@@ -7,11 +7,14 @@ import type {
   BookItem,
   BookStatus,
   BreakdownPart,
+  EtymologyStep,
   Morpheme,
   MorphemeKind,
+  OriginStep,
   SuggestItem,
   WordDetail,
   WordEntry,
+  WordEtymology,
   WordForm,
   WordOrigin,
 } from '../types.js';
@@ -42,7 +45,18 @@ interface OriginRow {
   origin: string | null;
   origin_code: string | null;
   lineage: string | null;
+  lineage_words: string | null;
   depth: number | null;
+}
+
+interface EtymologyRow {
+  word: string;
+  text_en: string | null;
+  text_zh: string | null;
+  chain: string | null;
+  origin: string | null;
+  origin_code: string | null;
+  source: string | null;
 }
 
 interface FormRow {
@@ -119,12 +133,57 @@ function rowToOrigin(r: OriginRow): WordOrigin {
   } catch {
     /* ignore */
   }
+  let lineageWords: OriginStep[] = [];
+  try {
+    const p = JSON.parse(r.lineage_words ?? '[]');
+    if (Array.isArray(p)) {
+      lineageWords = p
+        .filter((s: unknown) => s && typeof s === 'object')
+        .map((s: Record<string, unknown>) => ({
+          w: String(s.w ?? ''),
+          l: String(s.l ?? ''),
+          lz: String(s.lz ?? s.l ?? ''),
+        }));
+    }
+  } catch {
+    /* ignore */
+  }
   return {
     word: r.word,
     origin: r.origin ?? '未知',
     originCode: r.origin_code ?? '',
     lineage,
+    lineageWords,
     depth: r.depth ?? 0,
+  };
+}
+
+function rowToEtymology(r: EtymologyRow): WordEtymology {
+  let chain: EtymologyStep[] = [];
+  try {
+    const p = JSON.parse(r.chain ?? '[]');
+    if (Array.isArray(p)) {
+      chain = p
+        .filter((s: unknown) => s && typeof s === 'object')
+        .map((s: Record<string, unknown>) => ({
+          lang: String(s.lang ?? ''),
+          langZh: String(s.langZh ?? s.lang ?? ''),
+          word: s.word ? String(s.word) : null,
+          parts: Array.isArray(s.parts) ? s.parts.map(String) : undefined,
+          kind: s.kind ? String(s.kind) : undefined,
+        }));
+    }
+  } catch {
+    /* ignore */
+  }
+  return {
+    word: r.word,
+    textEn: r.text_en,
+    textZh: r.text_zh,
+    chain,
+    origin: r.origin,
+    originCode: r.origin_code,
+    source: r.source,
   };
 }
 
@@ -171,6 +230,11 @@ export function getOrigin(db: DatabaseSync, word: string): WordOrigin | null {
   return r ? rowToOrigin(r) : null;
 }
 
+export function getEtymology(db: DatabaseSync, word: string): WordEtymology | null {
+  const r = db.prepare('SELECT * FROM word_etymology WHERE word = ?').get(word) as unknown as EtymologyRow | undefined;
+  return r ? rowToEtymology(r) : null;
+}
+
 export function lookupWord(db: DatabaseSync, rawWord: string): WordDetail | null {
   const word = normalizeWord(rawWord);
   if (!word) return null;
@@ -194,6 +258,7 @@ export function lookupWord(db: DatabaseSync, rawWord: string): WordDetail | null
     ...rowToEntry(row),
     forms: listForms(db, matched),
     origin: getOrigin(db, matched),
+    etymology: getEtymology(db, matched),
     breakdown: breakdownWord(db, matched),
     inBook: !!db.prepare('SELECT 1 FROM book WHERE word = ? AND deleted = 0').get(matched),
   };

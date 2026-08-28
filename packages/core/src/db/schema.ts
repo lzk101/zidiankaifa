@@ -30,11 +30,22 @@ CREATE TABLE IF NOT EXISTS word_forms (
 CREATE INDEX IF NOT EXISTS idx_forms_form ON word_forms(form);
 
 CREATE TABLE IF NOT EXISTS word_origins (
+  word          TEXT PRIMARY KEY,
+  origin        TEXT,
+  origin_code   TEXT,
+  lineage       TEXT,
+  lineage_words TEXT,
+  depth         INTEGER
+);
+
+CREATE TABLE IF NOT EXISTS word_etymology (
   word        TEXT PRIMARY KEY,
+  text_en     TEXT,
+  text_zh     TEXT,
+  chain       TEXT,
   origin      TEXT,
   origin_code TEXT,
-  lineage     TEXT,
-  depth       INTEGER
+  source      TEXT
 );
 
 CREATE TABLE IF NOT EXISTS morphemes (

@@ -142,6 +142,27 @@ LANG_NAME = {
     "nav": "纳瓦霍语", "iku": "因纽特语", "moh": "莫霍克语", "oji": "奥吉布瓦语",
     "nah": "纳瓦特尔语", "que": "克丘亚语", "aym": "艾马拉语", "grn": "瓜拉尼语",
     "smi": "萨米语", "fry": "弗里西亚语", "cym": "威尔士语",
+    # wiktextract 模板常用代码
+    "de": "德语", "fr": "法语", "es": "西班牙语", "it": "意大利语", "pt": "葡萄牙语",
+    "nl": "荷兰语", "sv": "瑞典语", "da": "丹麦语", "no": "挪威语", "nb": "书面挪威语",
+    "nn": "新挪威语", "is": "冰岛语", "fi": "芬兰语", "et": "爱沙尼亚语", "hu": "匈牙利语",
+    "cs": "捷克语", "sk": "斯洛伐克语", "pl": "波兰语", "uk": "乌克兰语", "ru": "俄语",
+    "bg": "保加利亚语", "sr": "塞尔维亚语", "hr": "克罗地亚语", "ro": "罗马尼亚语",
+    "el": "希腊语", "tr": "土耳其语", "fa": "波斯语", "ar": "阿拉伯语", "he": "希伯来语",
+    "hi": "印地语", "ur": "乌尔都语", "bn": "孟加拉语", "ta": "泰米尔语", "te": "泰卢固语",
+    "kn": "卡纳达语", "ml": "马拉雅拉姆语", "mr": "马拉地语", "gu": "古吉拉特语",
+    "pa": "旁遮普语", "si": "僧伽罗语", "ne": "尼泊尔语", "zh": "汉语", "ja": "日语",
+    "ko": "韩语", "vi": "越南语", "th": "泰语", "km": "高棉语", "lo": "老挝语",
+    "ms": "马来语", "id": "印尼语", "tl": "他加禄语", "sw": "斯瓦希里语",
+    "cy": "威尔士语", "ga": "爱尔兰语", "gd": "苏格兰盖尔语", "kw": "康沃尔语",
+    "eu": "巴斯克语", "ca": "加泰罗尼亚语", "la": "拉丁语", "grc": "古希腊语",
+    "frk": "法兰克语", "gem-pro": "原始日耳曼语", "ine-pro": "原始印欧语",
+    "la-lat": "古典拉丁语", "la-med": "中世纪拉丁语", "la-cla": "古典拉丁语",
+    "osx": "古撒克逊语", "non": "古诺尔斯语", "sga": "古爱尔兰语",
+    "cel-pro": "原始凯尔特语", "itc-pro": "原始意大利语", "grk-pro": "原始希腊语",
+    "sla-pro": "原始斯拉夫语", "bal-pro": "原始波罗的语", "fro": "古法语", "frm": "中古法语",
+    "enm": "中古英语", "ang": "古英语", "goh": "古高地德语", "gmh": "中古高地德语",
+    "dum": "中古荷兰语", "odt": "古荷兰语", "gmw-pro": "原始西日耳曼语",
 }
 
 REL_ANCESTOR = {
@@ -177,6 +198,11 @@ def build_origins(conn):
     if not os.path.exists(zipp):
         log("SKIP origins: etymwn zip missing")
         return
+    # 迁移：给已有 word_origins 表补 lineage_words 列
+    cols = [r[1] for r in conn.execute("PRAGMA table_info(word_origins)")]
+    if "lineage_words" not in cols:
+        conn.execute("ALTER TABLE word_origins ADD COLUMN lineage_words TEXT")
+        conn.commit()
     log("scanning etymwn (pass 1: language frequency) ...")
     z = zipfile.ZipFile(zipp)
     member = "etymwn.tsv"
@@ -241,12 +267,13 @@ def build_origins(conn):
         if node in memo:
             return memo[node]
         if depth >= MAX_DEPTH or node in visiting:
-            return (node[0], [node[0]], 1)
+            return (node[0], [node], 1)
         visiting.add(node)
-        best = (node[0], [node[0]], 1)  # (origin_lang, langs_path, depth)
+        # (origin_lang, path_nodes, depth)，path_nodes 自 node 向外（含 node）
+        best = (node[0], [node], 1)
         for anc in graph.get(node, ()):
             r = origin(anc, depth + 1)
-            cand = (r[0], [node[0]] + r[1], r[2] + 1)
+            cand = (r[0], [node] + r[1], r[2] + 1)
             if cand[2] > best[2] or (cand[2] == best[2] and cand[0] != "eng" and best[0] == "eng"):
                 best = cand
         visiting.discard(node)
@@ -259,10 +286,13 @@ def build_origins(conn):
     for node in eng_nodes:
         res = origin(node, 0)
         lang = res[0]
-        lineage = [LANG_NAME.get(l, l) for l in res[1]]
+        langs = [l for l, _w in res[1]]
+        lineage = [LANG_NAME.get(l, l) for l in langs]
+        lineage_words = [{"w": w, "l": l, "lz": LANG_NAME.get(l, l)} for l, w in res[1]]
         cur.execute(
-            "INSERT OR REPLACE INTO word_origins (word, origin, origin_code, lineage, depth) VALUES (?,?,?,?,?)",
-            (node[1], LANG_NAME.get(lang, lang), lang, json.dumps(lineage, ensure_ascii=False), res[2]))
+            "INSERT OR REPLACE INTO word_origins (word, origin, origin_code, lineage, lineage_words, depth) VALUES (?,?,?,?,?,?)",
+            (node[1], LANG_NAME.get(lang, lang), lang, json.dumps(lineage, ensure_ascii=False),
+             json.dumps(lineage_words, ensure_ascii=False), res[2]))
         n += 1
     cur.execute("COMMIT")
     log(f"word_origins: {n}")
@@ -308,6 +338,13 @@ def verify(conn):
     }
     print("  stats:", stats)
 
+def build_etymology(conn):
+    """由 build_wiktextract.py 写入 word_etymology；此处仅清空以便重建。"""
+    conn.execute("DELETE FROM word_etymology")
+    conn.commit()
+    log("word_etymology cleared (run build_wiktextract.py to fill)")
+
+
 def main():
     only = sys.argv[1] if len(sys.argv) > 1 else None
     t0 = time.time()
@@ -320,6 +357,8 @@ def main():
         build_origins(conn)
     if only is None or only == "morphemes":
         build_morphemes(conn)
+    if only is None or only == "etymology":
+        build_etymology(conn)
     conn.execute("PRAGMA optimize")
     conn.commit()
     verify(conn)

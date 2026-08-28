@@ -6,7 +6,7 @@
 
 - 🔍 **查词**：音标、英英/英汉释义、词性、柯林斯/牛津星级、考试标签（中考/高考/四六级/考研/托福/GRE/雅思）、语料词频
 - 🔊 **发音**：系统 TTS（浏览器/桌面通用），后续可接真人发音音频
-- 🧬 **词源分类**：基于 Etymological Wordnet 词源图，最长祖先链定位语源语言（拉丁语/希腊语/法语/古英语…），展示演变链
+- 🧬 **词源分类**：三层数据——Etymological Wordnet 词源图算出的词级演变链（135k 词）+ **Wiktionary（wiktextract）词源详解**（词源原文中文/英文 + 结构化派生链，数十万词）+ 语源语言判定
 - 🔄 **词形演变**：由 ECDICT exchange 字段生成，过去式/过去分词/现在分词/复数/比较级等，点词形即查
 - 🧩 **词根词缀拆解**：内置 260+ 词根/前缀/后缀库，启发式切分并标注含义与来源
 - 📚 **生词本**：新学/学习中/已掌握/已暂停 四态管理，支持自定义标签
@@ -23,7 +23,7 @@
 | 手机 | 同一套前端以 PWA 运行；预留 Capacitor 配置 |
 | 数据 | SQLite（better 无依赖：Node 内置 `node:sqlite`） |
 | 同步 | Node 内置 http 服务 + SQLite，可选 Bearer Token |
-| 词库 | [ECDICT](https://github.com/skywind3000/ECDICT)（CC BY-SA 4.0 类开源）+ [Etymological Wordnet](https://archive.org/details/etymwn-20130208)（CC BY 3.0）+ 自编词根库 |
+| 词库 | [ECDICT](https://github.com/skywind3000/ECDICT)（开源，77 万词条）+ [Etymological Wordnet](https://archive.org/details/etymwn-20130208)（CC BY 3.0）+ [Wiktionary/wiktextract](https://kaikki.org)（CC BY-SA 4.0 / GFDL，词源详解）+ 自编词根库 |
 
 ## 目录结构
 
@@ -89,6 +89,7 @@ POST /api/v1/sync  {items:[...]}  # 合并同步
 
 - [ECDICT](https://github.com/skywind3000/ECDICT)：76 万词条（音标/释义/词频/考试标签/词形变化）。开源词库，用于个人学习研究。
 - [Etymological Wordnet](https://archive.org/details/etymwn-20130208)（Gerard de Melo）：603 万条词源关系，CC BY 3.0。
+- [Wiktionary](https://www.wiktionary.org/) / [kaikki.org wiktextract 转储](https://kaikki.org)：词源详解原文（中文/英文）与结构化派生链，CC BY-SA 4.0 / GFDL。
 - 词根词缀库：本项目自编（`packages/data-pipeline/roots.json`）。
 - 词库构建脚本与产物仅用于本项目，请勿将词库数据打包商用。
 

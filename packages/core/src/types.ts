@@ -43,6 +43,16 @@ export interface WordForm {
   type: FormType;
 }
 
+/** 词源演变链上的一环（词级） */
+export interface OriginStep {
+  /** 词形 */
+  w: string;
+  /** 语言代码，如 eng/frm/lat */
+  l: string;
+  /** 语言中文名 */
+  lz: string;
+}
+
 /** 词源信息 */
 export interface WordOrigin {
   word: string;
@@ -50,9 +60,41 @@ export interface WordOrigin {
   origin: string;
   /** 语源语言代码，如 lat */
   originCode: string;
-  /** 演变链（自英语向外），如 ["英语","古法语","拉丁语"] */
+  /** 演变链（语言名，自英语向外），如 ["英语","古法语","拉丁语"] */
   lineage: string[];
+  /** 演变链（词级），如 [{w:"abandon",l:"eng",lz:"英语"},{w:"abandoner",l:"fro",lz:"古法语"}] */
+  lineageWords: OriginStep[];
   depth: number;
+}
+
+/** wiktextract 结构化派生链上的一环 */
+export interface EtymologyStep {
+  /** 语言代码，如 frm/lat */
+  lang: string;
+  /** 语言中文名 */
+  langZh: string;
+  /** 源词 */
+  word: string | null;
+  /** 构词成分（同语言内部构词时） */
+  parts?: string[];
+  /** 模板类型 */
+  kind?: string;
+}
+
+/** 词源详解（Wiktionary/wiktextract） */
+export interface WordEtymology {
+  word: string;
+  /** 英文词源原文 */
+  textEn: string | null;
+  /** 中文词源原文 */
+  textZh: string | null;
+  /** 结构化派生链 */
+  chain: EtymologyStep[];
+  /** 最深层来源语言中文名 */
+  origin: string | null;
+  originCode: string | null;
+  /** 数据来源: en / zh / en+zh */
+  source: string | null;
 }
 
 export type MorphemeKind = 'root' | 'prefix' | 'suffix';
@@ -100,6 +142,7 @@ export interface BookItem {
 export interface WordDetail extends WordEntry {
   forms: WordForm[];
   origin: WordOrigin | null;
+  etymology: WordEtymology | null;
   breakdown: BreakdownPart[];
   inBook: boolean;
 }

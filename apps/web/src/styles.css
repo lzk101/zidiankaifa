@@ -513,6 +513,79 @@ input {
   color: var(--muted);
 }
 
+/* 详细词源（v0.2） */
+
+.origin-hero {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.origin-section {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+}
+
+.origin-section-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.origin-source {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--accent);
+  background: var(--accent-weak);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+
+.lang-badge {
+  font-size: 10px;
+  font-weight: 400;
+  margin-left: 4px;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: rgba(127, 127, 127, 0.18);
+  color: var(--muted);
+}
+
+.origin-text {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text);
+  margin: 6px 0;
+  background: var(--panel-2);
+  border-radius: 8px;
+  padding: 10px 12px;
+  word-break: break-word;
+}
+
+.origin-text-en {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.origin-text-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent);
+  border-radius: 4px;
+  padding: 1px 5px;
+  margin-right: 8px;
+  vertical-align: 1px;
+}
+
 /* ---------------- 词形卡片 ---------------- */
 
 .forms-body {

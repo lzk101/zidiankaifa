@@ -31,11 +31,12 @@ CREATE INDEX IF NOT EXISTS idx_forms_form ON word_forms(form);
 
 -- 词源分类
 CREATE TABLE IF NOT EXISTS word_origins (
-  word        TEXT PRIMARY KEY,
-  origin      TEXT,
-  origin_code TEXT,
-  lineage     TEXT,  -- JSON: ["英语","古法语","拉丁语"]
-  depth       INTEGER
+  word          TEXT PRIMARY KEY,
+  origin        TEXT,
+  origin_code   TEXT,
+  lineage       TEXT,  -- JSON: ["英语","古法语","拉丁语"]（兼容旧字段）
+  lineage_words TEXT,  -- JSON: [{"w":"abandon","l":"eng","lz":"英语"}, ...] 词级演变链
+  depth         INTEGER
 );
 
 -- 词根词缀库
@@ -46,6 +47,17 @@ CREATE TABLE IF NOT EXISTS morphemes (
   meaning_en TEXT,
   origin    TEXT,
   examples  TEXT                -- JSON: [..例词..]
+);
+
+-- 词源详解（wiktextract / Wiktionary）
+CREATE TABLE IF NOT EXISTS word_etymology (
+  word    TEXT PRIMARY KEY,
+  text_en TEXT,        -- 英文词源原文
+  text_zh TEXT,        -- 中文词源原文（zh 转储）
+  chain   TEXT,        -- JSON: [{"lang":"frm","langZh":"古法语","word":"abandouner"}, ...] 结构化派生链
+  origin  TEXT,        -- 最深层来源语言（中文名）
+  origin_code TEXT,    -- 最深层来源语言代码
+  source  TEXT         -- 'en' / 'zh' / 'en+zh'
 );
 
 -- 生词本（本地；同步服务端另有表）

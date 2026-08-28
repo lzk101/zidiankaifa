@@ -173,7 +173,7 @@ export default function App() {
               />
               {current && !searching && (
                 <>
-                  <OriginCard origin={current.origin} />
+                  <OriginCard origin={current.origin} etymology={current.etymology} />
                   <FormsCard forms={current.forms} onPick={lookup} />
                   <BreakdownCard
                     word={current.word}
