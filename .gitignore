@@ -1,0 +1,17 @@
+node_modules/
+dist/
+build/
+*.log
+.DS_Store
+.env
+*.tsbuildinfo
+.pnpm-store/
+.electron-cache/
+data/raw/*
+!data/raw/.gitkeep
+data/db/*.db
+data/db/*.db-*
+data/sync-data/
+data/*.png
+data/*.txt
+apps/sync-server/dist/

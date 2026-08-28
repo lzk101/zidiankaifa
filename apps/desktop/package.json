@@ -1,0 +1,37 @@
+{
+  "name": "@zidiankaifa/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/main.mjs",
+  "scripts": {
+    "dev": "electron .",
+    "start": "electron .",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@zidiankaifa/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "electron": "^37.0.0",
+    "electron-builder": "^26.0.0",
+    "typescript": "^5.6.0"
+  },
+  "build": {
+    "appId": "com.zidiankaifa.dict",
+    "productName": "我的电子辞典",
+    "files": ["src/**/*", "node_modules/**/*", "../../apps/web/dist/**/*"],
+    "extraResources": [
+      { "from": "../../data/db/dict.db", "to": "dict/dict.db", "filter": ["**/*"] }
+    ],
+    "win": {
+      "target": ["nsis"],
+      "artifactName": "zidiankaifa-${version}-setup.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

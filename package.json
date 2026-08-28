@@ -1,0 +1,26 @@
+{
+  "name": "zidiankaifa",
+  "private": true,
+  "version": "0.1.0",
+  "description": "自研电子辞典：React+TS+SQLite 一套代码驱动桌面(Electron)与手机(PWA/Capacitor)，内置 ECDICT 词库，按语言发展流程整理单词（词源/词形/词根词缀），配套 Node 云同步",
+  "engines": {
+    "node": ">=20"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "electron",
+      "esbuild"
+    ]
+  },
+  "scripts": {
+    "data:download": "python packages/data-pipeline/download.py",
+    "data:build": "python packages/data-pipeline/build_db.py",
+    "data:all": "pnpm run data:download && pnpm run data:build",
+    "dev:web": "pnpm --filter @zidiankaifa/web dev",
+    "build:web": "pnpm --filter @zidiankaifa/web build",
+    "dev:desktop": "pnpm --filter @zidiankaifa/desktop dev",
+    "build:desktop": "pnpm --filter @zidiankaifa/desktop build",
+    "dev:server": "pnpm --filter @zidiankaifa/sync-server dev",
+    "typecheck": "pnpm -r typecheck"
+  }
+}

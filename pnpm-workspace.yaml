@@ -1,0 +1,17 @@
+packages:
+  - packages/*
+  - apps/*
+
+# 依赖构建脚本（electron 下载二进制 / esbuild 校验）在受控沙箱中会被 EPERM 拦截，
+# 二进制已就位（见 README「若 Electron 二进制未下载」一节），因此统一忽略脚本。
+# 全新环境请先手动执行：
+#   $env:ELECTRON_MIRROR='https://npmmirror.com/mirrors/electron/'
+#   $env:electron_config_cache='<workspace>\.electron-cache'
+#   node apps/desktop/node_modules/electron/install.js
+allowBuilds:
+  electron: false
+  electron-winstaller: false
+  esbuild: false
+
+# pnpm run 前跳过依赖自检（自检会触发 install -> 上述脚本 -> EPERM）
+verifyDepsBeforeRun: false

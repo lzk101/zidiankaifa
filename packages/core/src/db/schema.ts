@@ -1,0 +1,61 @@
+/** zidiankaifa 词库模式（与 schema.sql 保持一致，供 node:sqlite 直接执行） */
+export const SCHEMA_SQL = `
+PRAGMA journal_mode = WAL;
+PRAGMA synchronous = NORMAL;
+
+CREATE TABLE IF NOT EXISTS words (
+  word        TEXT PRIMARY KEY,
+  phonetic    TEXT,
+  definition  TEXT,
+  translation TEXT,
+  pos         TEXT,
+  collins     INTEGER,
+  oxford      INTEGER,
+  tag         TEXT,
+  bnc         INTEGER,
+  frq         INTEGER,
+  exchange    TEXT,
+  audio       TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_words_tag ON words(tag);
+CREATE INDEX IF NOT EXISTS idx_words_bnc ON words(bnc);
+CREATE INDEX IF NOT EXISTS idx_words_frq ON words(frq);
+
+CREATE TABLE IF NOT EXISTS word_forms (
+  word      TEXT NOT NULL,
+  form      TEXT NOT NULL,
+  form_type TEXT NOT NULL,
+  PRIMARY KEY (word, form, form_type)
+);
+CREATE INDEX IF NOT EXISTS idx_forms_form ON word_forms(form);
+
+CREATE TABLE IF NOT EXISTS word_origins (
+  word        TEXT PRIMARY KEY,
+  origin      TEXT,
+  origin_code TEXT,
+  lineage     TEXT,
+  depth       INTEGER
+);
+
+CREATE TABLE IF NOT EXISTS morphemes (
+  morpheme   TEXT PRIMARY KEY,
+  kind       TEXT NOT NULL,
+  meaning_zh TEXT,
+  meaning_en TEXT,
+  origin     TEXT,
+  examples   TEXT
+);
+
+CREATE TABLE IF NOT EXISTS book (
+  word             TEXT PRIMARY KEY,
+  added_at         INTEGER NOT NULL,
+  updated_at       INTEGER NOT NULL,
+  status           TEXT NOT NULL DEFAULT 'new',
+  note             TEXT,
+  tags             TEXT NOT NULL DEFAULT '[]',
+  review_count     INTEGER NOT NULL DEFAULT 0,
+  last_reviewed_at INTEGER,
+  deleted          INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_book_updated ON book(updated_at);
+`;
