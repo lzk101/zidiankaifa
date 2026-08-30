@@ -48,6 +48,29 @@ CREATE TABLE IF NOT EXISTS word_etymology (
   source      TEXT
 );
 
+CREATE TABLE IF NOT EXISTS words_i18n (
+  word        TEXT NOT NULL,
+  lang        TEXT NOT NULL,
+  phonetic    TEXT,
+  translation TEXT,
+  definition  TEXT,
+  pos         TEXT,
+  forms       TEXT,
+  audio       TEXT,
+  source      TEXT,
+  PRIMARY KEY (word, lang)
+);
+CREATE INDEX IF NOT EXISTS idx_i18n_translation ON words_i18n(translation);
+
+CREATE TABLE IF NOT EXISTS i18n_forms (
+  form  TEXT NOT NULL,
+  word  TEXT NOT NULL,
+  lang  TEXT NOT NULL,
+  tags  TEXT,
+  PRIMARY KEY (lang, form, word)
+);
+CREATE INDEX IF NOT EXISTS idx_i18n_forms_form ON i18n_forms(form);
+
 CREATE TABLE IF NOT EXISTS morphemes (
   morpheme   TEXT PRIMARY KEY,
   kind       TEXT NOT NULL,

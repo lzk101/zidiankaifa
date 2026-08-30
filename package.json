@@ -15,7 +15,9 @@
   "scripts": {
     "data:download": "python packages/data-pipeline/download.py",
     "data:build": "python packages/data-pipeline/build_db.py",
-    "data:all": "pnpm run data:download && pnpm run data:build",
+    "data:ru": "python packages/data-pipeline/build_ru.py",
+    "data:etym": "python packages/data-pipeline/build_wiktextract.py",
+    "data:all": "pnpm run data:download && pnpm run data:build && pnpm run data:ru && pnpm run data:etym",
     "dev:web": "pnpm --filter @zidiankaifa/web dev",
     "build:web": "pnpm --filter @zidiankaifa/web build",
     "dev:desktop": "pnpm --filter @zidiankaifa/desktop dev",

@@ -171,7 +171,7 @@ export default function App() {
                 onPick={lookup}
                 onToggleBook={toggleBook}
               />
-              {current && !searching && (
+              {current && !searching && !current.i18n && (
                 <>
                   <OriginCard origin={current.origin} etymology={current.etymology} />
                   <FormsCard forms={current.forms} onPick={lookup} />

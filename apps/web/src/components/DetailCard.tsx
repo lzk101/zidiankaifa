@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { SuggestItem, WordDetail } from '@zidiankaifa/core';
+import { rusTagsZh } from '@zidiankaifa/core';
 import { getBackend } from '../api';
 
 interface DetailCardProps {
@@ -65,11 +66,11 @@ export default function DetailCard({
     };
   }, [notFound, query]);
 
-  const speak = async (word: string) => {
+  const speak = async (word: string, lang?: string) => {
     if (speaking) return;
     setSpeaking(true);
     try {
-      await getBackend().speak(word);
+      await getBackend().speak(word, lang);
     } catch {
       // 发音失败静默处理
     } finally {
@@ -128,6 +129,90 @@ export default function DetailCard({
     ? detail.tag.split(/\s+/).filter(Boolean)
     : [];
   const transLines = splitLines(detail.translation);
+
+  // ---- 多语言词条（俄语等）：独立布局 ----
+  if (detail.i18n) {
+    const i = detail.i18n;
+    const i18nTransLines = splitLines(i.translation);
+    return (
+      <div className="card detail-card">
+        <div className="detail-head">
+          <h2 className="detail-word">
+            {i.word}
+            <span className="i18n-lang-badge">{i.langName}</span>
+          </h2>
+          <div className="detail-actions">
+            <button
+              className="btn speak-btn"
+              title="发音"
+              disabled={speaking}
+              onClick={() => void speak(i.word, i.lang)}
+            >
+              🔊 {speaking ? '发音中…' : '发音'}
+            </button>
+            <button
+              className={`btn fav-btn${detail.inBook ? ' faved' : ''}`}
+              title={detail.inBook ? '取消收藏' : '加入生词本'}
+              onClick={() => onToggleBook(i.word)}
+            >
+              {detail.inBook ? '★ 已收藏' : '☆ 收藏'}
+            </button>
+          </div>
+        </div>
+
+        <div className="detail-phonetic">
+          {i.phonetic ? i.phonetic : '暂无音标'}
+        </div>
+
+        {i.matchedForm && (
+          <div className="i18n-form-note">
+            「{i.matchedForm.display}」是「{i.word}」的
+            {rusTagsZh(i.matchedForm.tags).join(' / ')}形式
+          </div>
+        )}
+
+        <div className="detail-def">
+          {i.pos && <span className="pos">{i.pos}</span>}
+          <span className="definition">{i.translation || '暂无释义'}</span>
+        </div>
+
+        {i18nTransLines.length > 0 && (
+          <div className="detail-trans">
+            {i18nTransLines.map((line, idx) => (
+              <div className="trans-line" key={idx}>
+                {line}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {i.forms.length > 0 && (
+          <div className="i18n-forms">
+            <div className="i18n-forms-title">变格变位</div>
+            <div className="i18n-forms-list">
+              {i.forms
+                .filter((f) => f.form !== i.word)
+                .map((f, idx) => (
+                  <button
+                    key={`${f.form}-${idx}`}
+                    className="i18n-form-chip"
+                    title="点击查询该词形"
+                    onClick={() => onPick(f.form)}
+                  >
+                    {f.display}
+                    {f.tags.length > 0 && (
+                      <span className="i18n-form-tags">
+                        {rusTagsZh(f.tags).join('/')}
+                      </span>
+                    )}
+                  </button>
+                ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="card detail-card">

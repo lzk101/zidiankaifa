@@ -38,19 +38,15 @@ function writeLocalBook(items: BookItem[]): void {
 
 /* ---------------- 语音合成：统一走 Web Speech API ---------------- */
 
-function pickEnglishVoice(
+function pickVoice(
   synth: SpeechSynthesis,
+  langPrefix: string,
 ): SpeechSynthesisVoice | undefined {
   const voices = synth.getVoices();
-  const en = voices.filter((v) => v.lang.toLowerCase().startsWith('en'));
-  return (
-    en.find((v) => v.lang.toLowerCase().startsWith('en-us')) ??
-    en.find((v) => v.lang.toLowerCase().startsWith('en-gb')) ??
-    en[0]
-  );
+  return voices.find((v) => v.lang.toLowerCase().startsWith(langPrefix));
 }
 
-function speakViaWebSpeech(word: string): Promise<void> {
+function speakViaWebSpeech(word: string, lang = 'en'): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     if (
       typeof window === 'undefined' ||
@@ -62,12 +58,13 @@ function speakViaWebSpeech(word: string): Promise<void> {
     }
     const synth = window.speechSynthesis;
     const utter = new SpeechSynthesisUtterance(word);
-    const voice = pickEnglishVoice(synth);
+    const prefix = lang === 'en' ? 'en' : lang;
+    const voice = pickVoice(synth, prefix);
     if (voice) {
       utter.voice = voice;
       utter.lang = voice.lang;
     } else {
-      utter.lang = 'en-US';
+      utter.lang = lang === 'en' ? 'en-US' : `${lang}-RU`;
     }
     utter.rate = 0.85;
     utter.onend = () => resolve();

@@ -60,6 +60,31 @@ CREATE TABLE IF NOT EXISTS word_etymology (
   source  TEXT         -- 'en' / 'zh' / 'en+zh'
 );
 
+-- 多语言词条（俄语等，lang 代码见 i18n_langs）
+CREATE TABLE IF NOT EXISTS words_i18n (
+  word        TEXT NOT NULL,
+  lang        TEXT NOT NULL,       -- 'ru' 等
+  phonetic    TEXT,                -- IPA
+  translation TEXT,                -- 中文释义（繁体已转简体）
+  definition  TEXT,                -- 其他语言释义（可选）
+  pos         TEXT,
+  forms       TEXT,                -- JSON: [{"form":"вода́","tags":["genitive"]}, ...]
+  audio       TEXT,                -- mp3_url
+  source      TEXT,                -- 'zh' / 'ru' 等
+  PRIMARY KEY (word, lang)
+);
+CREATE INDEX IF NOT EXISTS idx_i18n_translation ON words_i18n(translation);
+
+-- 多语言词形索引（变格/变位反查：输入词形 → 原型）
+CREATE TABLE IF NOT EXISTS i18n_forms (
+  form  TEXT NOT NULL,
+  word  TEXT NOT NULL,
+  lang  TEXT NOT NULL,
+  tags  TEXT,                      -- JSON 标签数组
+  PRIMARY KEY (lang, form, word)
+);
+CREATE INDEX IF NOT EXISTS idx_i18n_forms_form ON i18n_forms(form);
+
 -- 生词本（本地；同步服务端另有表）
 CREATE TABLE IF NOT EXISTS book (
   word           TEXT PRIMARY KEY,

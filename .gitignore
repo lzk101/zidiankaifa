@@ -10,6 +10,8 @@ __pycache__/
 .pnpm-store/
 .electron-cache/
 .gh-config/
+.pip-tmp/
+data/py-deps/
 data/raw/*
 !data/raw/.gitkeep
 data/db/*.db

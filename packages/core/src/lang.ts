@@ -31,6 +31,7 @@ export const TAG_LABEL: Record<string, string> = {
   toefl: '托福',
   gre: 'GRE',
   ielts: '雅思',
+  ru: '俄语',
 };
 
 /** 把 ECDICT tag 字段拆成 chips */
@@ -43,9 +44,73 @@ export function tagChips(tag: string | null | undefined): { code: string; label:
 }
 
 const CJK_RE = /[\u4e00-\u9fff\u3400-\u4dbf]/;
+const CYRILLIC_RE = /[\u0400-\u04ff]/;
 
 export function isCjk(s: string): boolean {
   return CJK_RE.test(s);
+}
+
+export function isCyrillic(s: string): boolean {
+  return CYRILLIC_RE.test(s);
+}
+
+/** 多语言代码 → 中文名 */
+export const I18N_LANG_NAME: Record<string, string> = {
+  ru: '俄语',
+};
+
+/** 俄语语法标签 → 中文（变格/变位等） */
+export const RUS_TAG_LABEL: Record<string, string> = {
+  nominative: '主格',
+  genitive: '属格',
+  dative: '与格',
+  accusative: '宾格',
+  instrumental: '工具格',
+  prepositional: '前置格',
+  locative: '方位格',
+  vocative: '呼格',
+  singular: '单数',
+  plural: '复数',
+  masculine: '阳性',
+  feminine: '阴性',
+  neuter: '中性',
+  animate: '有生命',
+  inanimate: '无生命',
+  perfective: '完成体',
+  imperfective: '未完成体',
+  reflexive: '反身',
+  past: '过去时',
+  present: '现在时',
+  future: '将来时',
+  'first-person': '第一人称',
+  'second-person': '第二人称',
+  'third-person': '第三人称',
+  indicative: '陈述式',
+  imperative: '命令式',
+  subjunctive: '虚拟式',
+  conditional: '条件式',
+  comparative: '比较级',
+  superlative: '最高级',
+  'short-form': '短尾',
+  short: '短尾',
+  canonical: '原形',
+  lemma: '词条形',
+  'non-lemma': '非词条形',
+  relational: '关系形容词',
+  participle: '分词',
+  verbal: '动词性',
+  'noun-from-verb': '动名词',
+  name: '人名',
+  surname: '姓氏',
+};
+
+/** 俄语语法标签列表 → 中文标签串 */
+export function rusTagsZh(tags: string[]): string[] {
+  const out: string[] = [];
+  for (const t of tags ?? []) {
+    out.push(RUS_TAG_LABEL[t] ?? t);
+  }
+  return out;
 }
 
 export function nextBookStatus(s: BookStatus): BookStatus {

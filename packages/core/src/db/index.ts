@@ -8,6 +8,8 @@ import type {
   BookStatus,
   BreakdownPart,
   EtymologyStep,
+  I18nForm,
+  I18nWord,
   Morpheme,
   MorphemeKind,
   OriginStep,
@@ -18,7 +20,7 @@ import type {
   WordForm,
   WordOrigin,
 } from '../types.js';
-import { isCjk } from '../lang.js';
+import { isCjk, isCyrillic, I18N_LANG_NAME } from '../lang.js';
 import { SCHEMA_SQL } from './schema.js';
 
 export { SCHEMA_SQL };
@@ -57,6 +59,24 @@ interface EtymologyRow {
   origin: string | null;
   origin_code: string | null;
   source: string | null;
+}
+
+interface I18nRow {
+  word: string;
+  lang: string;
+  phonetic: string | null;
+  translation: string | null;
+  definition: string | null;
+  pos: string | null;
+  forms: string | null;
+  audio: string | null;
+  source: string | null;
+}
+
+interface I18nFormRow {
+  form: string;
+  word: string;
+  tags: string | null;
 }
 
 interface FormRow {
@@ -235,13 +255,104 @@ export function getEtymology(db: DatabaseSync, word: string): WordEtymology | nu
   return r ? rowToEtymology(r) : null;
 }
 
+/* ---------------- 多语言词条（俄语等） ---------------- */
+
+function rowToI18n(r: I18nRow, matchedForm: I18nWord['matchedForm']): I18nWord {
+  let forms: I18nForm[] = [];
+  try {
+    const p = JSON.parse(r.forms ?? '[]');
+    if (Array.isArray(p)) {
+      forms = p
+        .filter((s: unknown) => s && typeof s === 'object')
+        .map((s: Record<string, unknown>) => ({
+          form: String(s.form ?? ''),
+          display: String(s.display ?? s.form ?? ''),
+          tags: Array.isArray(s.tags) ? s.tags.map(String) : [],
+        }));
+    }
+  } catch {
+    /* ignore */
+  }
+  return {
+    word: r.word,
+    lang: r.lang,
+    langName: I18N_LANG_NAME[r.lang] ?? r.lang,
+    phonetic: r.phonetic,
+    translation: r.translation,
+    definition: r.definition,
+    pos: r.pos,
+    forms,
+    audio: r.audio,
+    matchedForm,
+  };
+}
+
+export function getI18n(db: DatabaseSync, word: string, lang = 'ru'): I18nWord | null {
+  const r = db
+    .prepare('SELECT * FROM words_i18n WHERE word = ? AND lang = ?')
+    .get(normalizeWord(word), lang) as unknown as I18nRow | undefined;
+  return r ? rowToI18n(r, null) : null;
+}
+
+function lookupI18n(db: DatabaseSync, word: string, lang: string): WordDetail | null {
+  // 优先直接词条；无词条时再词形反查（столом → стол）
+  const direct = getI18n(db, word, lang);
+  if (direct) return i18nToDetail(direct);
+  const fr = db
+    .prepare('SELECT word, tags FROM i18n_forms WHERE form = ? AND lang = ?')
+    .get(word, lang) as unknown as I18nFormRow | undefined;
+  if (fr) {
+    const base = getI18n(db, fr.word, lang);
+    if (base) {
+      let tags: string[] = [];
+      try {
+        const p = JSON.parse(fr.tags ?? '[]');
+        if (Array.isArray(p)) tags = p.map(String);
+      } catch {
+        /* ignore */
+      }
+      const withForm: I18nWord = { ...base, matchedForm: { form: word, display: word, tags } };
+      return i18nToDetail(withForm);
+    }
+  }
+  return null;
+}
+
+function i18nToDetail(i: I18nWord): WordDetail {
+  return {
+    word: i.word,
+    phonetic: i.phonetic,
+    definition: i.definition,
+    translation: i.translation,
+    pos: i.pos,
+    collins: null,
+    oxford: null,
+    tag: null,
+    bnc: null,
+    frq: null,
+    exchange: null,
+    audio: i.audio,
+    forms: [],
+    origin: null,
+    etymology: null,
+    breakdown: [],
+    inBook: false,
+    i18n: i,
+  };
+}
+
 export function lookupWord(db: DatabaseSync, rawWord: string): WordDetail | null {
   const word = normalizeWord(rawWord);
   if (!word) return null;
+  // 西里尔输入 → 俄语词条（先词形反查）
+  if (isCyrillic(word)) {
+    const ru = lookupI18n(db, word, 'ru');
+    if (ru) return ru;
+  }
   let row = db.prepare('SELECT * FROM words WHERE word = ?').get(word) as unknown as WordRow | undefined;
   let matched = word;
   if (!row && isCjk(word)) {
-    // 中文反查：取释义包含该词的第一个词条
+    // 中文反查：英文释义 + 俄语释义
     const like = `%${escapeLike(word)}%`;
     const r = db
       .prepare(
@@ -251,6 +362,14 @@ export function lookupWord(db: DatabaseSync, rawWord: string): WordDetail | null
     if (r) {
       row = r;
       matched = r.word;
+    } else {
+      const ruRow = db
+        .prepare("SELECT word, lang FROM words_i18n WHERE translation LIKE ? ESCAPE '\\' LIMIT 1")
+        .get(like) as unknown as { word: string; lang: string } | undefined;
+      if (ruRow) {
+        const ru = lookupI18n(db, ruRow.word, ruRow.lang);
+        if (ru) return ru;
+      }
     }
   }
   if (!row) return null;
@@ -261,6 +380,7 @@ export function lookupWord(db: DatabaseSync, rawWord: string): WordDetail | null
     etymology: getEtymology(db, matched),
     breakdown: breakdownWord(db, matched),
     inBook: !!db.prepare('SELECT 1 FROM book WHERE word = ? AND deleted = 0').get(matched),
+    i18n: null,
   };
 }
 
@@ -268,13 +388,29 @@ export function suggest(db: DatabaseSync, rawQuery: string, limit = 20): Suggest
   const q = normalizeWord(rawQuery);
   if (!q) return [];
   const lim = Math.min(Math.max(limit, 1), 50);
+  // 西里尔前缀 → 俄语词条
+  if (isCyrillic(q)) {
+    return db
+      .prepare(
+        `SELECT word, NULL AS bnc, NULL AS frq, 'ru' AS tag FROM words_i18n
+         WHERE word >= ? AND word < ?
+         ORDER BY word LIMIT ?`
+      )
+      .all(q, q + 'яяя', lim) as unknown as SuggestRow[];
+  }
   if (isCjk(q)) {
     const like = `%${escapeLike(q)}%`;
-    return db
+    const en = db
       .prepare(
         "SELECT word, bnc, frq, tag FROM words WHERE translation LIKE ? ESCAPE '\\' ORDER BY (bnc IS NULL), bnc, word LIMIT ?"
       )
       .all(like, lim) as unknown as SuggestRow[];
+    const ru = db
+      .prepare(
+        "SELECT word, NULL AS bnc, NULL AS frq, 'ru' AS tag FROM words_i18n WHERE translation LIKE ? ESCAPE '\\' ORDER BY word LIMIT ?"
+      )
+      .all(like, lim) as unknown as SuggestRow[];
+    return [...en, ...ru].slice(0, lim);
   }
   return db
     .prepare(

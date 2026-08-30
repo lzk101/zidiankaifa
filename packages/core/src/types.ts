@@ -138,6 +138,35 @@ export interface BookItem {
   deleted?: boolean;
 }
 
+/** 多语言词形（如俄语变格变位） */
+export interface I18nForm {
+  /** 无重音的形式键（可反查） */
+  form: string;
+  /** 原形展示（含重音等） */
+  display: string;
+  /** 语法标签：genitive/plural/perfective... */
+  tags: string[];
+}
+
+/** 多语言词条（俄语等，来自 Wiktionary） */
+export interface I18nWord {
+  word: string;
+  /** 语言代码，如 ru */
+  lang: string;
+  /** 语言中文名，如 俄语 */
+  langName: string;
+  phonetic: string | null;
+  /** 中文释义 */
+  translation: string | null;
+  /** 其他语言释义 */
+  definition: string | null;
+  pos: string | null;
+  forms: I18nForm[];
+  audio: string | null;
+  /** 若本次查询命中词形而非原型（如 столом → стол） */
+  matchedForm: { form: string; display: string; tags: string[] } | null;
+}
+
 /** 词条完整详情 */
 export interface WordDetail extends WordEntry {
   forms: WordForm[];
@@ -145,6 +174,8 @@ export interface WordDetail extends WordEntry {
   etymology: WordEtymology | null;
   breakdown: BreakdownPart[];
   inBook: boolean;
+  /** 多语言词条（非空表示本次命中俄语等词条） */
+  i18n: I18nWord | null;
 }
 
 export interface SuggestItem {
@@ -172,8 +203,8 @@ export interface DictBackend {
   bookUpdate(item: BookItem): Promise<void>;
   /** 全量合并同步；syncUrl 可选（Electron 端可省，浏览器端必传） */
   syncNow(syncUrl?: string): Promise<SyncResult>;
-  /** 发音：返回 void，由后端实现 TTS/音频播放 */
-  speak(word: string): Promise<void>;
+  /** 发音：lang 如 'en'/'ru'，默认 'en' */
+  speak(word: string, lang?: string): Promise<void>;
   /** 订阅剪贴板取词（仅 Electron 生效）；返回取消订阅函数 */
   onClipboard?(cb: (text: string) => void): () => void;
 }

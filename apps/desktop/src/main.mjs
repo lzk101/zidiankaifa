@@ -36,16 +36,35 @@ if (!gotLock) {
 }
 
 function resolveDbPath() {
-  const candidates = [
-    process.env.ZIDIANKAFA_DB,
-    path.join(process.resourcesPath, 'dict', 'dict.db'),
-    path.join(app.getPath('userData'), 'dict.db'),
-    path.join(__dirname, '..', '..', '..', 'data', 'db', 'dict.db'),
-  ].filter(Boolean);
-  for (const c of candidates) {
-    if (fs.existsSync(c)) return c;
+  // 1) 环境变量显式指定
+  if (process.env.ZIDIANKAFA_DB && fs.existsSync(process.env.ZIDIANKAFA_DB)) {
+    return process.env.ZIDIANKAFA_DB;
   }
-  return path.join(app.getPath('userData'), 'dict.db');
+  // 2) 用户数据目录（可写）；首次运行时把打包内置词库复制过来
+  const userData = path.join(app.getPath('userData'), 'dict.db');
+  const bundled = path.join(process.resourcesPath, 'dict', 'dict.db');
+  if (!fs.existsSync(userData) && fs.existsSync(bundled)) {
+    try {
+      fs.mkdirSync(path.dirname(userData), { recursive: true });
+      fs.copyFileSync(bundled, userData);
+      console.log('[zidiankaifa] bundled dict.db copied to userData');
+    } catch (e) {
+      console.error('[zidiankaifa] copy bundled db failed:', e);
+    }
+  }
+  if (fs.existsSync(userData)) {
+    return userData;
+  }
+  // 3) 打包内置（只读，仅当复制失败时兜底）
+  if (fs.existsSync(bundled)) {
+    return bundled;
+  }
+  // 4) 开发仓库
+  const dev = path.join(__dirname, '..', '..', '..', 'data', 'db', 'dict.db');
+  if (fs.existsSync(dev)) {
+    return dev;
+  }
+  return userData;
 }
 
 function registerIpc() {

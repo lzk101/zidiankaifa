@@ -21,17 +21,38 @@
   "build": {
     "appId": "com.zidiankaifa.dict",
     "productName": "我的电子辞典",
-    "files": ["src/**/*", "node_modules/**/*", "../../apps/web/dist/**/*"],
+    "directories": {
+      "output": "../../dist-release"
+    },
+    "files": [
+      "src/**/*",
+      "node_modules/**/*",
+      {
+        "from": "../web/dist",
+        "to": "web/dist",
+        "filter": ["**/*"]
+      }
+    ],
     "extraResources": [
-      { "from": "../../data/db/dict.db", "to": "dict/dict.db", "filter": ["**/*"] }
+      {
+        "from": "../../data/db/dict.db",
+        "to": "dict/dict.db",
+        "filter": ["**/*"]
+      }
     ],
     "win": {
-      "target": ["nsis"],
-      "artifactName": "zidiankaifa-${version}-setup.${ext}"
+      "target": ["nsis", "portable"],
+      "artifactName": "zidiankaifa-${version}-${arch}.${ext}"
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "shortcutName": "我的电子辞典"
+    },
+    "portable": {
+      "artifactName": "zidiankaifa-portable-${version}-${arch}.${ext}"
     }
   }
 }
