@@ -9,9 +9,11 @@ __pycache__/
 *.pyc
 .pnpm-store/
 .electron-cache/
+.eb-cache/
 .gh-config/
 .pip-tmp/
 data/py-deps/
+dist-release/
 data/raw/*
 !data/raw/.gitkeep
 data/db/*.db

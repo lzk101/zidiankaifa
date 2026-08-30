@@ -156,11 +156,12 @@ function createWindow() {
 
   // 开发验证钩子：ZIDIANKAFA_SHOT=<png路径> 时，加载后自动截图并退出
   if (process.env.ZIDIANKAFA_SHOT) {
+    const shotWord = process.env.ZIDIANKAFA_SHOT_WORD || 'telephone';
     mainWindow.webContents.once('did-finish-load', () => {
       setTimeout(async () => {
         try {
           await mainWindow.webContents.executeJavaScript(
-            'localStorage.setItem("zidian-last-word","telephone"); location.reload(); true'
+            `localStorage.setItem("zidian-last-word", ${JSON.stringify(shotWord)}); location.reload(); true`
           );
           setTimeout(async () => {
             const img = await mainWindow.webContents.capturePage();
