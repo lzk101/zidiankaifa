@@ -57,9 +57,17 @@ pnpm --filter @zidiankaifa/desktop dev
 
 # 5.（可选）启动同步服务（手机端/浏览器端查词与同步依赖它）
 pnpm --filter @zidiankaifa/sync-server start
+
+# 6.（可选）打包 Windows 安装包（产物在 dist-release/，先完成第 3 步构建）
+$env:ELECTRON_MIRROR='https://npmmirror.com/mirrors/electron/'
+$env:electron_config_cache='<workspace>\.electron-cache'      # electron 二进制缓存
+$env:ELECTRON_BUILDER_CACHE='<workspace>\.eb-cache'           # NSIS/winCodeSign 工具缓存
+pnpm --filter @zidiankaifa/desktop build
 ```
 
 > 若 Electron 二进制未下载：`$env:ELECTRON_MIRROR='https://npmmirror.com/mirrors/electron/'; $env:electron_config_cache='<workspace>\.electron-cache'; node apps/desktop/node_modules/electron/install.js`
+>
+> 打包工具链预下载脚本：`python packages/data-pipeline/fetch_builder_bins.py`（将 NSIS/winCodeSign/7zip 缓存到 `.eb-cache/`）。
 
 ### 浏览器/PWA 模式（手机端）
 

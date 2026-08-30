@@ -174,7 +174,7 @@ export default function App() {
           </button>
         </nav>
         <div className="copyright">
-          我的电子辞典 v0.1.0
+          我的电子辞典 v0.2.0
           <br />
           词库来源 ECDICT
         </div>
