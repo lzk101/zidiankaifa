@@ -1236,3 +1236,433 @@ input {
     bottom: 12px;
   }
 }
+
+/* ================= v0.2 新增样式 ================= */
+
+/* ---------------- 查询语言切换器 ---------------- */
+
+.lang-switcher {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--panel-2, #eef0f4);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.lang-btn {
+  padding: 4px 12px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.lang-btn:hover {
+  color: var(--text);
+}
+
+.lang-btn.active {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.search-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search-area .search-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ---------------- 建议语言徽章 ---------------- */
+
+.suggest-lang {
+  font-size: 11px;
+  margin-right: 2px;
+  opacity: 0.95;
+}
+
+/* ---------------- 俄语变格变位表格 ---------------- */
+
+.ru-forms {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ru-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.ru-table th,
+.ru-table td {
+  border: 1px solid var(--border);
+  padding: 6px 8px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.ru-table thead th {
+  background: var(--panel-2, #eef0f4);
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.ru-th-corner {
+  min-width: 64px;
+}
+
+.ru-th-row {
+  background: var(--panel-2, #eef0f4);
+  color: var(--text);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ru-cell-btn {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.ru-cell-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-weak);
+}
+
+.ru-cell-empty {
+  color: var(--muted);
+  opacity: 0.55;
+}
+
+.ru-leftovers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* ---------------- 构词成分（词源卡内） ---------------- */
+
+.construction-section {
+  border-top: 1px dashed var(--border);
+  padding-top: 10px;
+  margin-top: 4px;
+}
+
+.construction {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.construction-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.construction-plus {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.construction-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.construction-chip.root {
+  background: var(--accent-weak);
+  border-color: var(--accent);
+}
+
+.construction-chip.prefix {
+  background: #eaf3ff;
+  border-color: #7fb0e8;
+}
+
+.construction-chip.suffix {
+  background: #fff3e6;
+  border-color: #e8b877;
+}
+
+.construction-kind {
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.construction-meaning {
+  font-size: 11px;
+  color: var(--text);
+  font-weight: 400;
+}
+
+.construction-origin {
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.construction-hint {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* ---------------- 词素例词 ---------------- */
+
+.morpheme-examples {
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--muted);
+  margin-left: 4px;
+}
+
+.morpheme-example {
+  border: none;
+  background: var(--panel-2, #eef0f4);
+  color: var(--accent);
+  font-size: 12px;
+  padding: 1px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.morpheme-example:hover {
+  background: var(--accent-weak);
+  color: var(--accent);
+}
+
+/* ---------------- 生词本视图切换与分组 ---------------- */
+
+.book-view-tabs {
+  display: inline-flex;
+  gap: 4px;
+  margin: 10px 0 2px;
+}
+
+.view-tab {
+  padding: 5px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.view-tab.active {
+  border-color: var(--accent);
+  background: var(--accent-weak);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.view-tab-num {
+  margin-left: 4px;
+  font-size: 11px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 8px;
+  padding: 0 6px;
+}
+
+.book-lang-badge {
+  margin-left: 4px;
+  font-size: 12px;
+}
+
+.book-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.book-group {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: var(--panel);
+}
+
+.book-group-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.book-group-kind,
+.book-group-meaning {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.book-group-origin {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.book-group-count {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.book-group-words {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.book-group-word {
+  padding: 4px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--panel-2, #eef0f4);
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.book-group-word:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.book-group-examples {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* ---------------- 知识图谱（SVG） ---------------- */
+
+.book-graph {
+  margin-top: 12px;
+}
+
+.book-graph-title {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.book-graph-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 10px;
+}
+
+.graph-cell {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px;
+  background: var(--panel);
+  text-align: center;
+}
+
+.graph-cell-cap {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.graph-edge {
+  stroke: var(--border);
+  stroke-width: 1.2;
+}
+
+.graph-root-node {
+  stroke-width: 2;
+  cursor: default;
+}
+
+.graph-root-node.root {
+  fill: var(--accent-weak);
+  stroke: var(--accent);
+}
+
+.graph-root-node.prefix {
+  fill: #eaf3ff;
+  stroke: #7fb0e8;
+}
+
+.graph-root-node.suffix {
+  fill: #fff3e6;
+  stroke: #e8b877;
+}
+
+.graph-word-node {
+  fill: var(--panel);
+  stroke: var(--border);
+  stroke-width: 1.5;
+  cursor: pointer;
+}
+
+.graph-word-node:hover {
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.graph-root-text {
+  font-size: 10px;
+  font-weight: 600;
+  fill: var(--text);
+  pointer-events: none;
+}
+
+.graph-word-text {
+  font-size: 9px;
+  fill: var(--accent);
+  cursor: pointer;
+  pointer-events: none;
+}
+
+@media (max-width: 760px) {
+  .book-graph {
+    display: none;
+  }
+}
+

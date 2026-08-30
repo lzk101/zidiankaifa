@@ -1,19 +1,31 @@
-import type { WordEtymology, WordOrigin } from '@zidiankaifa/core';
+import type { BreakdownPart, WordEtymology, WordOrigin } from '@zidiankaifa/core';
 
 interface OriginCardProps {
   origin: WordOrigin | null;
   etymology: WordEtymology | null;
+  /** 词根词缀拆解（构词成分，衔接演变链） */
+  breakdown?: BreakdownPart[];
 }
+
+const KIND_LABEL: Record<BreakdownPart['kind'], string> = {
+  root: '词根',
+  prefix: '前缀',
+  suffix: '后缀',
+};
 
 function LangBadge({ text }: { text: string }) {
   return <span className="lang-badge">{text}</span>;
 }
 
-export default function OriginCard({ origin, etymology }: OriginCardProps) {
+export default function OriginCard({
+  origin,
+  etymology,
+  breakdown,
+}: OriginCardProps) {
   const originName = etymology?.origin ?? origin?.origin ?? null;
   const chainWords = origin?.lineageWords?.length ? origin.lineageWords : null;
   const chainEtym = etymology?.chain?.length ? etymology.chain : null;
-  const hasAny = !!(originName || chainWords || chainEtym || etymology?.textZh || etymology?.textEn);
+  const hasAny = !!(originName || chainWords || chainEtym || etymology?.textZh || etymology?.textEn || (breakdown && breakdown.length > 0));
 
   if (!hasAny) {
     return (
@@ -36,6 +48,38 @@ export default function OriginCard({ origin, etymology }: OriginCardProps) {
             <span className="origin-code">{origin.originCode}</span>
           )}
           <span className="origin-depth">源自 {originName}</span>
+        </div>
+      )}
+
+      {breakdown && breakdown.length > 0 && (
+        <div className="origin-section construction-section">
+          <div className="origin-section-label">构词成分（词根词缀）</div>
+          <div className="construction" aria-label="词素级构词路径">
+            {breakdown.map((p, i) => (
+              <span className="construction-item" key={`${p.morpheme}-${i}`}>
+                {i > 0 && (
+                  <span className="construction-plus" aria-hidden="true">
+                    +
+                  </span>
+                )}
+                <span className={`construction-chip ${p.kind}`}>
+                  {p.morpheme}
+                  <span className="construction-kind">
+                    {KIND_LABEL[p.kind]}
+                  </span>
+                  {p.meaningZh && (
+                    <span className="construction-meaning">{p.meaningZh}</span>
+                  )}
+                  {p.origin && (
+                    <span className="construction-origin">源自 {p.origin}</span>
+                  )}
+                </span>
+              </span>
+            ))}
+          </div>
+          <div className="construction-hint">
+            由 {breakdown.length} 个词素构成，与下方演变链（词级）共同构成完整发展路径
+          </div>
         </div>
       )}
 

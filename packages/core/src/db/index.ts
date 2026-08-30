@@ -10,7 +10,9 @@ import type {
   EtymologyStep,
   I18nForm,
   I18nWord,
+  LangMode,
   Morpheme,
+  MorphemeGroup,
   MorphemeKind,
   OriginStep,
   SuggestItem,
@@ -21,6 +23,7 @@ import type {
   WordOrigin,
 } from '../types.js';
 import { isCjk, isCyrillic, I18N_LANG_NAME } from '../lang.js';
+import { groupBookByMorphemeData } from '../graph.js';
 import { SCHEMA_SQL } from './schema.js';
 
 export { SCHEMA_SQL };
@@ -96,6 +99,7 @@ interface MorphemeRow {
 
 interface BookRow {
   word: string;
+  lang: string | null;
   added_at: number;
   updated_at: number;
   status: string;
@@ -111,6 +115,7 @@ interface SuggestRow {
   bnc: number | null;
   frq: number | null;
   tag: string | null;
+  lang: string | null;
 }
 
 /* ---------------- 打开 ---------------- */
@@ -118,7 +123,21 @@ interface SuggestRow {
 export function openDatabase(path: string): DatabaseSync {
   const db = new DatabaseSync(path);
   db.exec(SCHEMA_SQL);
+  migrateBookLang(db);
   return db;
+}
+
+/** 老库迁移：book 表补 lang 列（默认 'en'） */
+function migrateBookLang(db: DatabaseSync): void {
+  try {
+    const cols = db.prepare('PRAGMA table_info(book)').all() as unknown as {
+      name: string;
+    }[];
+    if (cols.some((c) => c.name === 'lang')) return;
+    db.exec("ALTER TABLE book ADD COLUMN lang TEXT NOT NULL DEFAULT 'en'");
+  } catch {
+    /* 表不存在或已迁移则忽略 */
+  }
 }
 
 export function countWords(db: DatabaseSync): number {
@@ -217,6 +236,7 @@ function rowToBook(r: BookRow): BookItem {
   }
   return {
     word: r.word,
+    lang: r.lang ?? 'en',
     addedAt: r.added_at,
     updatedAt: r.updated_at,
     status: (r.status as BookStatus) || 'new',
@@ -341,14 +361,27 @@ function i18nToDetail(i: I18nWord): WordDetail {
   };
 }
 
-export function lookupWord(db: DatabaseSync, rawWord: string): WordDetail | null {
+/** 查词：lang='auto'（默认）按输入脚本自动识别；'en'/'ru' 强制指定语言 */
+export function lookupWord(
+  db: DatabaseSync,
+  rawWord: string,
+  opts?: { lang?: LangMode | string },
+): WordDetail | null {
   const word = normalizeWord(rawWord);
   if (!word) return null;
-  // 西里尔输入 → 俄语词条（先词形反查）
-  if (isCyrillic(word)) {
+  const lang = opts?.lang ?? 'auto';
+
+  if (lang === 'ru') {
+    // 强制俄语：直接词条或词形反查；未命中则放弃（不回落英语，避免混用）
+    return lookupI18n(db, word, 'ru');
+  }
+
+  // 西里尔输入（auto）→ 俄语词条（先词形反查）
+  if (lang !== 'en' && isCyrillic(word)) {
     const ru = lookupI18n(db, word, 'ru');
     if (ru) return ru;
   }
+
   let row = db.prepare('SELECT * FROM words WHERE word = ?').get(word) as unknown as WordRow | undefined;
   let matched = word;
   if (!row && isCjk(word)) {
@@ -388,37 +421,56 @@ export function suggest(db: DatabaseSync, rawQuery: string, limit = 20): Suggest
   const q = normalizeWord(rawQuery);
   if (!q) return [];
   const lim = Math.min(Math.max(limit, 1), 50);
+  const toItems = (rows: SuggestRow[]): SuggestItem[] =>
+    rows.map((r) => ({
+      word: r.word,
+      bnc: r.bnc,
+      frq: r.frq,
+      tag: r.tag,
+      lang: r.lang ?? undefined,
+    }));
   // 西里尔前缀 → 俄语词条
   if (isCyrillic(q)) {
-    return db
-      .prepare(
-        `SELECT word, NULL AS bnc, NULL AS frq, 'ru' AS tag FROM words_i18n
-         WHERE word >= ? AND word < ?
-         ORDER BY word LIMIT ?`
-      )
-      .all(q, q + 'яяя', lim) as unknown as SuggestRow[];
+    return toItems(
+      db
+        .prepare(
+          `SELECT word, NULL AS bnc, NULL AS frq, 'ru' AS tag, 'ru' AS lang FROM words_i18n
+           WHERE word >= ? AND word < ?
+           ORDER BY word LIMIT ?`
+        )
+        .all(q, q + 'яяя', lim) as unknown as SuggestRow[],
+    );
   }
   if (isCjk(q)) {
     const like = `%${escapeLike(q)}%`;
     const en = db
       .prepare(
-        "SELECT word, bnc, frq, tag FROM words WHERE translation LIKE ? ESCAPE '\\' ORDER BY (bnc IS NULL), bnc, word LIMIT ?"
+        "SELECT word, bnc, frq, tag, 'en' AS lang FROM words WHERE translation LIKE ? ESCAPE '\\' ORDER BY (bnc IS NULL), bnc, word LIMIT ?"
       )
       .all(like, lim) as unknown as SuggestRow[];
     const ru = db
       .prepare(
-        "SELECT word, NULL AS bnc, NULL AS frq, 'ru' AS tag FROM words_i18n WHERE translation LIKE ? ESCAPE '\\' ORDER BY word LIMIT ?"
+        "SELECT word, NULL AS bnc, NULL AS frq, 'ru' AS tag, 'ru' AS lang FROM words_i18n WHERE translation LIKE ? ESCAPE '\\' ORDER BY word LIMIT ?"
       )
       .all(like, lim) as unknown as SuggestRow[];
-    return [...en, ...ru].slice(0, lim);
+    // 英俄交错返回，保证中文反查时两种语言都可见（双语言分区）
+    const mixed: SuggestRow[] = [];
+    const n = Math.max(en.length, ru.length);
+    for (let i = 0; i < n && mixed.length < lim; i += 1) {
+      if (en[i]) mixed.push(en[i]);
+      if (ru[i]) mixed.push(ru[i]);
+    }
+    return toItems(mixed).slice(0, lim);
   }
-  return db
-    .prepare(
-      `SELECT word, bnc, frq, tag FROM words
-       WHERE word >= ? AND word < ?
-       ORDER BY (word = ?) DESC, (bnc IS NULL), bnc, word LIMIT ?`
-    )
-    .all(q, q + 'zzzz', q, lim) as unknown as SuggestRow[];
+  return toItems(
+    db
+      .prepare(
+        `SELECT word, bnc, frq, tag, 'en' AS lang FROM words
+         WHERE word >= ? AND word < ?
+         ORDER BY (word = ?) DESC, (bnc IS NULL), bnc, word LIMIT ?`
+      )
+      .all(q, q + 'zzzz', q, lim) as unknown as SuggestRow[],
+  );
 }
 
 /* ---------------- 词根词缀拆解 ---------------- */
@@ -457,57 +509,57 @@ export function breakdownWord(db: DatabaseSync, rawWord: string): BreakdownPart[
   const w = normalizeWord(rawWord);
   if (w.length < 2) return [];
   const { prefixes, suffixes, roots } = loadMorphemes(db);
+  // 词素原文（morpheme 字段）→ 匹配用的词干（去掉首尾连字符）
+  const all = [...prefixes, ...suffixes, ...roots].map((m) => ({
+    m,
+    stem: m.morpheme.replace(/^-+|-+$/g, ''),
+  }));
+
   const parts: BreakdownPart[] = [];
   const occupied: [number, number][] = [];
-  const overlaps = (a: number, b: number) => occupied.some(([s, e]) => a < e && b > s);
+  let pos = 0;
 
-  // 前缀：最长匹配在词首
-  for (const p of prefixes) {
-    const stem = p.morpheme.replace(/-+$/, '');
-    if (stem && w.startsWith(stem)) {
-      parts.push({ morpheme: p.morpheme, kind: 'prefix', meaningZh: p.meaningZh, origin: p.origin, start: 0, end: stem.length });
-      occupied.push([0, stem.length]);
-      break;
+  const prevEnd = (at: number): number =>
+    occupied
+      .filter(([, e]) => e <= at)
+      .reduce((mx, [, e]) => Math.max(mx, e), 0);
+
+  while (pos < w.length && parts.length < 8) {
+    // 词头 1-字符间隙视为噪声（如 run -> r|un），跳过；
+    // 词中 1-字符间隙（如 phot|o|graph 的 o）允许，避免拆解半途而废
+    if (pos - prevEnd(pos) === 1 && prevEnd(pos) === 0) {
+      pos += 1;
+      continue;
     }
-  }
-  // 后缀：最长匹配在词尾
-  let suffixStart = w.length;
-  for (const s of suffixes) {
-    const stem = s.morpheme.replace(/^-+/, '');
-    if (stem && w.endsWith(stem) && w.length - stem.length >= 2) {
-      const start = w.length - stem.length;
-      parts.push({ morpheme: s.morpheme, kind: 'suffix', meaningZh: s.meaningZh, origin: s.origin, start, end: w.length });
-      occupied.push([start, w.length]);
-      suffixStart = start;
-      break;
-    }
-  }
-  // 词根：中间段最长优先、不重叠
-  for (const r of roots) {
-    const stem = r.morpheme.replace(/^-+|-+$/g, '');
-    if (!stem || stem.length < 2) continue;
-    let idx = 0;
-    while (idx <= w.length - stem.length) {
-      const at = w.indexOf(stem, idx);
-      if (at < 0) break;
-      const start = at;
-      const end = at + stem.length;
-      // 左侧未覆盖段恰为 1 个字符时视为噪声（如 run -> r|un），跳过
-      const prevEnd = occupied
-        .filter(([, e]) => e <= start)
-        .sort((a, b) => b[1] - a[1])[0]?.[1] ?? 0;
-      if (start - prevEnd === 1) {
-        idx = at + 1;
-        continue;
+    // 当前位置取【最长】匹配词素（词根/前缀/后缀一体比较，bio 优先于 bi）
+    let best: { m: Morpheme; stem: string } | null = null;
+    for (const { m, stem } of all) {
+      if (!stem || stem.length < 2) continue;
+      if (w.startsWith(stem, pos)) {
+        if (!best || stem.length > best.stem.length) best = { m, stem };
       }
-      if (end <= suffixStart && !overlaps(start, end)) {
-        parts.push({ morpheme: r.morpheme, kind: 'root', meaningZh: r.meaningZh, origin: r.origin, start, end });
-        occupied.push([start, end]);
-        break;
-      }
-      idx = at + 1;
     }
-    if (parts.length >= 6) break;
+    if (!best) {
+      pos += 1;
+      continue;
+    }
+    const end = pos + best.stem.length;
+    // 与已占用区间重叠则放弃该候选（如 telephone 的 -one 后缀与 phon 冲突）
+    if (occupied.some(([s, e]) => pos < e && end > s)) {
+      pos += 1;
+      continue;
+    }
+    parts.push({
+      morpheme: best.m.morpheme,
+      kind: best.m.kind,
+      meaningZh: best.m.meaningZh,
+      origin: best.m.origin,
+      start: pos,
+      end,
+      examples: best.m.examples?.length ? best.m.examples : undefined,
+    });
+    occupied.push([pos, end]);
+    pos = end;
   }
   return parts.sort((a, b) => a.start - b.start);
 }
@@ -515,12 +567,13 @@ export function breakdownWord(db: DatabaseSync, rawWord: string): BreakdownPart[
 /* ---------------- 生词本 ---------------- */
 
 const BOOK_INSERT =
-  'INSERT INTO book (word, added_at, updated_at, status, note, tags, review_count, last_reviewed_at, deleted) VALUES (?,?,?,?,?,?,?,?,?)';
+  'INSERT INTO book (word, lang, added_at, updated_at, status, note, tags, review_count, last_reviewed_at, deleted) VALUES (?,?,?,?,?,?,?,?,?,?)';
 
 function upsertBook(db: DatabaseSync, it: BookItem): void {
   db.prepare(
     `${BOOK_INSERT}
      ON CONFLICT(word) DO UPDATE SET
+       lang = excluded.lang,
        added_at = excluded.added_at,
        updated_at = excluded.updated_at,
        status = excluded.status,
@@ -531,6 +584,7 @@ function upsertBook(db: DatabaseSync, it: BookItem): void {
        deleted = excluded.deleted`
   ).run(
     it.word,
+    it.lang ?? 'en',
     it.addedAt,
     it.updatedAt,
     it.status,
@@ -560,11 +614,12 @@ export function bookListAll(db: DatabaseSync): BookItem[] {
   return rows.map(rowToBook);
 }
 
-export function bookAdd(db: DatabaseSync, word: string, tags: string[] = []): BookItem {
+export function bookAdd(db: DatabaseSync, word: string, tags: string[] = [], lang = 'en'): BookItem {
   const w = normalizeWord(word);
   const now = Date.now();
   upsertBook(db, {
     word: w,
+    lang,
     addedAt: now,
     updatedAt: now,
     status: 'new',
@@ -614,6 +669,13 @@ export function syncMerge(db: DatabaseSync, items: BookItem[]): { pushed: number
   }
   const all = bookListAll(db);
   return { pushed, pulled: all.length, items: all };
+}
+
+/* ---------------- 生词本 × 词根分组（知识图谱数据层） ---------------- */
+
+/** 把生词按命中的词根/词缀分组（词频排序：命中词多的词素靠前） */
+export function groupBookByMorpheme(db: DatabaseSync, items: BookItem[]): MorphemeGroup[] {
+  return groupBookByMorphemeData(items, (w) => breakdownWord(db, w));
 }
 
 /* ---------------- 词频排行工具 ---------------- */

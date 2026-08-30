@@ -16,6 +16,7 @@ import {
   bookUpdate,
   breakdownWord,
   countWords,
+  groupBookByMorpheme,
   lookupWord,
   openDatabase,
   suggest,
@@ -68,15 +69,22 @@ function resolveDbPath() {
 }
 
 function registerIpc() {
-  ipcMain.handle('dict:lookup', (_e, word) => (word ? lookupWord(db, String(word)) : null));
+  ipcMain.handle('dict:lookup', (_e, word, lang) =>
+    word
+      ? lookupWord(db, String(word), lang ? { lang: String(lang) } : undefined)
+      : null,
+  );
   ipcMain.handle('dict:suggest', (_e, q, limit) => (q ? suggest(db, String(q), Number(limit) || 20) : []));
   ipcMain.handle('dict:breakdown', (_e, word) => (word ? breakdownWord(db, String(word)) : []));
   ipcMain.handle('book:list', () => bookList(db));
-  ipcMain.handle('book:add', (_e, word, tags) => bookAdd(db, String(word), Array.isArray(tags) ? tags.map(String) : []));
+  ipcMain.handle('book:add', (_e, word, tags, lang) =>
+    bookAdd(db, String(word), Array.isArray(tags) ? tags.map(String) : [], lang ? String(lang) : 'en'),
+  );
   ipcMain.handle('book:remove', (_e, word) => {
     bookRemove(db, String(word));
   });
   ipcMain.handle('book:update', (_e, item) => bookUpdate(db, item));
+  ipcMain.handle('book:groups', () => groupBookByMorpheme(db, bookList(db)));
 
   ipcMain.handle('sync:now', async (_e, syncUrl) => {
     const url = (syncUrl && String(syncUrl).trim()) || process.env.ZIDIANKAFA_SYNC_URL || '';

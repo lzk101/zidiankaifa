@@ -16,8 +16,10 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
+  bookList,
   breakdownWord,
   countWords,
+  groupBookByMorpheme,
   lookupWord,
   openDatabase,
   suggest,
@@ -105,7 +107,8 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
 
   if (req.method === 'GET' && p === '/api/v1/lookup') {
     const word = url.searchParams.get('word') ?? '';
-    return sendJson(res, 200, lookupWord(dictDb, word));
+    const lang = url.searchParams.get('lang') ?? 'auto';
+    return sendJson(res, 200, lookupWord(dictDb, word, { lang }));
   }
 
   if (req.method === 'GET' && p === '/api/v1/suggest') {
@@ -122,6 +125,12 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
   if (req.method === 'GET' && p === '/api/v1/book') {
     const items = syncDb.prepare('SELECT * FROM book ORDER BY updated_at DESC').all();
     return sendJson(res, 200, { items });
+  }
+
+  // 生词本 × 词根分组（知识图谱）：以服务端生词本为准
+  if (req.method === 'GET' && p === '/api/v1/book-groups') {
+    const items = bookList(syncDb);
+    return sendJson(res, 200, { groups: groupBookByMorpheme(dictDb, items) });
   }
 
   if ((req.method === 'POST' || req.method === 'PUT') && (p === '/api/v1/sync' || p === '/api/v1/book')) {

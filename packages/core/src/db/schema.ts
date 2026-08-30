@@ -82,6 +82,7 @@ CREATE TABLE IF NOT EXISTS morphemes (
 
 CREATE TABLE IF NOT EXISTS book (
   word             TEXT PRIMARY KEY,
+  lang             TEXT NOT NULL DEFAULT 'en',
   added_at         INTEGER NOT NULL,
   updated_at       INTEGER NOT NULL,
   status           TEXT NOT NULL DEFAULT 'new',

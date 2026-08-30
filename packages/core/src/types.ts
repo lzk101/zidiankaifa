@@ -119,6 +119,8 @@ export interface BreakdownPart {
   /** 在单词中的起始位置（启发式匹配，可能为 -1 表示未定位） */
   start: number;
   end: number;
+  /** 该词素的例词（来自 morphemes 表，可点击反查） */
+  examples?: string[];
 }
 
 export type BookStatus = 'new' | 'learning' | 'mastered' | 'suspended';
@@ -126,6 +128,8 @@ export type BookStatus = 'new' | 'learning' | 'mastered' | 'suspended';
 /** 生词本条目 */
 export interface BookItem {
   word: string;
+  /** 语言：'en'（英语）/ 'ru'（俄语）等；旧数据缺省视为 'en' */
+  lang?: string;
   /** epoch ms */
   addedAt: number;
   updatedAt: number;
@@ -183,6 +187,23 @@ export interface SuggestItem {
   bnc: number | null;
   frq: number | null;
   tag: string | null;
+  /** 建议项语言：'en' / 'ru'（默认 'en'） */
+  lang?: string;
+}
+
+/** 查询语言模式：auto=按输入脚本自动识别（默认）；en=强制英语；ru=强制俄语 */
+export type LangMode = 'auto' | 'en' | 'ru';
+
+/** 生词本 × 词素分组（知识图谱数据层）：同一词根/词缀关联的生词集合 */
+export interface MorphemeGroup {
+  morpheme: string;
+  kind: MorphemeKind;
+  meaningZh: string;
+  origin: string | null;
+  /** 命中该词素的生词 */
+  words: string[];
+  /** 该词素的例词 */
+  examples: string[];
 }
 
 export interface SyncResult {
@@ -194,13 +215,16 @@ export interface SyncResult {
 
 /** 后端能力：Electron 由 IPC 提供，浏览器/PWA 由 REST 提供 */
 export interface DictBackend {
-  lookup(word: string): Promise<WordDetail | null>;
+  /** lang: 'auto' | 'en' | 'ru'，缺省 'auto'（按输入脚本自动识别） */
+  lookup(word: string, lang?: LangMode | string): Promise<WordDetail | null>;
   suggest(prefix: string, limit?: number): Promise<SuggestItem[]>;
   breakdown(word: string): Promise<BreakdownPart[]>;
   bookList(): Promise<BookItem[]>;
-  bookAdd(word: string, tags?: string[]): Promise<BookItem>;
+  bookAdd(word: string, tags?: string[], lang?: string): Promise<BookItem>;
   bookRemove(word: string): Promise<void>;
   bookUpdate(item: BookItem): Promise<void>;
+  /** 生词本按词根/词缀分组（知识图谱）；可选能力，缺失时前端自行聚合 */
+  bookGroups?(): Promise<MorphemeGroup[]>;
   /** 全量合并同步；syncUrl 可选（Electron 端可省，浏览器端必传） */
   syncNow(syncUrl?: string): Promise<SyncResult>;
   /** 发音：lang 如 'en'/'ru'，默认 'en' */

@@ -2,10 +2,13 @@ import type {
   BookItem,
   BreakdownPart,
   DictBackend,
+  LangMode,
+  MorphemeGroup,
   SuggestItem,
   SyncResult,
   WordDetail,
 } from '@zidiankaifa/core';
+import { groupBookByMorphemeData } from '@zidiankaifa/core';
 
 const DEFAULT_SYNC_URL = 'http://localhost:4570';
 const SYNC_URL_KEY = 'zidian-sync-url';
@@ -88,9 +91,9 @@ async function restFetch<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 const restBackend: DictBackend = {
-  async lookup(word: string): Promise<WordDetail | null> {
+  async lookup(word: string, lang?: LangMode | string): Promise<WordDetail | null> {
     const detail = await restFetch<WordDetail | null>(
-      `/api/v1/lookup?word=${encodeURIComponent(word)}`,
+      `/api/v1/lookup?word=${encodeURIComponent(word)}${lang && lang !== 'auto' ? `&lang=${encodeURIComponent(String(lang))}` : ''}`,
     );
     if (!detail) return null;
     // 浏览器模式下生词本在本地，inBook 以后端为准再叠加本地状态
@@ -117,7 +120,7 @@ const restBackend: DictBackend = {
     return readLocalBook();
   },
 
-  async bookAdd(word: string, tags: string[] = []): Promise<BookItem> {
+  async bookAdd(word: string, tags: string[] = [], lang = 'en'): Promise<BookItem> {
     const items = readLocalBook();
     const existed = items.find(
       (b) => b.word.toLowerCase() === word.toLowerCase(),
@@ -126,6 +129,7 @@ const restBackend: DictBackend = {
     const now = Date.now();
     const item: BookItem = {
       word,
+      lang,
       addedAt: now,
       updatedAt: now,
       status: 'new',
@@ -180,6 +184,25 @@ const restBackend: DictBackend = {
     }
   },
 
+  /** 浏览器模式：生词本在本地，逐个拆解后聚合分组 */
+  async bookGroups(): Promise<MorphemeGroup[]> {
+    const items = readLocalBook().filter((b) => !b.deleted);
+    const partsMap = new Map<string, BreakdownPart[]>();
+    await Promise.all(
+      items.map(async (b) => {
+        try {
+          const parts = await restFetch<BreakdownPart[]>(
+            `/api/v1/breakdown?word=${encodeURIComponent(b.word)}`,
+          );
+          partsMap.set(b.word, parts);
+        } catch {
+          partsMap.set(b.word, []);
+        }
+      }),
+    );
+    return groupBookByMorphemeData(items, (w) => partsMap.get(w) ?? []);
+  },
+
   speak: speakViaWebSpeech,
 };
 
@@ -188,13 +211,14 @@ const restBackend: DictBackend = {
 function electronBackend(): DictBackend {
   const api = window.dictAPI!;
   return {
-    lookup: (w) => api.lookup(w),
+    lookup: (w, lang) => api.lookup(w, lang),
     suggest: (p, l) => api.suggest(p, l),
     breakdown: (w) => api.breakdown(w),
     bookList: () => api.bookList(),
-    bookAdd: (w, t) => api.bookAdd(w, t),
+    bookAdd: (w, t, lang) => api.bookAdd(w, t, lang),
     bookRemove: (w) => api.bookRemove(w),
     bookUpdate: (i) => api.bookUpdate(i),
+    bookGroups: () => (api.bookGroups ? api.bookGroups() : Promise.resolve([])),
     syncNow: () => api.syncNow(),
     // 按统一约定，发音走 Web Speech API
     speak: speakViaWebSpeech,

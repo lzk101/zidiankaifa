@@ -3,6 +3,8 @@ import type { BreakdownPart, MorphemeKind } from '@zidiankaifa/core';
 interface BreakdownCardProps {
   word: string;
   breakdown: BreakdownPart[];
+  /** 点击例词即查询该词 */
+  onPick?: (word: string) => void;
 }
 
 const KIND_LABEL: Record<MorphemeKind, string> = {
@@ -14,6 +16,7 @@ const KIND_LABEL: Record<MorphemeKind, string> = {
 export default function BreakdownCard({
   word,
   breakdown,
+  onPick,
 }: BreakdownCardProps) {
   // 先拼接整词字母串：命中的词素片段着色，其余字母灰色
   const hitMap: (MorphemeKind | null)[] = new Array(word.length).fill(null);
@@ -52,6 +55,21 @@ export default function BreakdownCard({
                 <span className="morpheme-meaning">{p.meaningZh}</span>
                 {p.origin && (
                   <span className="morpheme-origin">源自 {p.origin}</span>
+                )}
+                {p.examples && p.examples.length > 0 && (
+                  <span className="morpheme-examples">
+                    例词：
+                    {p.examples.slice(0, 6).map((ex) => (
+                      <button
+                        key={ex}
+                        className="morpheme-example"
+                        title={`查询 ${ex}`}
+                        onClick={() => onPick?.(ex)}
+                      >
+                        {ex}
+                      </button>
+                    ))}
+                  </span>
                 )}
               </div>
             ))}

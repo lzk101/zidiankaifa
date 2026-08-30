@@ -102,6 +102,9 @@ export default function SearchBar({
         <div className="suggest-panel" role="listbox" aria-label="搜索建议">
           {suggests.map((s, i) => {
             const freq = s.frq ?? s.bnc;
+            // 混排（中文反查含英俄）或俄语项时显示语言徽章
+            const mixed = suggests.some((x) => x.lang === 'ru');
+            const showBadge = s.lang === 'ru' || mixed;
             return (
               <div
                 key={s.word}
@@ -111,6 +114,11 @@ export default function SearchBar({
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => pick(s.word)}
               >
+                {showBadge && (
+                  <span className={`suggest-lang ${s.lang === 'ru' ? 'ru' : 'en'}`}>
+                    {s.lang === 'ru' ? '🇷🇺' : '🇬🇧'}
+                  </span>
+                )}
                 <span className="suggest-word">{s.word}</span>
                 <span className="suggest-freq">
                   {freq != null ? `频次 ${freq}` : ''}

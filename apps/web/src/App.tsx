@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import type { BookItem, WordDetail } from '@zidiankaifa/core';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { BookItem, LangMode, WordDetail } from '@zidiankaifa/core';
 import { getBackend } from './api';
 import SearchBar from './components/SearchBar';
 import DetailCard from './components/DetailCard';
@@ -13,6 +13,36 @@ import ClipboardPopup from './components/ClipboardPopup';
 type Panel = 'lookup' | 'book' | 'settings';
 
 const LAST_WORD_KEY = 'zidian-last-word';
+const LANG_KEY = 'zidian-lang';
+
+/** 查询语言切换器：自动 / 英语 / 俄语 */
+function LangSwitcher({
+  value,
+  onChange,
+}: {
+  value: LangMode;
+  onChange: (l: LangMode) => void;
+}) {
+  const opts: { key: LangMode; label: string; hint: string }[] = [
+    { key: 'auto', label: '自动', hint: '按输入自动识别语言' },
+    { key: 'en', label: '英语', hint: '只查英语词库' },
+    { key: 'ru', label: '俄语', hint: '只查俄语词库（含变格变位）' },
+  ];
+  return (
+    <div className="lang-switcher" role="group" aria-label="查询语言">
+      {opts.map((o) => (
+        <button
+          key={o.key}
+          className={`lang-btn${value === o.key ? ' active' : ''}`}
+          title={o.hint}
+          onClick={() => onChange(o.key)}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 export default function App() {
   const [current, setCurrent] = useState<WordDetail | null>(null);
@@ -22,6 +52,15 @@ export default function App() {
   const [book, setBook] = useState<BookItem[]>([]);
   const [activePanel, setActivePanel] = useState<Panel>('lookup');
   const [clipboardText, setClipboardText] = useState<string | null>(null);
+  const [lang, setLang] = useState<LangMode>(() => {
+    const saved = localStorage.getItem(LANG_KEY);
+    return saved === 'en' || saved === 'ru' ? saved : 'auto';
+  });
+
+  const setLangAndPersist = useCallback((l: LangMode) => {
+    setLang(l);
+    localStorage.setItem(LANG_KEY, l);
+  }, []);
 
   const refreshBook = useCallback(() => {
     getBackend()
@@ -30,26 +69,32 @@ export default function App() {
       .catch(() => setBook([]));
   }, []);
 
-  const lookup = useCallback(async (word: string) => {
-    const w = word.trim();
-    if (!w) return;
-    setActivePanel('lookup');
-    setSearching(true);
-    setError(null);
-    setQuery(w);
-    localStorage.setItem(LAST_WORD_KEY, w);
-    try {
-      const d = await getBackend().lookup(w);
-      setCurrent(d);
-    } catch (e) {
-      setCurrent(null);
-      setError(
-        e instanceof Error ? `查询失败：${e.message}` : '查询失败，请检查同步服务',
-      );
-    } finally {
-      setSearching(false);
-    }
-  }, []);
+  const lookup = useCallback(
+    async (word: string, langOverride?: string) => {
+      const w = word.trim();
+      if (!w) return;
+      setActivePanel('lookup');
+      setSearching(true);
+      setError(null);
+      setQuery(w);
+      localStorage.setItem(LAST_WORD_KEY, w);
+      try {
+        const d = await getBackend().lookup(
+          w,
+          langOverride && langOverride !== 'auto' ? langOverride : lang,
+        );
+        setCurrent(d);
+      } catch (e) {
+        setCurrent(null);
+        setError(
+          e instanceof Error ? `查询失败：${e.message}` : '查询失败，请检查同步服务',
+        );
+      } finally {
+        setSearching(false);
+      }
+    },
+    [lang],
+  );
 
   const toggleBook = useCallback(
     async (word: string) => {
@@ -60,7 +105,11 @@ export default function App() {
         if (inBook) {
           await getBackend().bookRemove(word);
         } else {
-          await getBackend().bookAdd(word);
+          await getBackend().bookAdd(
+            word,
+            [],
+            current?.i18n?.lang ?? 'en',
+          );
         }
       } catch {
         // 忽略
@@ -72,7 +121,7 @@ export default function App() {
       );
       refreshBook();
     },
-    [book, refreshBook],
+    [book, current, refreshBook],
   );
 
   const closeClipboard = useCallback(() => setClipboardText(null), []);
@@ -91,11 +140,13 @@ export default function App() {
     };
   }, []);
 
-  // 启动时自动查询最近一次查过的词
+  // 启动时自动查询最近一次查过的词（仅挂载一次；语言切换不重查）
+  const lookupRef = useRef(lookup);
+  lookupRef.current = lookup;
   useEffect(() => {
     const last = localStorage.getItem(LAST_WORD_KEY);
-    if (last) void lookup(last);
-  }, [lookup]);
+    if (last) void lookupRef.current(last);
+  }, []);
 
   return (
     <div className="app">
@@ -133,6 +184,7 @@ export default function App() {
       <header className="mobile-header">
         <div className="logo">📖 我的电子辞典</div>
         <SearchBar onPick={lookup} />
+        <LangSwitcher value={lang} onChange={setLangAndPersist} />
         <nav className="tabs">
           <button
             className={activePanel === 'lookup' ? 'active' : ''}
@@ -159,6 +211,7 @@ export default function App() {
       <main className="main">
         <div className="search-area">
           <SearchBar onPick={lookup} />
+          <LangSwitcher value={lang} onChange={setLangAndPersist} />
         </div>
         <div className="content">
           {activePanel === 'lookup' && (
@@ -173,18 +226,23 @@ export default function App() {
               />
               {current && !searching && !current.i18n && (
                 <>
-                  <OriginCard origin={current.origin} etymology={current.etymology} />
+                  <OriginCard
+                    origin={current.origin}
+                    etymology={current.etymology}
+                    breakdown={current.breakdown}
+                  />
                   <FormsCard forms={current.forms} onPick={lookup} />
                   <BreakdownCard
                     word={current.word}
                     breakdown={current.breakdown}
+                    onPick={lookup}
                   />
                 </>
               )}
             </>
           )}
           {activePanel === 'book' && (
-            <BookPanel items={book} onChanged={refreshBook} />
+            <BookPanel items={book} onChanged={refreshBook} onPick={lookup} />
           )}
           {activePanel === 'settings' && <SettingsPanel />}
         </div>

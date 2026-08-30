@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react';
 import type { SuggestItem, WordDetail } from '@zidiankaifa/core';
 import { rusTagsZh } from '@zidiankaifa/core';
 import { getBackend } from '../api';
+import RuFormsTable from './RuFormsTable';
 
 interface DetailCardProps {
   /** 最近一次查询的词（未收录时用于相近词建议） */
   query: string;
   detail: WordDetail | null;
   searching: boolean;
-  onPick: (word: string) => void;
+  onPick: (word: string, lang?: string) => void;
   onToggleBook: (word: string) => void;
 }
 
@@ -189,25 +190,10 @@ export default function DetailCard({
         {i.forms.length > 0 && (
           <div className="i18n-forms">
             <div className="i18n-forms-title">变格变位</div>
-            <div className="i18n-forms-list">
-              {i.forms
-                .filter((f) => f.form !== i.word)
-                .map((f, idx) => (
-                  <button
-                    key={`${f.form}-${idx}`}
-                    className="i18n-form-chip"
-                    title="点击查询该词形"
-                    onClick={() => onPick(f.form)}
-                  >
-                    {f.display}
-                    {f.tags.length > 0 && (
-                      <span className="i18n-form-tags">
-                        {rusTagsZh(f.tags).join('/')}
-                      </span>
-                    )}
-                  </button>
-                ))}
-            </div>
+            <RuFormsTable
+              forms={i.forms.filter((f) => f.form !== i.word)}
+              onPick={(form) => onPick(form, i.lang)}
+            />
           </div>
         )}
       </div>
