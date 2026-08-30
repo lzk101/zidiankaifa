@@ -107,8 +107,10 @@ POST /api/v1/sync  {items:[...]}  # 合并同步
 - [x] 核心查询库（查词/词族/词源/拆解/生词本/合并同步）
 - [x] React Web UI + Electron 桌面壳
 - [x] Node 同步服务
+- [x] Windows EXE 打包（v0.2.0：安装包 + 便携版，含完整词库）
 - [ ] 真人发音音频（ECDICT audio 字段 + 有道/离线音频）
 - [ ] 背单词/记忆曲线复习
 - [ ] Capacitor 打包 Android APK
 - [ ] 中文分词搜索（FTS5 trigram）
 - [ ] 划词取词（全局快捷键）
+- [ ] 俄语变格变位数据补全（forms 48.8% → 90%）、中文词源 text_zh 构建
