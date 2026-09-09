@@ -184,8 +184,15 @@ def process_gz(path, word_set, conn, is_zh):
                 continue
             n_in_set += 1
             last_in_dict_line = n_total
-            et = obj.get("etymology_text")
-            etmpl = obj.get("etymology_templates")
+            # zh 转储英文词条的中文词源存于 etymology_texts（复数列表）；en 转储用单数字段
+            if is_zh:
+                et_texts = obj.get("etymology_texts") or []
+                et = " ".join(str(x) for x in et_texts if x) if isinstance(et_texts, list) else (obj.get("etymology_text") or "")
+                et = et or ""
+                etmpl = obj.get("etymology_templates") or []
+            else:
+                et = obj.get("etymology_text") or ""
+                etmpl = obj.get("etymology_templates") or []
             if not et and not etmpl:
                 continue
             n_etym += 1
@@ -282,16 +289,24 @@ def main():
         sample(word)
         return 0
 
+    zh_only = "--zh-only" in sys.argv
     conn = sqlite3.connect(DB_PATH)
-    conn.execute("DELETE FROM word_etymology")
+    if zh_only:
+        log("--zh-only: 保留现有 word_etymology，仅用 zh 转储补充 text_zh")
+    else:
+        conn.execute("DELETE FROM word_etymology")
     conn.commit()
     word_set = {r[0] for r in conn.execute("SELECT word FROM words")}
     log(f"words in dict: {len(word_set)}")
 
     t0 = time.time()
-    for path, is_zh in [(ALL_GZ, False), (ZH_GZ, True)]:
-        n_total, n_in, n_e = process_gz(path, word_set, conn, is_zh)
-        log(f"{os.path.basename(path)}: total={n_total} in_dict={n_in} with_etym={n_e}")
+    if zh_only:
+        n_total, n_in, n_e = process_gz(ZH_GZ, word_set, conn, True)
+        log(f"{os.path.basename(ZH_GZ)}: total={n_total} in_dict={n_in} with_etym={n_e}")
+    else:
+        for path, is_zh in [(ALL_GZ, False), (ZH_GZ, True)]:
+            n_total, n_in, n_e = process_gz(path, word_set, conn, is_zh)
+            log(f"{os.path.basename(path)}: total={n_total} in_dict={n_in} with_etym={n_e}")
     n = conn.execute("SELECT COUNT(*) FROM word_etymology").fetchone()[0]
     srcs = conn.execute("SELECT source, COUNT(*) FROM word_etymology GROUP BY source").fetchall()
     conn.commit()

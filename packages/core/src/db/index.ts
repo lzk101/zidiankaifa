@@ -315,9 +315,9 @@ export function getI18n(db: DatabaseSync, word: string, lang = 'ru'): I18nWord |
 }
 
 function lookupI18n(db: DatabaseSync, word: string, lang: string): WordDetail | null {
-  // 优先直接词条；无词条时再词形反查（столом → стол）
-  const direct = getI18n(db, word, lang);
-  if (direct) return i18nToDetail(direct);
+  // 1) 词形反查优先：命中即返回主词条（含完整变格表）+ 词形标注（столом → стол[instrumental,singular]）。
+  //    zh 转储会把变格形也建成独立词条（столом 有词条但无变格表），直接命中会掩盖反查、
+  //    丢失「这是 стол 的哪个格」的教学信息，故反查在前。
   const fr = db
     .prepare('SELECT word, tags FROM i18n_forms WHERE form = ? AND lang = ?')
     .get(word, lang) as unknown as I18nFormRow | undefined;
@@ -335,6 +335,9 @@ function lookupI18n(db: DatabaseSync, word: string, lang: string): WordDetail | 
       return i18nToDetail(withForm);
     }
   }
+  // 2) 直接词条
+  const direct = getI18n(db, word, lang);
+  if (direct) return i18nToDetail(direct);
   return null;
 }
 
