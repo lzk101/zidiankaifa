@@ -22,3 +22,5 @@ data/sync-data/
 data/*.png
 data/*.txt
 apps/sync-server/dist/
+
+data/db/*.bak*

@@ -91,7 +91,7 @@ export default function SettingsPanel() {
       <div className="setting-row about">
         <span className="setting-label">关于</span>
         <div className="about-info">
-          <div>我的电子辞典 v0.2.0</div>
+          <div>我的电子辞典 v0.2.1</div>
           <div>词库来源：ECDICT（开源英汉词典数据）</div>
           <div>词源、词形、词根拆解由后端计算生成</div>
           <div>支持桌面端（Electron）与浏览器 / PWA 双模式</div>
