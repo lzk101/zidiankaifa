@@ -7,6 +7,7 @@ const dictAPI = {
   lookup: (word, lang) => ipcRenderer.invoke('dict:lookup', word, lang),
   suggest: (query, limit, lang) => ipcRenderer.invoke('dict:suggest', query, limit ?? 20, lang),
   breakdown: (word, lang) => ipcRenderer.invoke('dict:breakdown', word, lang ?? 'en'),
+  relatedByMorpheme: (word, lang) => ipcRenderer.invoke('dict:related', word, lang ?? 'en'),
   bookList: () => ipcRenderer.invoke('book:list'),
   bookAdd: (word, tags, lang) => ipcRenderer.invoke('book:add', word, tags ?? [], lang),
   bookRemove: (word) => ipcRenderer.invoke('book:remove', word),

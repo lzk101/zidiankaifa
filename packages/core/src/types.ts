@@ -81,6 +81,16 @@ export interface EtymologyStep {
   kind?: string;
 }
 
+/** 词源文本里提到、且本词典可查的词（用于把词源详解中的相关词变成可点链接） */
+export interface EtymologyLink {
+  /** 文中出现的词形 */
+  word: string;
+  /** 词条语言: en / ru */
+  lang: string;
+  /** 库内释义摘要（悬浮提示用） */
+  translation?: string;
+}
+
 /** 词源详解（Wiktionary/wiktextract） */
 export interface WordEtymology {
   word: string;
@@ -95,6 +105,8 @@ export interface WordEtymology {
   originCode: string | null;
   /** 数据来源: en / zh / en+zh */
   source: string | null;
+  /** 词源文本中提到的、本词典可查的相关词 */
+  links?: EtymologyLink[];
 }
 
 export type MorphemeKind = 'root' | 'prefix' | 'suffix';
@@ -225,6 +237,8 @@ export interface DictBackend {
   bookUpdate(item: BookItem): Promise<void>;
   /** 生词本按词根/词缀分组（知识图谱）；可选能力，缺失时前端自行聚合 */
   bookGroups?(): Promise<MorphemeGroup[]>;
+  /** 查词页「同根词」：当前词经构词拆解关联到的词族（按共享词素分组） */
+  relatedByMorpheme?(word: string, lang?: string): Promise<MorphemeGroup[]>;
   /** 词根表 / 词缀表列表查询（可选能力，浏览器端走同步服务） */
   lexiconList?(opts: LexiconQueryOptions): Promise<LexiconPage>;
   /** 单条词素详情（含全部关联词） */

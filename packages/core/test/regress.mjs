@@ -31,7 +31,7 @@ console.log('--- believ 词族 / 新词素 ---');
 eq('believer', bd('believer'), ['believ', '-er']);
 eq('disbelief', bd('disbelief'), ['dis-', 'belief']);
 eq('knowledge', bd('knowledge'), ['know', '-ledge']);
-eq('acknowledge', bd('acknowledge'), ['know', '-ledge']);
+eq('acknowledge', bd('acknowledge'), ['ac-', 'know', '-ledge']);
 eq('creator', bd('creator'), ['creat', '-or']);
 eq('creative', bd('creative'), ['creat', '-ive']);
 eq('technology', bd('technology'), ['techn', '-logy']);

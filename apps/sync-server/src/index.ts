@@ -26,6 +26,7 @@ import {
   listWords,
   lookupWord,
   openDatabase,
+  relatedByMorpheme,
   suggest,
   syncMerge,
 } from '@zidiankaifa/core/db';
@@ -105,7 +106,7 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
       ok: true,
       words: countWords(dictDb),
       sync: 'zidiankaifa-sync-server',
-      version: '0.6.0',
+      version: '0.7.0',
     });
   }
 
@@ -179,6 +180,13 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
   if (req.method === 'GET' && p === '/api/v1/book-groups') {
     const items = bookList(syncDb);
     return sendJson(res, 200, { groups: groupBookByMorpheme(dictDb, items) });
+  }
+
+  // 查词页「同根词」：当前词经构词拆解关联到的词族
+  if (req.method === 'GET' && p === '/api/v1/related') {
+    const word = url.searchParams.get('word') ?? '';
+    const lang = url.searchParams.get('lang') ?? 'en';
+    return sendJson(res, 200, { groups: relatedByMorpheme(dictDb, word, lang) });
   }
 
   if ((req.method === 'POST' || req.method === 'PUT') && (p === '/api/v1/sync' || p === '/api/v1/book')) {

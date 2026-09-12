@@ -24,6 +24,7 @@ import {
   listWords,
   lookupWord,
   openDatabase,
+  relatedByMorpheme,
   suggest,
   syncMerge,
 } from '@zidiankaifa/core/db';
@@ -109,6 +110,8 @@ function registerIpc() {
   });
   ipcMain.handle('book:update', (_e, item) => bookUpdate(db, item));
   ipcMain.handle('book:groups', () => plain(groupBookByMorpheme(db, bookList(db))));
+  ipcMain.handle('dict:related', (_e, word, lang) =>
+    word ? plain(relatedByMorpheme(db, String(word), lang ? String(lang) : 'en')) : []);
 
   // 词根表 / 词缀表 / 单词表
   ipcMain.handle('lexicon:list', (_e, opts) => {

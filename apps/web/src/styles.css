@@ -583,6 +583,144 @@ input {
   color: var(--muted);
 }
 
+/* ── 词源详解里的相关词链接（点击直接查词）── */
+.etym-link-hint {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--accent);
+  opacity: 0.75;
+}
+
+.etym-link {
+  display: inline;
+  padding: 0 1px;
+  border: none;
+  border-bottom: 1px dashed currentColor;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  line-height: inherit;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: background 0.15s ease;
+}
+
+.etym-link:hover {
+  background: var(--accent-weak);
+  border-bottom-style: solid;
+}
+
+.etym-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* ── 查词页：同根词 · 词族 ── */
+.related-total {
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.related-hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+
+.related-group {
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+}
+
+.related-group:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+
+.related-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 9px;
+}
+
+.related-morpheme {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: var(--root-bg, rgba(127, 127, 127, 0.12));
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.related-morpheme.prefix {
+  background: var(--prefix-bg, rgba(127, 127, 127, 0.12));
+}
+
+.related-morpheme.suffix {
+  background: var(--suffix-bg, rgba(127, 127, 127, 0.12));
+}
+
+.related-morpheme:hover {
+  filter: brightness(0.94);
+}
+
+.related-kind {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.related-meaning {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.related-origin,
+.related-count {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.related-words {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.related-word {
+  padding: 3px 9px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.related-word:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.related-word:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
 .origin-text {
   font-size: 14px;
   line-height: 1.7;

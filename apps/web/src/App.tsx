@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { BookItem, LangMode, WordDetail } from '@zidiankaifa/core';
+import type { BookItem, LangMode, MorphemeGroup, WordDetail } from '@zidiankaifa/core';
 import { getBackend } from './api';
 import SearchBar from './components/SearchBar';
 import DetailCard from './components/DetailCard';
 import OriginCard from './components/OriginCard';
 import FormsCard from './components/FormsCard';
 import BreakdownCard from './components/BreakdownCard';
+import RelatedCard from './components/RelatedCard';
 import BookPanel from './components/BookPanel';
 import LexiconPanel from './components/LexiconPanel';
 import SettingsPanel from './components/SettingsPanel';
@@ -57,6 +58,9 @@ export default function App() {
   const [clipboardText, setClipboardText] = useState<string | null>(null);
   /** 从构词拆解点进来的词素：切到词根面板并直接打开它的详情 */
   const [lexFocus, setLexFocus] = useState<string | null>(null);
+  /** 当前词的同根词（按共享词素分组） */
+  const [related, setRelated] = useState<MorphemeGroup[]>([]);
+  const [relatedLoading, setRelatedLoading] = useState(false);
   const [lang, setLang] = useState<LangMode>(() => {
     const saved = localStorage.getItem(LANG_KEY);
     return saved === 'en' || saved === 'ru' ? saved : 'auto';
@@ -84,13 +88,30 @@ export default function App() {
       setQuery(w);
       localStorage.setItem(LAST_WORD_KEY, w);
       try {
-        const d = await getBackend().lookup(
+        const backend = getBackend();
+        const d = await backend.lookup(
           w,
           langOverride && langOverride !== 'auto' ? langOverride : lang,
         );
         setCurrent(d);
+
+        // 同根词与主查词并行加载：失败不影响查词结果
+        if (d && backend.relatedByMorpheme) {
+          // 俄语词条命中 i18n 时按 ru 取词素库，否则按查询语言
+          const wLang = d.i18n?.lang ?? (langOverride && langOverride !== 'auto' ? langOverride : lang);
+          setRelatedLoading(true);
+          backend
+            .relatedByMorpheme(w, wLang === 'auto' ? 'en' : wLang)
+            .then(setRelated)
+            .catch(() => setRelated([]))
+            .finally(() => setRelatedLoading(false));
+        } else {
+          setRelated([]);
+          setRelatedLoading(false);
+        }
       } catch (e) {
         setCurrent(null);
+        setRelated([]);
         setError(
           e instanceof Error ? `查询失败：${e.message}` : '查询失败，请检查同步服务',
         );
@@ -209,7 +230,7 @@ export default function App() {
           </button>
         </nav>
         <div className="copyright">
-          我的电子辞典 v0.6.0
+          我的电子辞典 v0.7.0
           <br />
           词库来源 ECDICT
         </div>
@@ -276,6 +297,7 @@ export default function App() {
                     etymology={current.etymology}
                     breakdown={current.breakdown}
                     onMorpheme={openMorpheme}
+                    onPickWord={lookup}
                   />
                   {!current.i18n && <FormsCard forms={current.forms} onPick={lookup} />}
                   <BreakdownCard
@@ -287,6 +309,15 @@ export default function App() {
                         ? (w: string) => lookup(w, current.i18n!.lang)
                         : lookup
                     }
+                  />
+                  <RelatedCard
+                    word={current.word}
+                    groups={related}
+                    loading={relatedLoading}
+                    onPick={(w) =>
+                      lookup(w, current.i18n?.lang ?? (lang === 'auto' ? 'en' : lang))
+                    }
+                    onMorpheme={openMorpheme}
                   />
                 </>
               )}

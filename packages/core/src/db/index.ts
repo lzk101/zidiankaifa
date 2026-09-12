@@ -9,6 +9,7 @@ import type {
   BookItem,
   BookStatus,
   BreakdownPart,
+  EtymologyLink,
   EtymologyStep,
   I18nForm,
   I18nWord,
@@ -310,6 +311,90 @@ export function getOrigin(db: DatabaseSync, word: string): WordOrigin | null {
   return r ? rowToOrigin(r) : null;
 }
 
+/* ---------------- 词源相关词（把词源详解里的生词变成可点链接） ---------------- */
+
+/**
+ * 英语词源文本里不宜当作词条链接的词：功能词 + 语言学叙述常用词。
+ * 不排除的话，`the/from/latin/derived` 之类在 77 万词库中同样可查，会把词源详解糊满无意义链接。
+ */
+const ETYM_STOP_EN = new Set([
+  'the', 'and', 'from', 'with', 'that', 'this', 'which', 'have', 'has', 'had', 'been', 'was', 'were', 'are',
+  'its', 'his', 'her', 'their', 'they', 'them', 'these', 'those', 'when', 'where', 'while', 'also', 'more',
+  'most', 'such', 'some', 'other', 'into', 'than', 'then', 'only', 'even', 'well', 'very', 'both', 'each',
+  'does', 'did', 'done', 'being', 'because', 'about', 'after', 'before', 'between', 'during', 'through',
+  'under', 'over', 'against', 'could', 'would', 'should', 'might', 'must', 'shall', 'will', 'can', 'may',
+  'one', 'two', 'three', 'like', 'same', 'used', 'using', 'form', 'forms', 'formed', 'formation', 'word',
+  'words', 'name', 'term', 'see', 'first', 'later', 'early', 'modern', 'english', 'german', 'latin',
+  'greek', 'french', 'russian', 'spanish', 'italian', 'dutch', 'swedish', 'polish', 'czech', 'old', 'new',
+  'middle', 'proto', 'indo', 'european', 'germanic', 'slavic', 'romance', 'celtic', 'saxon', 'norwegian',
+  'danish', 'icelandic', 'ukrainian', 'belarusian', 'bulgarian', 'serbian', 'croatian', 'means', 'meaning',
+  'sense', 'senses', 'derived', 'borrowed', 'inherited', 'ultimately', 'probably', 'perhaps', 'possibly',
+  'related', 'cognate', 'doublet', 'equivalent', 'compound', 'prefix', 'suffix', 'root', 'stem', 'verb',
+  'noun', 'adjective', 'adverb', 'participle', 'plural', 'singular', 'genitive', 'dative', 'accusative',
+  'nominative', 'instrumental', 'prepositional', 'compare', 'variant', 'diminutive', 'augmentative',
+  'verbal', 'reflexive', 'present', 'past', 'future', 'tense', 'case', 'number', 'gender', 'feminine',
+  'masculine', 'neuter', 'person', 'third', 'second', 'unknown', 'origin', 'source', 'attested', 'appears',
+  'found', 'shows', 'given', 'takes', 'made', 'makes', 'attested', 'uncertain', 'unclear', 'instead',
+  'without', 'within', 'being', 'having', 'there', 'their', 'whose', 'whom', 'what', 'than', 'thus',
+]);
+
+const RU_LINK_TOKEN = /[\u0400-\u04FF]{3,}/g;
+/** 英语构词表达里的词素：带连字符的前缀/后缀形式，如 `un-` `-able` `photo-` */
+const EN_MORPH_HYPHEN = /(?:^|[\s(+.])([a-z]{2,}-|-[a-z]{2,})(?=[\s+),.]|$)/g;
+/** 英语构词表达里 `+` 两侧的裸词，如 `un- + believe + -able` 中的 believe */
+const EN_MORPH_PLUS = /(?:^|\+)\s*([a-z]{3,})\s*(?=\+|$)/g;
+
+/**
+ * 从词源文本提取「本词典可查的相关词」，用于在词源详解里生成可点链接。
+ * - 俄语文本里的西里尔词天然与中文说明区隔，直接提取，几乎无噪声
+ * - 英语文本须过滤功能词与语言学常用词，只保留长度 ≥5 的实词
+ * @returns 按文中出现顺序去重的关联词（最多 24 条）
+ */
+export function etymologyLinks(
+  db: DatabaseSync,
+  self: string,
+  lang: string,
+  textZh: string | null,
+  textEn: string | null,
+): EtymologyLink[] {
+  const sRu = db.prepare("SELECT translation FROM words_i18n WHERE lang = 'ru' AND word = ? LIMIT 1");
+  const sEn = db.prepare('SELECT translation FROM words WHERE word = ? LIMIT 1');
+  const out: EtymologyLink[] = [];
+  const seen = new Set<string>([self.toLowerCase()]);
+
+  const take = (tok: string, tlang: string): void => {
+    const key = tok.toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    const stmt = tlang === 'ru' ? sRu : sEn;
+    for (const v of caseVariants(tok)) {
+      const r = stmt.get(v) as { translation?: string | null } | undefined;
+      if (!r) continue;
+      const tr = (r.translation ?? '').split(/[；;\n]/)[0]?.trim() ?? '';
+      out.push({ word: tok, lang: tlang, translation: tr.slice(0, 40) || undefined });
+      return;
+    }
+  };
+
+  for (const m of (textZh ?? '').matchAll(RU_LINK_TOKEN)) take(m[0], 'ru');
+  if (lang === 'ru') {
+    for (const m of (textEn ?? '').matchAll(RU_LINK_TOKEN)) take(m[0], 'ru');
+  } else {
+    // 英语只取构词表达（`un- + believe + -able` / `photo- + -graph`）里的成分。
+    // 若按全文实词提取，"distance/denoting/apparatus/signals" 这类叙述用词在 77 万词库里同样可查，
+    // 会把词源详解糊满无效链接。
+    for (const m of (textEn ?? '').matchAll(EN_MORPH_HYPHEN)) {
+      const c = m[1].replace(/^-+|-+$/g, '');
+      if (c.length >= 2) take(c.toLowerCase(), 'en');
+    }
+    for (const m of (textEn ?? '').matchAll(EN_MORPH_PLUS)) {
+      if (ETYM_STOP_EN.has(m[1].toLowerCase())) continue;
+      take(m[1].toLowerCase(), 'en');
+    }
+  }
+  return out.slice(0, 24);
+}
+
 export function getEtymology(db: DatabaseSync, word: string, lang = 'en'): WordEtymology | null {
   const r = getByVariants<EtymologyRow>(
     db,
@@ -317,7 +402,11 @@ export function getEtymology(db: DatabaseSync, word: string, lang = 'en'): WordE
     word,
     [lang],
   );
-  return r ? rowToEtymology(r) : null;
+  if (!r) return null;
+  const e = rowToEtymology(r);
+  const links = etymologyLinks(db, word, lang, e.textZh, e.textEn);
+  if (links.length) e.links = links;
+  return e;
 }
 
 /* ---------------- 多语言词条（俄语等） ---------------- */
@@ -755,7 +844,101 @@ export function breakdownWord(db: DatabaseSync, rawWord: string, lang = 'en'): B
   // 词头 1 字符间隙的单片段（run→un、orange→-ange）判为不可拆；
   // achievement（chiev 起于位置 1，但后面还有 -ment，共 2 片段）不受影响。
   if (parts.length === 1 && parts[0].start === 1) return [];
+
+  // 词首间隙 ≥2 且 gap 无法被前缀解释时判为误拆：сегодня 曾被拆成 год- + -ня（"се" 被跳过，
+  // 靠 -ня 补足覆盖率骗过阈值），实际是 сего + дня，与 год-（年）无关。
+  // 但 acknowledge = ac- + know + -ledge 的 "ac" 能由 ac- 前缀解释，必须放行。
+  if (parts.length && parts[0].start >= 2) {
+    const gap = mw.slice(0, parts[0].start);
+    const explained = all.some((x) => x.m.kind === 'prefix' && x.stem === gap);
+    if (!explained) return [];
+  }
   return parts.sort((a, b) => a.start - b.start);
+}
+
+/**
+ * 关联词排序 + 去碎片。
+ *
+ * roots/affixes 的 words 是按拆解倒排生成的，含词素裸形式（`phon`、`phon-`、`tele`）与
+ * 生僻派生形；直接按字母序截断会让「同根词」以 `Phong/phono/phony` 打头、把 microphone
+ * 这类常用词挤掉。这里剔除裸词素，英语按 bnc/frq 词频、俄语按词长（短词更基础）排序。
+ */
+function rankSiblings(
+  db: DatabaseSync,
+  words: string[],
+  lang: string,
+  morpheme: string,
+  self: string,
+): string[] {
+  const bare = new Set([morpheme.toLowerCase(), morpheme.replace(/-/g, '').toLowerCase()]);
+  const clean = words.filter((w) => {
+    const key = w.toLowerCase().replace(/-/g, '');
+    return !bare.has(w.toLowerCase()) && !bare.has(key) && key.length >= 3 && key !== self;
+  });
+  if (!clean.length) return [];
+
+  if (lang === 'en') {
+    const stmt = db.prepare('SELECT bnc, frq FROM words WHERE word = ?');
+    const scored = clean.map((w) => {
+      const r = stmt.get(w.toLowerCase()) as { bnc: number | null; frq: number | null } | undefined;
+      const bnc = r?.bnc && r.bnc > 0 ? r.bnc : Number.MAX_SAFE_INTEGER;
+      const frq = r?.frq && r.frq > 0 ? r.frq : Number.MAX_SAFE_INTEGER;
+      return { w, score: Math.min(bnc, frq) };
+    });
+    scored.sort((a, b) => a.score - b.score || a.w.length - b.w.length);
+    // 语料库无记录的词（telep/teles/Phong 这类）只在有词频的邻居太少时才补位，
+    // 否则它们会挤进同根词列表末尾，看着像噪声。
+    const ranked = scored.filter((s) => s.score < Number.MAX_SAFE_INTEGER);
+    return (ranked.length >= 8 ? ranked : scored).map((s) => s.w);
+  }
+  return [...clean].sort((a, b) => a.length - b.length || a.localeCompare(b, 'ru'));
+}
+
+/**
+ * 当前词经构词拆解关联到的同根词/同缀词，按共享词素分组。
+ *
+ * 数据来自 roots / affixes 表（由 `packages/data-pipeline/build_roots_tables.mjs`
+ * 基于全量真实拆解建立的关联词倒排）。与词源卡「提到的词」互补：
+ * 能拆解的词走这里看词族，拆不开的（луна/небо 这类单词根词）走词源链接。
+ */
+export function relatedByMorpheme(db: DatabaseSync, word: string, lang = 'en'): MorphemeGroup[] {
+  const parts = breakdownWord(db, word, lang);
+  if (!parts.length) return [];
+
+  const qRoot = db.prepare(
+    'SELECT meaning_zh, origin, words, examples FROM roots WHERE lang = ? AND morpheme = ?',
+  );
+  const qAffix = db.prepare(
+    'SELECT meaning_zh, origin, words, examples FROM affixes WHERE lang = ? AND morpheme = ?',
+  );
+  const self = word.toLowerCase();
+  const groups: MorphemeGroup[] = [];
+
+  for (const p of parts) {
+    const row = (p.kind === 'root' ? qRoot : qAffix).get(lang, p.morpheme) as
+      | { meaning_zh: string | null; origin: string | null; words: string | null; examples: string | null }
+      | undefined;
+    if (!row) continue;
+    const words = rankSiblings(db, safeJsonArray(row.words), lang, p.morpheme, self);
+    if (!words.length) continue;
+    groups.push({
+      morpheme: p.morpheme,
+      kind: p.kind,
+      meaningZh: row.meaning_zh ?? p.meaningZh ?? '',
+      origin: row.origin ?? p.origin ?? null,
+      // 词根组是真正的「词族」，给满；词缀组语义关联天然更弱（рас- 会带出 раса/расти），
+      // 只给前 16 个以免噪声盖过词根。
+      words: words.slice(0, p.kind === 'root' ? 40 : 16),
+      examples: safeJsonArray(row.examples),
+    });
+  }
+
+  // 词根优先于词缀；同类按关联词数从多到少
+  return groups.sort((a, b) => {
+    const ra = a.kind === 'root' ? 0 : 1;
+    const rb = b.kind === 'root' ? 0 : 1;
+    return ra === rb ? b.words.length - a.words.length : ra - rb;
+  });
 }
 
 /* ---------------- 生词本 ---------------- */

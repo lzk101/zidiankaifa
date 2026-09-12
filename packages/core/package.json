@@ -1,6 +1,6 @@
 {
   "name": "@zidiankaifa/core",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
   "type": "module",
   "main": "./dist/index.js",
@@ -22,7 +22,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "node test/regress.mjs && node test/lexicon.mjs"
+    "test": "node test/regress.mjs && node test/lexicon.mjs && node test/related.mjs"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

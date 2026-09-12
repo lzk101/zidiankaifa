@@ -122,6 +122,13 @@ const restBackend: DictBackend = {
     );
   },
 
+  async relatedByMorpheme(word: string, lang = 'en'): Promise<MorphemeGroup[]> {
+    const r = await restFetch<{ groups: MorphemeGroup[] }>(
+      `/api/v1/related?word=${encodeURIComponent(word)}&lang=${encodeURIComponent(lang === 'auto' ? 'en' : lang)}`,
+    );
+    return r.groups ?? [];
+  },
+
   async bookList(): Promise<BookItem[]> {
     return readLocalBook();
   },
@@ -262,6 +269,8 @@ function electronBackend(): DictBackend {
     bookRemove: (w) => api.bookRemove(w),
     bookUpdate: (i) => api.bookUpdate(i),
     bookGroups: () => (api.bookGroups ? api.bookGroups() : Promise.resolve([])),
+    relatedByMorpheme: (w, lang) =>
+      api.relatedByMorpheme ? api.relatedByMorpheme(w, lang) : Promise.resolve([]),
     lexiconList: (o) => (api.lexiconList ? api.lexiconList(o) : Promise.reject(new Error('当前后端不支持词根表'))),
     lexiconEntry: (m, lang) => (api.lexiconEntry ? api.lexiconEntry(m, lang) : Promise.resolve(null)),
     lexiconStats: () => (api.lexiconStats ? api.lexiconStats() : Promise.reject(new Error('当前后端不支持词根表'))),

@@ -1,4 +1,5 @@
 import type { BreakdownPart, WordEtymology, WordOrigin } from '@zidiankaifa/core';
+import EtymText from './EtymText';
 
 interface OriginCardProps {
   origin: WordOrigin | null;
@@ -7,6 +8,8 @@ interface OriginCardProps {
   breakdown?: BreakdownPart[];
   /** 点击构词成分 → 打开词根表/词缀表中的该词素详情 */
   onMorpheme?: (morpheme: string) => void;
+  /** 点击词源详解里的相关词 → 直接查该词（带语言） */
+  onPickWord?: (word: string, lang: string) => void;
 }
 
 const KIND_LABEL: Record<BreakdownPart['kind'], string> = {
@@ -24,6 +27,7 @@ export default function OriginCard({
   etymology,
   breakdown,
   onMorpheme,
+  onPickWord,
 }: OriginCardProps) {
   const originName = etymology?.origin ?? origin?.origin ?? null;
   const chainWords = origin?.lineageWords?.length ? origin.lineageWords : null;
@@ -166,17 +170,20 @@ export default function OriginCard({
           <div className="origin-section-label">
             词源详解
             {etymology?.source && <span className="origin-source">Wiktionary</span>}
+            {!!etymology?.links?.length && (
+              <span className="etym-link-hint">蓝色词可直接查</span>
+            )}
           </div>
           {etymology?.textZh && (
             <p className="origin-text">
               <span className="origin-text-tag">中</span>
-              {etymology.textZh}
+              <EtymText text={etymology.textZh} links={etymology.links} onPick={onPickWord} />
             </p>
           )}
           {etymology?.textEn && (
             <p className="origin-text origin-text-en">
               <span className="origin-text-tag">EN</span>
-              {etymology.textEn}
+              <EtymText text={etymology.textEn} links={etymology.links} onPick={onPickWord} />
             </p>
           )}
         </div>
