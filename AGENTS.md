@@ -30,7 +30,7 @@
    不设 `PYTHONIOENCODING` 会报 `UnicodeEncodeError: 'gbk' codec can't encode character`（**入库其实已成功**，只是打印校验时崩）。
 3. **改 `packages/core` 后必须 `pnpm --filter @zidiankaifa/core build`**，且**重启 sync-server**（它读 `dist`，不热更新）。
 4. **禁止 `sandbox_permissions` 升级**：本会话审批已禁用，请求会被自动拒绝。
-5. **桌面端数据库路径**：`apps/desktop/src/main.mjs` 的 `resolveDbPath()` **优先用 userData 副本**（`%APPDATA%\<productName>\dict.db`），只在副本不存在时才复制 bundled。**升级后旧副本不会被覆盖** → 改这条逻辑时必须同时迁移用户生词本（`book` 表）。
+5. **桌面端词库升级**：`apps/desktop/src/main.mjs` 的 `resolveDbPath()` 调用 `dbmigrate.mjs` 的 `ensureUserDb()` —— 用内置库 `size:mtime` 指纹与 userData 旁的 `dict.db.stamp` 比对，不一致即换库，并迁移 `book` 表（**含墓碑**），旧库改名 `.bak-<ts>` 备份。**改动这段逻辑必须跑 `pnpm --filter @zidiankaifa/desktop test`**（5 场景 22 项断言）。
 
 ---
 
@@ -57,6 +57,11 @@ pnpm --filter @zidiankaifa/desktop build
 
 **Electron 调试钩子**（前缀是 `ZIDIANKAFA_`，**不是** ZIDIANKAIFA_）
 `ZIDIANKAFA_SHOT`(png 路径) / `ZIDIANKAFA_SHOT_WORD` / `ZIDIANKAFA_SHOT_LANG` / `ZIDIANKAFA_SHOT_DELAY` / `ZIDIANKAFA_DUMP` / `ZIDIANKAFA_DIAG`。
+
+- ⚠️ **截图只截视口**：`capturePage` 不会截视口外的内容。**不要因为截图里某张卡片空白就判定"数据为空"** —— v0.7.1 排查中曾据此误判「词根词缀拆解」为空，实际拆解卡在词源卡**下方、视口之外**，数据完全正常。
+- **正确做法**：用 `ZIDIANKAFA_DUMP` 导出 innerText，或起 `_serve_static.mjs` + sync-server 用浏览器验证（`browser_snapshot` 能拿到完整无障碍树，含视口外元素）。
+- `ZIDIANKAFA_DUMP` 的面板状态不稳定（reload 后可能停在设置页），**以浏览器验证为准**。
+- 用 `--user-data-dir=<目录>` 可以让 exe 使用指定的 userData，便于端到端验证换库逻辑。
 
 **UI 验证（无需 dev server）**
 ```powershell
@@ -125,6 +130,7 @@ $env:ZIDIANKAIFA_DB='D:\lzk17\Documents\zidiankaifa\data\db\dict.db'; node apps/
 
 ## 7. 已知未闭环事项
 
-- **【P0】桌面端升级不换库**：`resolveDbPath()` 不会覆盖 userData 旧副本，导致装新版仍读旧词库（用户实测 v0.7.0 查 `тоска` 显示"暂无词源数据/暂未拆解"，实际是 v0.2.x 时期的 509MB 旧库）。修复需：stamp 版本比对 + 换库时迁移 `book` 表。
+- ~~【P0】桌面端升级不换库~~ → **已修复（v0.7.1）**：`ensureUserDb()` 做指纹比对换库 + 生词本迁移，见第 2 节铁律 5。端到端复现方法：用 `--user-data-dir=<临时目录>` 启动 exe，观察是否生成 `dict.db.stamp` 与 `dict.db.bak-*`。
+- 桌面端升级换库时，旧库中**时间戳早于内置库同名墓碑**的墓碑记录不会被 `syncMerge` 带入（last-write-wins），对活跃生词无影响。
 - 俄语 `suggest` 已接 `lang`；中文反查建议仍可能混合（auto 模式按设计交错）。
 - 词源覆盖率与屈折形反查的残余缺口见 `docs/需求总结.md` 遗留章节。
