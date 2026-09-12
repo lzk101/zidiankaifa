@@ -42,12 +42,12 @@ export default function OriginCard({
 
       {originName && (
         <div className="origin-hero">
-          <span className="origin-value">{originName}</span>
+          <span className="origin-value">{originName === '构词' ? '构词法' : originName}</span>
           {etymology?.originCode && <span className="origin-code">{etymology.originCode}</span>}
           {origin && !etymology?.origin && origin.originCode && (
             <span className="origin-code">{origin.originCode}</span>
           )}
-          <span className="origin-depth">源自 {originName}</span>
+          <span className="origin-depth">{originName === '构词' ? '派生 / 复合构词' : `源自 ${originName}`}</span>
         </div>
       )}
 
