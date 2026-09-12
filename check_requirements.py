@@ -1,3 +1,5 @@
+# ⚠️ DEPRECATED (2026-08-31): 本脚本停用。运行它会覆盖根目录需求管理文件的废弃横幅。
+# 权威文档：docs/交接文档.md / docs/需求总结.md / AGENTS.md
 # -*- coding: utf-8 -*-
 """
 check_requirements.py — 需求管理自动化（每半小时由后台循环调用）
