@@ -17,7 +17,11 @@ import {
   bookUpdate,
   breakdownWord,
   countWords,
+  getLexiconEntry,
   groupBookByMorpheme,
+  lexiconStats,
+  listLexicon,
+  listWords,
   lookupWord,
   openDatabase,
   suggest,
@@ -105,6 +109,31 @@ function registerIpc() {
   });
   ipcMain.handle('book:update', (_e, item) => bookUpdate(db, item));
   ipcMain.handle('book:groups', () => plain(groupBookByMorpheme(db, bookList(db))));
+
+  // 词根表 / 词缀表 / 单词表
+  ipcMain.handle('lexicon:list', (_e, opts) => {
+    const o = opts ?? {};
+    const kind = ['root', 'prefix', 'suffix', 'all'].includes(o.kind) ? o.kind : 'root';
+    return plain(listLexicon(db, {
+      kind,
+      lang: o.lang ? String(o.lang) : 'en',
+      query: o.query ? String(o.query) : undefined,
+      sort: o.sort === 'alpha' ? 'alpha' : 'words',
+      limit: Number(o.limit) || 60,
+      offset: Number(o.offset) || 0,
+    }));
+  });
+  ipcMain.handle('lexicon:entry', (_e, morpheme, lang) =>
+    plain(getLexiconEntry(db, String(morpheme), lang ? String(lang) : 'en')));
+  ipcMain.handle('lexicon:stats', () => plain(lexiconStats(db)));
+  ipcMain.handle('words:list', (_e, lang, opts) => {
+    const o = opts ?? {};
+    return plain(listWords(db, lang ? String(lang) : 'en', {
+      query: o.query ? String(o.query) : undefined,
+      limit: Number(o.limit) || 60,
+      offset: Number(o.offset) || 0,
+    }));
+  });
 
   ipcMain.handle('sync:now', async (_e, syncUrl) => {
     const url = (syncUrl && String(syncUrl).trim()) || process.env.ZIDIANKAFA_SYNC_URL || '';

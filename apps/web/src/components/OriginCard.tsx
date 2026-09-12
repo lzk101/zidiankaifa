@@ -5,6 +5,8 @@ interface OriginCardProps {
   etymology: WordEtymology | null;
   /** 词根词缀拆解（构词成分，衔接演变链） */
   breakdown?: BreakdownPart[];
+  /** 点击构词成分 → 打开词根表/词缀表中的该词素详情 */
+  onMorpheme?: (morpheme: string) => void;
 }
 
 const KIND_LABEL: Record<BreakdownPart['kind'], string> = {
@@ -21,6 +23,7 @@ export default function OriginCard({
   origin,
   etymology,
   breakdown,
+  onMorpheme,
 }: OriginCardProps) {
   const originName = etymology?.origin ?? origin?.origin ?? null;
   const chainWords = origin?.lineageWords?.length ? origin.lineageWords : null;
@@ -62,7 +65,13 @@ export default function OriginCard({
                     +
                   </span>
                 )}
-                <span className={`construction-chip ${p.kind}`}>
+                <span
+                  className={`construction-chip ${p.kind}${onMorpheme ? ' clickable' : ''}`}
+                  role={onMorpheme ? 'button' : undefined}
+                  tabIndex={onMorpheme ? 0 : undefined}
+                  title={onMorpheme ? `在词根表中查看 ${p.morpheme}` : undefined}
+                  onClick={() => onMorpheme?.(p.morpheme)}
+                >
                   {p.morpheme}
                   <span className="construction-kind">
                     {KIND_LABEL[p.kind]}

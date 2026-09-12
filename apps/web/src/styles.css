@@ -1883,3 +1883,297 @@ input {
     width: 100px;
   }
 }
+
+/* ==================== v0.6.0 词根表 / 词缀表 ==================== */
+
+.lexicon-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lexicon-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.lexicon-lang-switch,
+.lexicon-kind-tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  background: var(--accent-weak);
+  border-radius: 10px;
+}
+
+.lexicon-lang-switch button,
+.lexicon-kind-tabs button {
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.lexicon-lang-switch button.active,
+.lexicon-kind-tabs button.active {
+  background: var(--panel);
+  color: var(--accent);
+  font-weight: 600;
+  box-shadow: var(--shadow);
+}
+
+.lexicon-tab-count {
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.lexicon-kind-tabs button.active .lexicon-tab-count {
+  color: var(--accent);
+}
+
+.lexicon-search {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel);
+  color: var(--text);
+  font-size: 14px;
+}
+
+.lexicon-search:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.lexicon-error {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(229, 72, 77, 0.1);
+  color: var(--danger);
+  font-size: 13px;
+}
+
+.lexicon-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lexicon-item {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel);
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.lexicon-item:hover {
+  border-color: var(--accent);
+  transform: translateX(2px);
+}
+
+.lexicon-item-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lexicon-item-sub {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+.lexicon-item-meaning {
+  color: var(--text);
+}
+
+.lexicon-item-count {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.lexicon-item-origin {
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.lexicon-morpheme {
+  font-family: var(--mono);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.lexicon-kind {
+  font-size: 11px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--muted);
+}
+
+.lexicon-kind-root { background: var(--root-bg); }
+.lexicon-kind-prefix { background: var(--prefix-bg); }
+.lexicon-kind-suffix { background: var(--suffix-bg); }
+
+.lexicon-lang-badge {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.lexicon-more {
+  padding: 9px 14px;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.lexicon-more:disabled {
+  color: var(--muted);
+  cursor: default;
+}
+
+.lexicon-empty {
+  padding: 18px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.lexicon-back {
+  align-self: flex-start;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.lexicon-detail {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel);
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+
+.lexicon-detail-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.lexicon-meaning {
+  margin: 10px 0 0;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.lexicon-meaning-en {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.lexicon-origin {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.lexicon-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  margin-right: 8px;
+}
+
+.lexicon-block {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.lexicon-count {
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.lexicon-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.lexicon-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.lexicon-chip {
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: var(--mono);
+}
+
+.lexicon-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.lexicon-chip-example {
+  background: var(--accent-weak);
+  border-color: transparent;
+}
+
+/* 可点击的词素（跳转词根表详情） */
+.morpheme-chip.clickable,
+.construction-chip.clickable {
+  cursor: pointer;
+}
+
+.morpheme-chip.clickable:hover,
+.construction-chip.clickable:hover {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+@media (max-width: 760px) {
+  .lexicon-toolbar { flex-direction: column; align-items: stretch; }
+  .lexicon-lang-switch, .lexicon-kind-tabs { justify-content: center; }
+}

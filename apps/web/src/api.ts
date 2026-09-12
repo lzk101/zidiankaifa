@@ -3,10 +3,15 @@ import type {
   BreakdownPart,
   DictBackend,
   LangMode,
+  LexiconEntry,
+  LexiconPage,
+  LexiconQueryOptions,
+  LexiconStats,
   MorphemeGroup,
   SuggestItem,
   SyncResult,
   WordDetail,
+  WordListPage,
 } from '@zidiankaifa/core';
 import { groupBookByMorphemeData } from '@zidiankaifa/core';
 
@@ -206,6 +211,42 @@ const restBackend: DictBackend = {
   },
 
   speak: speakViaWebSpeech,
+
+  /* ---- 词根表 / 词缀表 / 单词表（走同步服务） ---- */
+
+  async lexiconList(opts: LexiconQueryOptions): Promise<LexiconPage> {
+    const p = new URLSearchParams();
+    p.set('kind', opts.kind ?? 'root');
+    p.set('lang', opts.lang ?? 'en');
+    if (opts.query) p.set('q', opts.query);
+    if (opts.sort) p.set('sort', opts.sort);
+    p.set('limit', String(opts.limit ?? 60));
+    p.set('offset', String(opts.offset ?? 0));
+    return restFetch<LexiconPage>(`/api/v1/lexicon?${p.toString()}`);
+  },
+
+  async lexiconEntry(morpheme: string, lang = 'en'): Promise<LexiconEntry | null> {
+    try {
+      return await restFetch<LexiconEntry>(
+        `/api/v1/lexicon/entry?morpheme=${encodeURIComponent(morpheme)}&lang=${encodeURIComponent(lang)}`,
+      );
+    } catch {
+      return null;
+    }
+  },
+
+  async lexiconStats(): Promise<LexiconStats> {
+    return restFetch<LexiconStats>('/api/v1/lexicon/stats');
+  },
+
+  async wordList(lang: string, opts: { query?: string; limit?: number; offset?: number } = {}): Promise<WordListPage> {
+    const p = new URLSearchParams();
+    p.set('lang', lang);
+    if (opts.query) p.set('q', opts.query);
+    p.set('limit', String(opts.limit ?? 60));
+    p.set('offset', String(opts.offset ?? 0));
+    return restFetch<WordListPage>(`/api/v1/words?${p.toString()}`);
+  },
 };
 
 /* ---------------- Electron 后端（转发 window.dictAPI） ---------------- */
@@ -221,6 +262,10 @@ function electronBackend(): DictBackend {
     bookRemove: (w) => api.bookRemove(w),
     bookUpdate: (i) => api.bookUpdate(i),
     bookGroups: () => (api.bookGroups ? api.bookGroups() : Promise.resolve([])),
+    lexiconList: (o) => (api.lexiconList ? api.lexiconList(o) : Promise.reject(new Error('当前后端不支持词根表'))),
+    lexiconEntry: (m, lang) => (api.lexiconEntry ? api.lexiconEntry(m, lang) : Promise.resolve(null)),
+    lexiconStats: () => (api.lexiconStats ? api.lexiconStats() : Promise.reject(new Error('当前后端不支持词根表'))),
+    wordList: (lang, o) => (api.wordList ? api.wordList(lang, o) : Promise.reject(new Error('当前后端不支持词表'))),
     // 自动更新仅 Electron 提供；浏览器/PWA 无此能力（undefined → UI 提示手动更新）
     update: api.update,
     syncNow: () => api.syncNow(),

@@ -19,7 +19,11 @@ import {
   bookList,
   breakdownWord,
   countWords,
+  getLexiconEntry,
   groupBookByMorpheme,
+  lexiconStats,
+  listLexicon,
+  listWords,
   lookupWord,
   openDatabase,
   suggest,
@@ -101,7 +105,7 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
       ok: true,
       words: countWords(dictDb),
       sync: 'zidiankaifa-sync-server',
-      version: '0.5.0',
+      version: '0.6.0',
     });
   }
 
@@ -122,6 +126,48 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
     const word = url.searchParams.get('word') ?? '';
     const lang = url.searchParams.get('lang') ?? 'en';
     return sendJson(res, 200, breakdownWord(dictDb, word, lang));
+  }
+
+  // 词根表 / 词缀表：kind=root 词根，prefix/suffix 词缀，all 词缀全量
+  if (req.method === 'GET' && p === '/api/v1/lexicon') {
+    const kindRaw = url.searchParams.get('kind') ?? 'root';
+    const kind = (['root', 'prefix', 'suffix', 'all'] as const).includes(kindRaw as never) ? (kindRaw as 'root' | 'prefix' | 'suffix' | 'all') : 'root';
+    return sendJson(
+      res,
+      200,
+      listLexicon(dictDb, {
+        kind,
+        lang: url.searchParams.get('lang') ?? 'en',
+        query: url.searchParams.get('q') ?? undefined,
+        sort: url.searchParams.get('sort') === 'alpha' ? 'alpha' : 'words',
+        limit: Number(url.searchParams.get('limit') ?? 60),
+        offset: Number(url.searchParams.get('offset') ?? 0),
+      })
+    );
+  }
+
+  if (req.method === 'GET' && p === '/api/v1/lexicon/entry') {
+    const morpheme = url.searchParams.get('morpheme') ?? '';
+    const lang = url.searchParams.get('lang') ?? 'en';
+    const entry = getLexiconEntry(dictDb, morpheme, lang);
+    return entry ? sendJson(res, 200, entry) : sendError(res, 404, `未收录词素：${morpheme}`);
+  }
+
+  if (req.method === 'GET' && p === '/api/v1/lexicon/stats') {
+    return sendJson(res, 200, lexiconStats(dictDb));
+  }
+
+  // 单词表（按语言分离）
+  if (req.method === 'GET' && p === '/api/v1/words') {
+    return sendJson(
+      res,
+      200,
+      listWords(dictDb, url.searchParams.get('lang') ?? 'en', {
+        query: url.searchParams.get('q') ?? undefined,
+        limit: Number(url.searchParams.get('limit') ?? 60),
+        offset: Number(url.searchParams.get('offset') ?? 0),
+      })
+    );
   }
 
   if (req.method === 'GET' && p === '/api/v1/book') {
@@ -157,3 +203,4 @@ createServer((req, res) => {
   console.log(`  sync db : ${SYNC_DB}`);
   console.log(`  auth    : ${TOKEN ? 'token 已启用' : '未启用（个人使用建议设置 ZIDIANKAFA_SYNC_TOKEN）'}`);
 });
+

@@ -225,6 +225,14 @@ export interface DictBackend {
   bookUpdate(item: BookItem): Promise<void>;
   /** 生词本按词根/词缀分组（知识图谱）；可选能力，缺失时前端自行聚合 */
   bookGroups?(): Promise<MorphemeGroup[]>;
+  /** 词根表 / 词缀表列表查询（可选能力，浏览器端走同步服务） */
+  lexiconList?(opts: LexiconQueryOptions): Promise<LexiconPage>;
+  /** 单条词素详情（含全部关联词） */
+  lexiconEntry?(morpheme: string, lang?: string): Promise<LexiconEntry | null>;
+  /** 词根/词缀统计概览 */
+  lexiconStats?(): Promise<LexiconStats>;
+  /** 单词表（按语言分离：en / ru） */
+  wordList?(lang: string, opts?: { query?: string; limit?: number; offset?: number }): Promise<WordListPage>;
   /** 全量合并同步；syncUrl 可选（Electron 端可省，浏览器端必传） */
   syncNow(syncUrl?: string): Promise<SyncResult>;
   /** 发音：lang 如 'en'/'ru'，默认 'en' */
@@ -274,6 +282,65 @@ export interface UpdateAPI {
   install(): Promise<boolean>;
   openRelease(): Promise<boolean>;
   onStatus(cb: (state: UpdateState) => void): () => void;
+}
+
+/* ---------------- 词根表 / 词缀表 / 单词表 ---------------- */
+
+/** 词素表类别：root 词根表；prefix/suffix 词缀表；all 词缀表全量 */
+export type LexiconKind = 'root' | 'prefix' | 'suffix' | 'all';
+
+/** 词根表 / 词缀表的一行 */
+export interface LexiconEntry {
+  morpheme: string;
+  kind: MorphemeKind;
+  lang: string;
+  meaningZh: string;
+  meaningEn?: string;
+  origin?: string;
+  /** 词素库自带的典型例词 */
+  examples: string[];
+  /** 关联词总数（由真实拆解统计，非子串匹配） */
+  wordCount: number;
+  /** 关联词样例（按词长升序，短词更基础） */
+  words: string[];
+}
+
+export interface LexiconPage {
+  total: number;
+  lang: string;
+  kind: LexiconKind;
+  items: LexiconEntry[];
+}
+
+/** 词根表 / 词缀表查询参数 */
+export interface LexiconQueryOptions {
+  kind?: LexiconKind;
+  /** 'en' | 'ru' | 'auto'（auto 按查询串脚本判定） */
+  lang?: string;
+  query?: string;
+  sort?: 'words' | 'alpha';
+  limit?: number;
+  offset?: number;
+  /** 只要有关联词的（默认 true） */
+  onlyLinked?: boolean;
+}
+
+export interface WordListItem {
+  word: string;
+  phonetic?: string;
+  gloss?: string;
+  pos?: string;
+}
+
+export interface WordListPage {
+  total: number;
+  lang: string;
+  items: WordListItem[];
+}
+
+export interface LexiconStats {
+  roots: Record<string, { count: number; words: number }>;
+  affixes: Record<string, { count: number; words: number }>;
 }
 
 /** Electron preload 注入的 window.dictAPI */

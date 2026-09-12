@@ -7,12 +7,13 @@ import OriginCard from './components/OriginCard';
 import FormsCard from './components/FormsCard';
 import BreakdownCard from './components/BreakdownCard';
 import BookPanel from './components/BookPanel';
+import LexiconPanel from './components/LexiconPanel';
 import SettingsPanel from './components/SettingsPanel';
 import ClipboardPopup from './components/ClipboardPopup';
 import UpdateBanner from './components/UpdateBanner';
 import { isAutoUpdateEnabled, useUpdateState } from './useUpdate';
 
-type Panel = 'lookup' | 'book' | 'settings';
+type Panel = 'lookup' | 'book' | 'lexicon' | 'settings';
 
 const LAST_WORD_KEY = 'zidian-last-word';
 const LANG_KEY = 'zidian-lang';
@@ -54,6 +55,8 @@ export default function App() {
   const [book, setBook] = useState<BookItem[]>([]);
   const [activePanel, setActivePanel] = useState<Panel>('lookup');
   const [clipboardText, setClipboardText] = useState<string | null>(null);
+  /** 从构词拆解点进来的词素：切到词根面板并直接打开它的详情 */
+  const [lexFocus, setLexFocus] = useState<string | null>(null);
   const [lang, setLang] = useState<LangMode>(() => {
     const saved = localStorage.getItem(LANG_KEY);
     return saved === 'en' || saved === 'ru' ? saved : 'auto';
@@ -97,6 +100,12 @@ export default function App() {
     },
     [lang],
   );
+
+  /** 打开词根/词缀详情（来自构词拆解卡片） */
+  const openMorpheme = useCallback((morpheme: string) => {
+    setLexFocus(morpheme);
+    setActivePanel('lexicon');
+  }, []);
 
   const toggleBook = useCallback(
     async (word: string) => {
@@ -183,6 +192,13 @@ export default function App() {
             📚 生词本
           </button>
           <button
+            className={activePanel === 'lexicon' ? 'active' : ''}
+            title="词根表与词缀表（英语 / 俄语分开）"
+            onClick={() => setActivePanel('lexicon')}
+          >
+            🌱 词根词缀
+          </button>
+          <button
             className={activePanel === 'settings' ? 'active' : ''}
             onClick={() => setActivePanel('settings')}
           >
@@ -190,7 +206,7 @@ export default function App() {
           </button>
         </nav>
         <div className="copyright">
-          我的电子辞典 v0.5.0
+          我的电子辞典 v0.6.0
           <br />
           词库来源 ECDICT
         </div>
@@ -213,6 +229,12 @@ export default function App() {
             onClick={() => setActivePanel('book')}
           >
             生词本
+          </button>
+          <button
+            className={activePanel === 'lexicon' ? 'active' : ''}
+            onClick={() => setActivePanel('lexicon')}
+          >
+            词根词缀
           </button>
           <button
             className={activePanel === 'settings' ? 'active' : ''}
@@ -247,11 +269,13 @@ export default function App() {
                     origin={current.origin}
                     etymology={current.etymology}
                     breakdown={current.breakdown}
+                    onMorpheme={openMorpheme}
                   />
                   {!current.i18n && <FormsCard forms={current.forms} onPick={lookup} />}
                   <BreakdownCard
                     word={current.word}
                     breakdown={current.breakdown}
+                    onMorpheme={openMorpheme}
                     onPick={
                       current.i18n
                         ? (w: string) => lookup(w, current.i18n!.lang)
@@ -264,6 +288,15 @@ export default function App() {
           )}
           {activePanel === 'book' && (
             <BookPanel items={book} onChanged={refreshBook} onPick={lookup} />
+          )}
+          {activePanel === 'lexicon' && (
+            <LexiconPanel
+              key={lexFocus ?? 'lexicon'}
+              lang={lang}
+              focusMorpheme={lexFocus}
+              onLangChange={(l) => setLangAndPersist(l as LangMode)}
+              onPickWord={lookup}
+            />
           )}
           {activePanel === 'settings' && <SettingsPanel />}
         </div>

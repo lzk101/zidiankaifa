@@ -5,6 +5,8 @@ interface BreakdownCardProps {
   breakdown: BreakdownPart[];
   /** 点击例词即查询该词 */
   onPick?: (word: string) => void;
+  /** 点击词素 → 打开词根表/词缀表中的该词素详情 */
+  onMorpheme?: (morpheme: string) => void;
 }
 
 const KIND_LABEL: Record<MorphemeKind, string> = {
@@ -17,6 +19,7 @@ export default function BreakdownCard({
   word,
   breakdown,
   onPick,
+  onMorpheme,
 }: BreakdownCardProps) {
   // 先拼接整词字母串：命中的词素片段着色，其余字母灰色
   const hitMap: (MorphemeKind | null)[] = new Array(word.length).fill(null);
@@ -50,7 +53,14 @@ export default function BreakdownCard({
           <div className="morpheme-list">
             {breakdown.map((p, i) => (
               <div className="morpheme-row" key={`${p.morpheme}-${i}`}>
-                <span className={`morpheme-chip ${p.kind}`}>{p.morpheme}</span>
+                <button
+                  type="button"
+                  className={`morpheme-chip ${p.kind}${onMorpheme ? ' clickable' : ''}`}
+                  title={onMorpheme ? `在词根表中查看 ${p.morpheme}` : undefined}
+                  onClick={() => onMorpheme?.(p.morpheme)}
+                >
+                  {p.morpheme}
+                </button>
                 <span className="morpheme-kind">{KIND_LABEL[p.kind]}</span>
                 <span className="morpheme-meaning">{p.meaningZh}</span>
                 {p.origin && (

@@ -2,6 +2,8 @@
  * zidiankaifa 数据库访问层（node:sqlite，Node >= 22.13）
  * 供 Electron 主进程与同步服务共用；浏览器端不引用本模块。
  */
+export * from './lexicon.js';
+
 import { DatabaseSync } from 'node:sqlite';
 import type {
   BookItem,
@@ -614,7 +616,23 @@ function safeJsonArray(s: string | null): string[] {
   }
 }
 
-/** 构词拆解：lang='en' 英语词素库；lang='ru' 俄语词素库（含屈折词尾与单字符前缀处理） */
+/** 拆解最少覆盖率：整体覆盖不足则视为「不可拆」，避免 difficult→cul、business→-ness 这类碎片式误拆 */
+const BREAKDOWN_MIN_COVERAGE = 0.55;
+
+/** 同分时的词素优先级：前缀 > 后缀 > 词根（否则 unbelievable 的 un- 会被同名词根 un 顶掉） */
+const MORPHEME_RANK: Record<MorphemeKind, number> = { prefix: 0, suffix: 1, root: 2 };
+function rankOf(m: Morpheme | null): number {
+  return m ? MORPHEME_RANK[m.kind] : 3;
+}
+
+/**
+ * 构词拆解：lang='en' 英语词素库；lang='ru' 俄语词素库（含屈折词尾与单字符前缀处理）
+ *
+ * 算法：全局最优分段（动态规划），非「每步取最长」的贪心。
+ * 贪心会被同位置的长词素抢占：стетоскоп 在位置 3 命中 тоск-（忧愁）而丢掉
+ * 更优的 стето- + скоп-（观察镜），导致 тоск- 词根关联到一堆医疗仪器词。
+ * DP 以「覆盖字符数最大、片段数最少」为准则回推，从根上消除这类抢占。
+ */
 export function breakdownWord(db: DatabaseSync, rawWord: string, lang = 'en'): BreakdownPart[] {
   const w = normalizeWord(rawWord);
   if (w.length < 2) return [];
@@ -627,46 +645,39 @@ export function breakdownWord(db: DatabaseSync, rawWord: string, lang = 'en'): B
   const all = [...prefixes, ...suffixes, ...roots].map((m) => {
     const raw = m.morpheme.replace(/^-+|-+$/g, '');
     const stem = isRu ? raw.replace(/ё/g, 'е') : raw;
-    const patterns: string[] = [stem];
+    const patterns: { pat: string; core: boolean }[] = [{ pat: stem, core: false }];
     if (isRu && m.kind === 'suffix' && stem.length >= 5 && /[ьйоаяеыиую]$/.test(stem)) {
       // -ость → 核心 ост，可吸收 -и/-ью 等屈折词尾；
       // 核心须 ≥3 字符：否则 -ать（核心 ат）会抢占 писатель 的 -тель
       const core = stem.slice(0, -1);
-      if (core.length >= 3) patterns.push(core);
+      if (core.length >= 3) patterns.push({ pat: core, core: true });
     }
     return { m, stem, patterns };
   });
 
-  const parts: BreakdownPart[] = [];
-  const occupied: [number, number][] = [];
-  let pos = 0;
+  // 首字符索引：把每个位置要比较的词素从 888 条降到十位数（DP 反而比贪心更快）
+  const byFirst = new Map<string, typeof all>();
+  for (const e of all) {
+    for (const { pat } of e.patterns) {
+      const c = pat[0];
+      let arr = byFirst.get(c);
+      if (!arr) { arr = []; byFirst.set(c, arr); }
+      arr.push(e);
+    }
+  }
 
-  const prevEnd = (at: number): number =>
-    occupied
-      .filter(([, e]) => e <= at)
-      .reduce((mx, [, e]) => Math.max(mx, e), 0);
-
-  while (pos < w.length && parts.length < 8) {
-    // 词头 1-字符间隙：此处不再整体跳过（会让 achievement 的 chiev 起于位置 1 时被漏掉），
-    // 改为在候选筛选里拒掉「词头间隙处的单/短前缀」，见下方 gap 判定。
-    // 当前位置取【最长】匹配词素（词根/前缀/后缀一体比较，bio 优先于 bi）
-    let best: { m: Morpheme; start: number; end: number } | null = null;
-    for (const { m, stem, patterns } of all) {
-      for (const pat of patterns) {
-        const isCore = pat !== stem; // 俄语后缀的屈折核心模式
+  /** 位置 pos 上所有合法词素候选 */
+  const candidatesAt = (pos: number): { m: Morpheme; start: number; end: number }[] => {    const out: { m: Morpheme; start: number; end: number }[] = [];
+    const entries = byFirst.get(mw[pos]);
+    if (!entries) return out;
+    for (const { m, stem, patterns } of entries) {
+      for (const { pat, core } of patterns) {
         const minLen = isRu && m.kind === 'prefix' ? 1 : 2; // 俄语有 в-/с-/у-/о- 等单字符前缀
         if (pat.length < minLen || !mw.startsWith(pat, pos)) continue;
-        // 位置约束（消除误拆，同时保住复合词/派生词覆盖率）：
         // ① 前缀只能起于词首 —— 否则 principle 的 in-（位置 1）会被误收
-        // ② 后缀左侧空隙 ≤1 —— 否则 business 的 -ine（空隙 4）会被误收；
-        //    允许 1 字符空隙是因为俄语词干后常有连接元音（пис|а|-тель）
-        // ③ 任意词素左侧空隙 ≤3（覆盖 himself→self、aircraft 类复合词与 1 字符间隙）
-        //    —— difficult 的 cul（空隙 5）仍会被拒
-        if (m.kind === 'prefix' && pos !== 0 && !isCore) continue;
-        if (m.kind === 'suffix' && pos - prevEnd(pos) > 1 && !isCore) continue;
-        if (!isCore && pos - prevEnd(pos) > 3) continue;
-        let end = pos + (isCore ? w.length - pos : pat.length);
-        if (isCore) {
+        if (m.kind === 'prefix' && pos !== 0 && !core) continue;
+        let end = pos + (core ? w.length - pos : pat.length);
+        if (core) {
           // 后缀吸收屈折词尾（-ость → -ости/-остью），词尾过长则不算同一后缀
           if (w.length - (pos + pat.length) > 3) continue;
           end = w.length;
@@ -679,31 +690,71 @@ export function breakdownWord(db: DatabaseSync, rawWord: string, lang = 'en'): B
           );
           if (!supported) continue;
         }
-        if (!best || end - pos > best.end - best.start) best = { m, start: pos, end };
+        // ② 后缀左侧须有 ≥3 字符词干 —— 否则 ателье、тельце 会被 -тель 误拆
+        if (m.kind === 'suffix' && pos < 3) continue;
+        out.push({ m, start: pos, end });
       }
     }
-    if (!best) {
-      pos += 1;
-      continue;
+    return out;
+  };
+
+  // ---- DP：score[i] = 自 i 到词尾的最大覆盖；pieces[i] = 对应最少片段数 ----
+  const n = w.length;
+  const covered = new Int32Array(n + 1);
+  const pieces = new Int32Array(n + 1);
+  const stepTo = new Int32Array(n + 1);
+  const stepEnd = new Int32Array(n + 1);
+  const stepM: (Morpheme | null)[] = new Array(n + 1).fill(null);
+  stepTo[n] = -1;
+  for (let i = n - 1; i >= 0; i--) {
+    // 选项 A：该字符不归属任何词素（碎片）
+    let bestCov = covered[i + 1];
+    let bestPieces = pieces[i + 1];
+    let bestTo = i + 1;
+    let bestEnd = i + 1;
+    let bestM: Morpheme | null = null;
+    for (const c of candidatesAt(i)) {
+      const cov = c.end - c.start + covered[c.end];
+      const pc = 1 + pieces[c.end];
+      // 同分同片段时前缀 > 后缀 > 词根：否则 unbelievable 的 un- 会被同名词根 un 顶掉
+      const better =
+        cov > bestCov ||
+        (cov === bestCov && (pc < bestPieces || (pc === bestPieces && rankOf(c.m) < rankOf(bestM))));
+      if (better) {
+        bestCov = cov; bestPieces = pc; bestTo = c.end; bestEnd = c.end; bestM = c.m;
+      }
     }
-    const end = best.end;
-    // 与已占用区间重叠则放弃该候选（如 telephone 的 -one 后缀与 phon 冲突）
-    if (occupied.some(([s, e]) => pos < e && end > s)) {
-      pos += 1;
-      continue;
-    }
-    parts.push({
-      morpheme: best.m.morpheme,
-      kind: best.m.kind,
-      meaningZh: best.m.meaningZh,
-      origin: best.m.origin,
-      start: pos,
-      end,
-      examples: best.m.examples?.length ? best.m.examples : undefined,
-    });
-    occupied.push([pos, end]);
-    pos = end;
+    covered[i] = bestCov; pieces[i] = bestPieces; stepTo[i] = bestTo; stepEnd[i] = bestEnd; stepM[i] = bestM;
   }
+
+  // ---- 回溯 ----
+  const parts: BreakdownPart[] = [];
+  let i = 0;
+  while (i >= 0 && i < n && parts.length < 8) {
+    const m = stepM[i];
+    if (m) {
+      parts.push({
+        morpheme: m.morpheme,
+        kind: m.kind,
+        meaningZh: m.meaningZh,
+        origin: m.origin,
+        start: i,
+        end: stepEnd[i],
+        examples: m.examples?.length ? m.examples : undefined,
+      });
+      i = stepEnd[i];
+    } else {
+      i = stepTo[i];
+    }
+  }
+
+  // 覆盖率不足视为不可拆（difficult/business/principle 一类碎片式误拆）
+  const rawCovered = parts.reduce((s, p) => s + (p.end - p.start), 0);
+  if (rawCovered / n < BREAKDOWN_MIN_COVERAGE) return [];
+
+  // 词头 1 字符间隙的单片段（run→un、orange→-ange）判为不可拆；
+  // achievement（chiev 起于位置 1，但后面还有 -ment，共 2 片段）不受影响。
+  if (parts.length === 1 && parts[0].start === 1) return [];
   return parts.sort((a, b) => a.start - b.start);
 }
 

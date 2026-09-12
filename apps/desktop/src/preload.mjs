@@ -12,6 +12,10 @@ const dictAPI = {
   bookRemove: (word) => ipcRenderer.invoke('book:remove', word),
   bookUpdate: (item) => ipcRenderer.invoke('book:update', item),
   bookGroups: () => ipcRenderer.invoke('book:groups'),
+  lexiconList: (opts) => ipcRenderer.invoke('lexicon:list', opts),
+  lexiconEntry: (morpheme, lang) => ipcRenderer.invoke('lexicon:entry', morpheme, lang),
+  lexiconStats: () => ipcRenderer.invoke('lexicon:stats'),
+  wordList: (lang, opts) => ipcRenderer.invoke('words:list', lang, opts),
   update: {
     state: () => ipcRenderer.invoke('update:state'),
     check: () => ipcRenderer.invoke('update:check'),
