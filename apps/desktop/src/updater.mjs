@@ -144,7 +144,21 @@ export function createUpdater({ onChange, log = () => {} } = {}) {
       }
       emit({ phase: 'checking', message: null });
       try {
-        await autoUpdater.checkForUpdates();
+        autoUpdater.autoDownload = false; // 每次检查前重申：只有用户点「下载更新」才应下载
+        log(`check: autoDownload=${autoUpdater.autoDownload}`);
+        const res = await autoUpdater.checkForUpdates();
+        log(
+          `check done: available=${res?.isUpdateAvailable} hasDownloadPromise=${!!res?.downloadPromise} autoDownload=${autoUpdater.autoDownload}`,
+        );
+        // 兜底：若库内部仍启动了自动下载（autoDownload 被覆盖等），立即取消，保留用户确认权
+        if (res?.downloadPromise) {
+          log('unexpected auto-download detected → cancelling');
+          try {
+            res.cancellationToken?.cancel?.();
+          } catch (e) {
+            log(`cancel failed: ${e}`);
+          }
+        }
       } catch (e) {
         emit({ phase: 'error', message: humanError(e), checkedAt: Date.now() });
       }

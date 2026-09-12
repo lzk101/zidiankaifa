@@ -190,7 +190,7 @@ export default function App() {
           </button>
         </nav>
         <div className="copyright">
-          我的电子辞典 v0.4.1
+          我的电子辞典 v0.4.2
           <br />
           词库来源 ECDICT
         </div>

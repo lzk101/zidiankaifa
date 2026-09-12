@@ -137,7 +137,10 @@ function registerIpc() {
   // ---- 自动更新 ----
   ipcMain.handle('update:state', () => updater?.getState() ?? null);
   ipcMain.handle('update:check', () => updater?.check() ?? null);
-  ipcMain.handle('update:download', () => updater?.download() ?? null);
+  ipcMain.handle('update:download', (e) => {
+    console.log(`[zidiankaifa] IPC update:download from ${e?.sender?.getURL?.() ?? 'unknown'}`);
+    return updater?.download() ?? null;
+  });
   ipcMain.handle('update:install', () => updater?.install() ?? false);
   ipcMain.handle('update:open-release', async () => {
     const url = updater?.getState().releasePage;
