@@ -90,6 +90,20 @@ eq('столом → стол', inv?.word, 'стол');
 eq('столом matchedForm tags', inv?.i18n?.matchedForm?.tags, ['instrumental', 'singular']);
 eq('大写变体 Столом → стол', lookupWord(db, 'Столом', { lang: 'ru' })?.word, 'стол');
 
+console.log('=== D2. 屈折形词条清理（v0.4.4：变格形不再作为独立词条返回）===');
+// 这些词形原先在 words_i18n 中有独立词条（释义「X 的属格单数」），清理后应反查到主词条并带格标注
+const knigu = lookupWord(db, 'книгу', { lang: 'ru' });
+eq('книгу → книга', knigu?.word, 'книга');
+eq('книгу 有 matchedForm', !!knigu?.i18n?.matchedForm, true);
+eq('книгу 释义非纯屈折说明', /的[^，。；]{0,8}(格|数|时|式|体)/.test(knigu?.translation ?? '') === false, true);
+eq('ботинки → ботинок', lookupWord(db, 'ботинки', { lang: 'ru' })?.word, 'ботинок');
+eq('сопряжённый → сопрячь', lookupWord(db, 'сопряжённый', { lang: 'ru' })?.word, 'сопрячь');
+eq('австралийца → австралиец', lookupWord(db, 'австралийца', { lang: 'ru' })?.word, 'австралиец');
+// 不可反查的屈折形（i18n_forms 无记录）予以保留，仍可查到
+eq('авиакосмическая 保留可查', !!lookupWord(db, 'авиакосмическая', { lang: 'ru' }), true);
+// 部分词条本就义项纯粹、不得被当成屈折形劫持
+eq('дома 仍是独立词条', lookupWord(db, 'дома', { lang: 'ru' })?.word, 'дома');
+
 console.log('=== E. 俄语词源（含此前漏失的专名）===');
 for (const w of ['вода', 'телефон', 'стол', 'читать', 'хороший', 'книга', 'человек']) {
   const o = lookupWord(db, w, { lang: 'ru' })?.etymology?.origin;
