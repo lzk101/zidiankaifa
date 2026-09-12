@@ -1,17 +1,18 @@
 {
   "name": "@zidiankaifa/desktop",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "main": "src/main.mjs",
   "scripts": {
     "dev": "electron .",
     "start": "electron .",
-    "build": "electron-builder",
+    "build": "electron-builder --publish never",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@zidiankaifa/core": "workspace:*"
+    "@zidiankaifa/core": "workspace:*",
+    "electron-updater": "^6.8.9"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
@@ -31,18 +32,25 @@
       {
         "from": "../web/dist",
         "to": "web/dist",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       }
     ],
     "extraResources": [
       {
         "from": "../../data/db/dict.db",
         "to": "dict/dict.db",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       }
     ],
     "win": {
-      "target": ["nsis", "portable"],
+      "target": [
+        "nsis",
+        "portable"
+      ],
       "artifactName": "zidiankaifa-${version}-${arch}.${ext}"
     },
     "nsis": {
@@ -54,6 +62,13 @@
     },
     "portable": {
       "artifactName": "zidiankaifa-portable-${version}-${arch}.${ext}"
-    }
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "lzk101",
+        "repo": "zidiankaifa"
+      }
+    ]
   }
 }

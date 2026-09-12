@@ -4,10 +4,11 @@
  * - IPC 提供查词/词形/词源/拆解/生词本/同步
  * - 剪贴板取词轮询（仅监听类英文单词文本）
  */
-import { app, BrowserWindow, clipboard, ipcMain } from 'electron';
+import { app, BrowserWindow, clipboard, ipcMain, shell } from 'electron';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createUpdater } from './updater.mjs';
 import {
   bookAdd,
   bookList,
@@ -30,6 +31,7 @@ let db = null;
 let mainWindow = null;
 let clipboardTimer = null;
 let lastClipboard = '';
+let updater = null;
 
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) {
@@ -68,16 +70,31 @@ function resolveDbPath() {
   return userData;
 }
 
+/**
+ * IPC 返回前拍平成普通对象：
+ * node:sqlite 的行对象是 null 原型对象，Electron IPC（结构化克隆）无法序列化，
+ * 会导致渲染进程 invoke 直接 reject（表现为「未收录」）。
+ */
+function plain(value) {
+  if (value === null || value === undefined) return value;
+  return JSON.parse(JSON.stringify(value));
+}
+
 function registerIpc() {
-  ipcMain.handle('dict:lookup', (_e, word, lang) =>
-    word
-      ? lookupWord(db, String(word), lang ? { lang: String(lang) } : undefined)
-      : null,
-  );
-  ipcMain.handle('dict:suggest', (_e, q, limit) => (q ? suggest(db, String(q), Number(limit) || 20) : []));
+  ipcMain.handle('dict:lookup', (_e, word, lang) => {
+    if (!word) return null;
+    try {
+      const detail = lookupWord(db, String(word), lang ? { lang: String(lang) } : undefined);
+      return plain(detail);
+    } catch (err) {
+      console.error(`[zidiankaifa] dict:lookup("${word}", ${lang}) failed:`, err);
+      throw err;
+    }
+  });
+  ipcMain.handle('dict:suggest', (_e, q, limit) => (q ? plain(suggest(db, String(q), Number(limit) || 20)) : []));
   ipcMain.handle('dict:breakdown', (_e, word, lang) =>
-    word ? breakdownWord(db, String(word), lang ? String(lang) : 'en') : []);
-  ipcMain.handle('book:list', () => bookList(db));
+    word ? plain(breakdownWord(db, String(word), lang ? String(lang) : 'en')) : []);
+  ipcMain.handle('book:list', () => plain(bookList(db)));
   ipcMain.handle('book:add', (_e, word, tags, lang) =>
     bookAdd(db, String(word), Array.isArray(tags) ? tags.map(String) : [], lang ? String(lang) : 'en'),
   );
@@ -85,7 +102,7 @@ function registerIpc() {
     bookRemove(db, String(word));
   });
   ipcMain.handle('book:update', (_e, item) => bookUpdate(db, item));
-  ipcMain.handle('book:groups', () => groupBookByMorpheme(db, bookList(db)));
+  ipcMain.handle('book:groups', () => plain(groupBookByMorpheme(db, bookList(db))));
 
   ipcMain.handle('sync:now', async (_e, syncUrl) => {
     const url = (syncUrl && String(syncUrl).trim()) || process.env.ZIDIANKAFA_SYNC_URL || '';
@@ -113,6 +130,17 @@ function registerIpc() {
   ipcMain.handle('clipboard:set', (_e, on) => {
     if (on) startClipboardWatch();
     else stopClipboardWatch();
+  });
+
+  // ---- 自动更新 ----
+  ipcMain.handle('update:state', () => updater?.getState() ?? null);
+  ipcMain.handle('update:check', () => updater?.check() ?? null);
+  ipcMain.handle('update:download', () => updater?.download() ?? null);
+  ipcMain.handle('update:install', () => updater?.install() ?? false);
+  ipcMain.handle('update:open-release', async () => {
+    const url = updater?.getState().releasePage;
+    if (url) await shell.openExternal(url);
+    return true;
   });
 }
 
@@ -166,11 +194,15 @@ function createWindow() {
   // 开发验证钩子：ZIDIANKAFA_SHOT=<png路径> 时，加载后自动截图并退出
   if (process.env.ZIDIANKAFA_SHOT) {
     const shotWord = process.env.ZIDIANKAFA_SHOT_WORD || 'telephone';
+    const shotLang = process.env.ZIDIANKAFA_SHOT_LANG || '';
+    const shotDelay = Number(process.env.ZIDIANKAFA_SHOT_DELAY || 2600);
     mainWindow.webContents.once('did-finish-load', () => {
       setTimeout(async () => {
         try {
           await mainWindow.webContents.executeJavaScript(
-            `localStorage.setItem("zidian-last-word", ${JSON.stringify(shotWord)}); location.reload(); true`
+            `localStorage.setItem("zidian-last-word", ${JSON.stringify(shotWord)});` +
+              (shotLang ? `localStorage.setItem("zidian-lang", ${JSON.stringify(shotLang)});` : '') +
+              `location.reload(); true`
           );
           setTimeout(async () => {
             const img = await mainWindow.webContents.capturePage();
@@ -179,9 +211,20 @@ function createWindow() {
               const text = await mainWindow.webContents.executeJavaScript('document.body.innerText');
               fs.writeFileSync(process.env.ZIDIANKAFA_DUMP, text, 'utf-8');
             }
+            if (process.env.ZIDIANKAFA_DIAG) {
+              const diag = await mainWindow.webContents.executeJavaScript(`(async () => {
+                const out = { hasDictAPI: !!window.dictAPI, lastWord: localStorage.getItem('zidian-last-word'), zidianLang: localStorage.getItem('zidian-lang'), hasUpdate: !!(window.dictAPI && window.dictAPI.update) };
+                try { const r = await window.dictAPI.lookup('telephone', 'auto'); out.lookup = r ? Object.keys(r).length + ' fields' : null; }
+                catch (e) { out.lookupErr = String((e && e.message) || e); }
+                try { out.updateState = JSON.stringify(await window.dictAPI.update.state()); }
+                catch (e) { out.updateErr = String((e && e.message) || e); }
+                return JSON.stringify(out);
+              })()`);
+              console.log('[zidiankaifa] DIAG ' + diag);
+            }
             console.log('[zidiankaifa] screenshot saved');
             app.quit();
-          }, 2600);
+          }, shotDelay);
         } catch (e) {
           console.error('[zidiankaifa] shot failed:', e);
           app.exit(1);
@@ -199,8 +242,18 @@ app.whenReady().then(() => {
   db = openDatabase(resolveDbPath());
   const words = countWords(db);
   console.log(`[zidiankaifa] dict.db opened, ${words} words`);
+  updater = createUpdater({
+    log: (m) => console.log(`[zidiankaifa] ${m}`),
+    onChange: (state) => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('update:status', state);
+      }
+    },
+  });
   registerIpc();
   createWindow();
+  // 更新检查由渲染进程触发（用户可在设置中关闭自动检查），此处仅记录版本
+  console.log(`[zidiankaifa] app version ${app.getVersion()}, portable=${!!process.env.PORTABLE_EXECUTABLE_DIR}`);
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();

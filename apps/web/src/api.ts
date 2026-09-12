@@ -220,6 +220,8 @@ function electronBackend(): DictBackend {
     bookRemove: (w) => api.bookRemove(w),
     bookUpdate: (i) => api.bookUpdate(i),
     bookGroups: () => (api.bookGroups ? api.bookGroups() : Promise.resolve([])),
+    // 自动更新仅 Electron 提供；浏览器/PWA 无此能力（undefined → UI 提示手动更新）
+    update: api.update,
     syncNow: () => api.syncNow(),
     // 按统一约定，发音走 Web Speech API
     speak: speakViaWebSpeech,

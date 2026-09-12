@@ -231,6 +231,49 @@ export interface DictBackend {
   speak(word: string, lang?: string): Promise<void>;
   /** 订阅剪贴板取词（仅 Electron 生效）；返回取消订阅函数 */
   onClipboard?(cb: (text: string) => void): () => void;
+  /** 自动更新（仅 Electron 桌面端提供） */
+  update?: UpdateAPI;
+}
+
+/* ---------------- 自动更新 ---------------- */
+
+export type UpdatePhase =
+  | 'idle'
+  | 'checking'
+  | 'available'
+  | 'downloading'
+  | 'downloaded'
+  | 'not-available'
+  | 'unsupported'
+  | 'error';
+
+export interface UpdateState {
+  phase: UpdatePhase;
+  /** 当前安装的版本 */
+  currentVersion: string;
+  /** 可用/已下载的新版本号 */
+  version: string | null;
+  releaseName: string | null;
+  releaseNotes: string | null;
+  /** 下载进度 0-100 */
+  percent: number;
+  transferred: number;
+  total: number;
+  bytesPerSecond: number;
+  message: string | null;
+  /** 便携版无法自更新 */
+  portable: boolean;
+  releasePage: string;
+  checkedAt: number | null;
+}
+
+export interface UpdateAPI {
+  state(): Promise<UpdateState | null>;
+  check(): Promise<UpdateState | null>;
+  download(): Promise<UpdateState | null>;
+  install(): Promise<boolean>;
+  openRelease(): Promise<boolean>;
+  onStatus(cb: (state: UpdateState) => void): () => void;
 }
 
 /** Electron preload 注入的 window.dictAPI */

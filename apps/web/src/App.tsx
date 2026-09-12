@@ -9,6 +9,8 @@ import BreakdownCard from './components/BreakdownCard';
 import BookPanel from './components/BookPanel';
 import SettingsPanel from './components/SettingsPanel';
 import ClipboardPopup from './components/ClipboardPopup';
+import UpdateBanner from './components/UpdateBanner';
+import { isAutoUpdateEnabled, useUpdateState } from './useUpdate';
 
 type Panel = 'lookup' | 'book' | 'settings';
 
@@ -148,8 +150,22 @@ export default function App() {
     if (last) void lookupRef.current(last);
   }, []);
 
+  // 自动检查更新（桌面端且用户未关闭；延迟启动避免拖慢首屏）
+  const updateCtl = useUpdateState();
+  const [updateDismissed, setUpdateDismissed] = useState(false);
+  useEffect(() => {
+    if (!updateCtl.supported || !isAutoUpdateEnabled()) return;
+    const t = setTimeout(() => void updateCtl.check(), 3500);
+    return () => clearTimeout(t);
+    // 仅在挂载时触发一次
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [updateCtl.supported]);
+
   return (
     <div className="app">
+      {!updateDismissed && (
+        <UpdateBanner ctl={updateCtl} onDismiss={() => setUpdateDismissed(true)} />
+      )}
       {/* 桌面端侧栏 */}
       <aside className="sidebar">
         <div className="logo">📖 我的电子辞典</div>
@@ -174,7 +190,7 @@ export default function App() {
           </button>
         </nav>
         <div className="copyright">
-          我的电子辞典 v0.3.0
+          我的电子辞典 v0.4.0
           <br />
           词库来源 ECDICT
         </div>

@@ -1,0 +1,4 @@
+# 开发模式更新配置（仅在 ZIDIANKAFA_FORCE_DEV_UPDATE=1 时被 electron-updater 读取）
+# 用于本地验证自动更新流程：node _mock_update_server.mjs 4599 后启动 dev 模式
+provider: generic
+url: http://127.0.0.1:4599

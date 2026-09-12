@@ -12,6 +12,18 @@ const dictAPI = {
   bookRemove: (word) => ipcRenderer.invoke('book:remove', word),
   bookUpdate: (item) => ipcRenderer.invoke('book:update', item),
   bookGroups: () => ipcRenderer.invoke('book:groups'),
+  update: {
+    state: () => ipcRenderer.invoke('update:state'),
+    check: () => ipcRenderer.invoke('update:check'),
+    download: () => ipcRenderer.invoke('update:download'),
+    install: () => ipcRenderer.invoke('update:install'),
+    openRelease: () => ipcRenderer.invoke('update:open-release'),
+    onStatus: (cb) => {
+      const listener = (_event, state) => cb(state);
+      ipcRenderer.on('update:status', listener);
+      return () => ipcRenderer.removeListener('update:status', listener);
+    },
+  },
   syncNow: (syncUrl) => ipcRenderer.invoke('sync:now', syncUrl),
   setClipboardWatch: (on) => ipcRenderer.invoke('clipboard:set', on),
   onClipboard: (cb) => {
