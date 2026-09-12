@@ -5,11 +5,14 @@ import { getBackend } from '../api';
 interface SearchBarProps {
   onPick: (word: string) => void;
   placeholder?: string;
+  /** 当前查询语言模式：'ru' 时建议只返回俄语项，'en' 只返回英语项，'auto' 按输入脚本判定 */
+  lang?: string;
 }
 
 export default function SearchBar({
   onPick,
   placeholder = '输入单词，回车查询…',
+  lang,
 }: SearchBarProps) {
   const [value, setValue] = useState('');
   const [suggests, setSuggests] = useState<SuggestItem[]>([]);
@@ -17,7 +20,7 @@ export default function SearchBar({
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
 
-  // 120ms 防抖拉取建议
+  // 120ms 防抖拉取建议（语言切换时重新拉取）
   useEffect(() => {
     const q = value.trim();
     if (!q) {
@@ -27,7 +30,7 @@ export default function SearchBar({
     }
     const timer = window.setTimeout(() => {
       getBackend()
-        .suggest(q, 8)
+        .suggest(q, 8, lang)
         .then((list) => {
           setSuggests(list);
           setActive(list.length > 0 ? 0 : -1);
@@ -39,7 +42,7 @@ export default function SearchBar({
         });
     }, 120);
     return () => window.clearTimeout(timer);
-  }, [value]);
+  }, [value, lang]);
 
   // 点击外部关闭下拉
   useEffect(() => {

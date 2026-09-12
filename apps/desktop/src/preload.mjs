@@ -5,7 +5,7 @@ import { contextBridge, ipcRenderer } from 'electron';
 
 const dictAPI = {
   lookup: (word, lang) => ipcRenderer.invoke('dict:lookup', word, lang),
-  suggest: (query, limit) => ipcRenderer.invoke('dict:suggest', query, limit ?? 20),
+  suggest: (query, limit, lang) => ipcRenderer.invoke('dict:suggest', query, limit ?? 20, lang),
   breakdown: (word, lang) => ipcRenderer.invoke('dict:breakdown', word, lang ?? 'en'),
   bookList: () => ipcRenderer.invoke('book:list'),
   bookAdd: (word, tags, lang) => ipcRenderer.invoke('book:add', word, tags ?? [], lang),

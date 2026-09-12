@@ -263,6 +263,37 @@ function normalizeWord(w: string): string {
   return w.trim().toLowerCase();
 }
 
+/**
+ * 大小写宽容候选：原词形优先 → 全小写 → 首字母大写。
+ * 俄语专名（Китай/Москва）在词源表里按原词形存储，而查询侧常被小写化；
+ * SQLite 的 COLLATE NOCASE 只折叠 ASCII，对西里尔字母无效，故在查询层手工兜底。
+ */
+function caseVariants(word: string): string[] {
+  const w = word.trim();
+  if (!w) return [];
+  const out = [w];
+  const lower = w.toLowerCase();
+  if (!out.includes(lower)) out.push(lower);
+  const cap = lower.charAt(0).toUpperCase() + lower.slice(1);
+  if (!out.includes(cap)) out.push(cap);
+  return out;
+}
+
+/** 按候选词形依次查一行；命中即返回 */
+function getByVariants<T>(
+  db: DatabaseSync,
+  sql: string,
+  word: string,
+  rest: (string | number)[] = [],
+): T | undefined {
+  const stmt = db.prepare(sql);
+  for (const v of caseVariants(word)) {
+    const r = stmt.get(v, ...rest) as unknown as T | undefined;
+    if (r) return r;
+  }
+  return undefined;
+}
+
 /* ---------------- 查词 ---------------- */
 
 export function listForms(db: DatabaseSync, word: string): WordForm[] {
@@ -273,14 +304,17 @@ export function listForms(db: DatabaseSync, word: string): WordForm[] {
 }
 
 export function getOrigin(db: DatabaseSync, word: string): WordOrigin | null {
-  const r = db.prepare('SELECT * FROM word_origins WHERE word = ?').get(word) as unknown as OriginRow | undefined;
+  const r = getByVariants<OriginRow>(db, 'SELECT * FROM word_origins WHERE word = ?', word);
   return r ? rowToOrigin(r) : null;
 }
 
 export function getEtymology(db: DatabaseSync, word: string, lang = 'en'): WordEtymology | null {
-  const r = db
-    .prepare('SELECT * FROM word_etymology WHERE word = ? AND lang = ?')
-    .get(word, lang) as unknown as EtymologyRow | undefined;
+  const r = getByVariants<EtymologyRow>(
+    db,
+    'SELECT * FROM word_etymology WHERE word = ? AND lang = ?',
+    word,
+    [lang],
+  );
   return r ? rowToEtymology(r) : null;
 }
 
@@ -316,43 +350,73 @@ function rowToI18n(r: I18nRow, matchedForm: I18nWord['matchedForm']): I18nWord {
   };
 }
 
+/**
+ * 是否为「纯屈折说明」释义：zh 转储给变格形也建了词条，其释义只是「X 的属格单数」这类说明。
+ * 「在家；дом (dom) 的属格单数」不算（含实质释义），「фра́нций (fráncij) 的属格单数」算。
+ */
+function isInflectionOnlyGloss(text: string | null): boolean {
+  const t = (text ?? '').trim();
+  if (!t) return false;
+  const parts = t.split(/[；;]/).map((s) => s.trim()).filter(Boolean);
+  return parts.length > 0 && parts.every((p) => /的[^，。；]{0,8}(格|数|时|式|体)/.test(p));
+}
+
 export function getI18n(db: DatabaseSync, word: string, lang = 'ru'): I18nWord | null {
-  const r = db
-    .prepare('SELECT * FROM words_i18n WHERE word = ? AND lang = ?')
-    .get(normalizeWord(word), lang) as unknown as I18nRow | undefined;
-  return r ? rowToI18n(r, null) : null;
+  const stmt = db.prepare('SELECT * FROM words_i18n WHERE word = ? AND lang = ?');
+  const rows: I18nRow[] = [];
+  for (const v of caseVariants(word)) {
+    const r = stmt.get(v, lang) as unknown as I18nRow | undefined;
+    if (r) rows.push(r);
+  }
+  if (!rows.length) return null;
+  // 大小写变体同时存在时优先取有实质释义的词条（Франция「法国」优于 франция「франций 的属格单数」）
+  const pick = rows.find((r) => !isInflectionOnlyGloss(r.translation)) ?? rows[0];
+  return rowToI18n(pick, null);
 }
 
 function lookupI18n(db: DatabaseSync, word: string, lang: string): WordDetail | null {
+  const direct = getI18n(db, word, lang);
   // 1) 词形反查优先：命中即返回主词条（含完整变格表）+ 词形标注（столом → стол[instrumental,singular]）。
-  //    zh 转储会把变格形也建成独立词条（столом 有词条但无变格表），直接命中会掩盖反查、
-  //    丢失「这是 стол 的哪个格」的教学信息，故反查在前。
-  const fr = db
-    .prepare('SELECT word, tags FROM i18n_forms WHERE form = ? AND lang = ?')
-    .get(word, lang) as unknown as I18nFormRow | undefined;
+  //    zh 转储会把变格形也建成独立词条（столом 有词条，甚至带 forms，但那是屈折形而非主词条），
+  //    直接命中会掩盖反查、丢失「这是 стол 的哪个格」的教学信息，故反查在前。
+  //    例外：输入本身是独立词条时（франция「法国」 vs франций「钫」的属格形 франция），
+  //    反查会把它误判成屈折形并劫持到无关词条，故当自身有词源而反查主词条没有时，认定输入是独立词条。
+  const fr = getByVariants<I18nFormRow>(
+    db,
+    'SELECT word, tags FROM i18n_forms WHERE form = ? AND lang = ?',
+    word,
+    [lang],
+  );
   if (fr) {
     const base = getI18n(db, fr.word, lang);
-    if (base) {
-      let tags: string[] = [];
-      try {
-        const p = JSON.parse(fr.tags ?? '[]');
-        if (Array.isArray(p)) tags = p.map(String);
-      } catch {
-        /* ignore */
+    if (base && base.word !== direct?.word) {
+      // 输入自身有实质释义（дома「在家」、яма「坑，洞」）→ 它是独立词条而非屈折形，不劫持到反查主词条；
+      // 纯屈折说明（столом「стол 的工具格单数」）或「自身有词源而主词条无」（франция「法国」）不适用。
+      const selfIsReal = direct
+        ? !isInflectionOnlyGloss(direct.translation) ||
+          (!!getEtymology(db, direct.word, lang) && !getEtymology(db, base.word, lang))
+        : false;
+      if (!selfIsReal) {
+        let tags: string[] = [];
+        try {
+          const p = JSON.parse(fr.tags ?? '[]');
+          if (Array.isArray(p)) tags = p.map(String);
+        } catch {
+          /* ignore */
+        }
+        const withForm: I18nWord = { ...base, matchedForm: { form: word, display: word, tags } };
+        return i18nToDetail(db, withForm, lang);
       }
-      const withForm: I18nWord = { ...base, matchedForm: { form: word, display: word, tags } };
-      return i18nToDetail(db, withForm, lang);
     }
   }
   // 2) 直接词条
-  const direct = getI18n(db, word, lang);
   if (direct) return i18nToDetail(db, direct, lang);
   return null;
 }
 
 /** 多语言词条 → WordDetail：补词源（词源语言与词条语言一致）与词根词缀拆解 */
 function i18nToDetail(db: DatabaseSync, i: I18nWord, lang: string): WordDetail {
-  const base = normalizeWord(i.word);
+  const base = i.word; // 保留原词形（俄语专名 Китай 按原形入库），大小写兜底交给 getOrigin/getEtymology
   return {
     word: i.word,
     phonetic: i.phonetic,
@@ -381,18 +445,21 @@ export function lookupWord(
   rawWord: string,
   opts?: { lang?: LangMode | string },
 ): WordDetail | null {
+  const raw = rawWord.trim();
   const word = normalizeWord(rawWord);
   if (!word) return null;
   const lang = opts?.lang ?? 'auto';
 
   if (lang === 'ru') {
     // 强制俄语：直接词条或词形反查；未命中则放弃（不回落英语，避免混用）
-    return lookupI18n(db, word, 'ru');
+    // 传原始词形（不预先小写）：专名 Франция「法国」与小写屈折词条 франция「франций 的属格单数」
+    // 在库中并存，小写化会让用户查「法国」却看到「钫的属格单数」。
+    return lookupI18n(db, raw, 'ru');
   }
 
   // 西里尔输入（auto）→ 俄语词条（先词形反查）
   if (lang !== 'en' && isCyrillic(word)) {
-    const ru = lookupI18n(db, word, 'ru');
+    const ru = lookupI18n(db, raw, 'ru');
     if (ru) return ru;
   }
 
@@ -431,10 +498,12 @@ export function lookupWord(
   };
 }
 
-export function suggest(db: DatabaseSync, rawQuery: string, limit = 20): SuggestItem[] {
+export function suggest(db: DatabaseSync, rawQuery: string, limit = 20, lang?: string): SuggestItem[] {
   const q = normalizeWord(rawQuery);
   if (!q) return [];
   const lim = Math.min(Math.max(limit, 1), 50);
+  /** 显式语言模式：'ru'/'en' 强制单语言；其它（undefined/'auto'）保持按输入脚本自动判定 */
+  const mode: 'auto' | 'en' | 'ru' = lang === 'en' || lang === 'ru' ? lang : 'auto';
   const toItems = (rows: SuggestRow[]): SuggestItem[] =>
     rows.map((r) => ({
       word: r.word,
@@ -443,9 +512,9 @@ export function suggest(db: DatabaseSync, rawQuery: string, limit = 20): Suggest
       tag: r.tag,
       lang: r.lang ?? undefined,
     }));
-  // 西里尔前缀 → 俄语词条
-  if (isCyrillic(q)) {
-    return toItems(
+
+  const ruPrefix = (): SuggestItem[] =>
+    toItems(
       db
         .prepare(
           `SELECT word, NULL AS bnc, NULL AS frq, 'ru' AS tag, 'ru' AS lang FROM words_i18n
@@ -454,37 +523,57 @@ export function suggest(db: DatabaseSync, rawQuery: string, limit = 20): Suggest
         )
         .all(q, q + 'яяя', lim) as unknown as SuggestRow[],
     );
-  }
-  if (isCjk(q)) {
+
+  const enPrefix = (): SuggestItem[] =>
+    toItems(
+      db
+        .prepare(
+          `SELECT word, bnc, frq, tag, 'en' AS lang FROM words
+           WHERE word >= ? AND word < ?
+           ORDER BY (word = ?) DESC, (bnc IS NULL), bnc, word LIMIT ?`
+        )
+        .all(q, q + 'zzzz', q, lim) as unknown as SuggestRow[],
+    );
+
+  const byTranslation = (target: 'en' | 'ru'): SuggestItem[] => {
     const like = `%${escapeLike(q)}%`;
-    const en = db
-      .prepare(
-        "SELECT word, bnc, frq, tag, 'en' AS lang FROM words WHERE translation LIKE ? ESCAPE '\\' ORDER BY (bnc IS NULL), bnc, word LIMIT ?"
-      )
-      .all(like, lim) as unknown as SuggestRow[];
-    const ru = db
-      .prepare(
-        "SELECT word, NULL AS bnc, NULL AS frq, 'ru' AS tag, 'ru' AS lang FROM words_i18n WHERE translation LIKE ? ESCAPE '\\' ORDER BY word LIMIT ?"
-      )
-      .all(like, lim) as unknown as SuggestRow[];
+    if (target === 'ru') {
+      return toItems(
+        db
+          .prepare(
+            "SELECT word, NULL AS bnc, NULL AS frq, 'ru' AS tag, 'ru' AS lang FROM words_i18n WHERE translation LIKE ? ESCAPE '\\' ORDER BY word LIMIT ?"
+          )
+          .all(like, lim) as unknown as SuggestRow[],
+      );
+    }
+    return toItems(
+      db
+        .prepare(
+          "SELECT word, bnc, frq, tag, 'en' AS lang FROM words WHERE translation LIKE ? ESCAPE '\\' ORDER BY (bnc IS NULL), bnc, word LIMIT ?"
+        )
+        .all(like, lim) as unknown as SuggestRow[],
+    );
+  };
+
+  // 1) 显式语言模式：俄语模式下不再混入英语建议（中文反查同样限定语言）
+  if (mode === 'ru') return isCjk(q) ? byTranslation('ru') : ruPrefix();
+  if (mode === 'en') return isCjk(q) ? byTranslation('en') : enPrefix();
+
+  // 2) 自动模式：按输入脚本判定（原行为）
+  if (isCyrillic(q)) return ruPrefix();
+  if (isCjk(q)) {
+    const en = byTranslation('en');
+    const ru = byTranslation('ru');
     // 英俄交错返回，保证中文反查时两种语言都可见（双语言分区）
-    const mixed: SuggestRow[] = [];
+    const mixed: SuggestItem[] = [];
     const n = Math.max(en.length, ru.length);
     for (let i = 0; i < n && mixed.length < lim; i += 1) {
       if (en[i]) mixed.push(en[i]);
       if (ru[i]) mixed.push(ru[i]);
     }
-    return toItems(mixed).slice(0, lim);
+    return mixed.slice(0, lim);
   }
-  return toItems(
-    db
-      .prepare(
-        `SELECT word, bnc, frq, tag, 'en' AS lang FROM words
-         WHERE word >= ? AND word < ?
-         ORDER BY (word = ?) DESC, (bnc IS NULL), bnc, word LIMIT ?`
-      )
-      .all(q, q + 'zzzz', q, lim) as unknown as SuggestRow[],
-  );
+  return enPrefix();
 }
 
 /* ---------------- 词根词缀拆解 ---------------- */
@@ -554,12 +643,8 @@ export function breakdownWord(db: DatabaseSync, rawWord: string, lang = 'en'): B
       .reduce((mx, [, e]) => Math.max(mx, e), 0);
 
   while (pos < w.length && parts.length < 8) {
-    // 词头 1-字符间隙视为噪声（如 run -> r|un），跳过；
-    // 词中 1-字符间隙（如 phot|o|graph 的 o）允许，避免拆解半途而废
-    if (pos - prevEnd(pos) === 1 && prevEnd(pos) === 0) {
-      pos += 1;
-      continue;
-    }
+    // 词头 1-字符间隙：此处不再整体跳过（会让 achievement 的 chiev 起于位置 1 时被漏掉），
+    // 改为在候选筛选里拒掉「词头间隙处的单/短前缀」，见下方 gap 判定。
     // 当前位置取【最长】匹配词素（词根/前缀/后缀一体比较，bio 优先于 bi）
     let best: { m: Morpheme; start: number; end: number } | null = null;
     for (const { m, stem, patterns } of all) {
@@ -567,6 +652,15 @@ export function breakdownWord(db: DatabaseSync, rawWord: string, lang = 'en'): B
         const isCore = pat !== stem; // 俄语后缀的屈折核心模式
         const minLen = isRu && m.kind === 'prefix' ? 1 : 2; // 俄语有 в-/с-/у-/о- 等单字符前缀
         if (pat.length < minLen || !w.startsWith(pat, pos)) continue;
+        // 位置约束（消除误拆，同时保住复合词/派生词覆盖率）：
+        // ① 前缀只能起于词首 —— 否则 principle 的 in-（位置 1）会被误收
+        // ② 后缀左侧空隙 ≤1 —— 否则 business 的 -ine（空隙 4）会被误收；
+        //    允许 1 字符空隙是因为俄语词干后常有连接元音（пис|а|-тель）
+        // ③ 任意词素左侧空隙 ≤3（覆盖 himself→self、aircraft 类复合词与 1 字符间隙）
+        //    —— difficult 的 cul（空隙 5）仍会被拒
+        if (m.kind === 'prefix' && pos !== 0 && !isCore) continue;
+        if (m.kind === 'suffix' && pos - prevEnd(pos) > 1 && !isCore) continue;
+        if (!isCore && pos - prevEnd(pos) > 3) continue;
         let end = pos + (isCore ? w.length - pos : pat.length);
         if (isCore) {
           // 后缀吸收屈折词尾（-ость → -ости/-остью），词尾过长则不算同一后缀

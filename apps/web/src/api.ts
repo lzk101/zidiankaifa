@@ -104,9 +104,10 @@ const restBackend: DictBackend = {
     return { ...detail, inBook };
   },
 
-  async suggest(prefix: string, limit = 8): Promise<SuggestItem[]> {
+  async suggest(prefix: string, limit = 8, lang?: string): Promise<SuggestItem[]> {
+    const langParam = lang && lang !== 'auto' ? `&lang=${encodeURIComponent(lang)}` : '';
     return restFetch<SuggestItem[]>(
-      `/api/v1/suggest?q=${encodeURIComponent(prefix)}&limit=${limit}`,
+      `/api/v1/suggest?q=${encodeURIComponent(prefix)}&limit=${limit}${langParam}`,
     );
   },
 
@@ -213,7 +214,7 @@ function electronBackend(): DictBackend {
   const api = window.dictAPI!;
   return {
     lookup: (w, lang) => api.lookup(w, lang),
-    suggest: (p, l) => api.suggest(p, l),
+    suggest: (p, l, lang) => api.suggest(p, l, lang),
     breakdown: (w, lang) => api.breakdown(w, lang),
     bookList: () => api.bookList(),
     bookAdd: (w, t, lang) => api.bookAdd(w, t, lang),

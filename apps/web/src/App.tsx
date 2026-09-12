@@ -190,7 +190,7 @@ export default function App() {
           </button>
         </nav>
         <div className="copyright">
-          我的电子辞典 v0.4.0
+          我的电子辞典 v0.4.1
           <br />
           词库来源 ECDICT
         </div>
@@ -199,7 +199,7 @@ export default function App() {
       {/* 手机端顶部 */}
       <header className="mobile-header">
         <div className="logo">📖 我的电子辞典</div>
-        <SearchBar onPick={lookup} />
+        <SearchBar onPick={lookup} lang={lang} />
         <LangSwitcher value={lang} onChange={setLangAndPersist} />
         <nav className="tabs">
           <button
@@ -226,7 +226,7 @@ export default function App() {
       {/* 主区 */}
       <main className="main">
         <div className="search-area">
-          <SearchBar onPick={lookup} />
+          <SearchBar onPick={lookup} lang={lang} />
           <LangSwitcher value={lang} onChange={setLangAndPersist} />
         </div>
         <div className="content">

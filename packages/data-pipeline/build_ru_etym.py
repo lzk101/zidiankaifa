@@ -145,7 +145,7 @@ def chain_origin(chain):
     return None
 
 
-def collect_zh(t2s, lang_re, ru_words):
+def collect_zh(t2s, lang_re, ru_index):
     """zh 转储：俄语词条中文词源"""
     out = {}
     n = 0
@@ -160,8 +160,9 @@ def collect_zh(t2s, lang_re, ru_words):
                 continue
             if (o.get("lang") or "").strip().lower() not in RU_LANGS:
                 continue
-            w = strip_stress((o.get("word") or "").strip().lower())
-            if w not in ru_words:
+            # 按归一化 key 查库中原词形（专名 Китай/Москва 以大写开头，直接 lower 比较会全部漏掉）
+            w = ru_index.get(strip_stress((o.get("word") or "").strip().lower()))
+            if not w:
                 continue
             texts = o.get("etymology_texts")
             raw = ""
@@ -189,7 +190,7 @@ def collect_zh(t2s, lang_re, ru_words):
     return out
 
 
-def collect_en(ru_words):
+def collect_en(ru_index):
     """en 转储：俄语词条英文词源 + 模板链 + 构词模板（用于词素库校验）"""
     from build_wiktextract import parse_chain
 
@@ -208,8 +209,8 @@ def collect_en(ru_words):
                 continue
             if (o.get("lang") or "").strip().lower() not in RU_LANGS:
                 continue
-            w = strip_stress((o.get("word") or "").strip().lower())
-            if w not in ru_words:
+            w = ru_index.get(strip_stress((o.get("word") or "").strip().lower()))
+            if not w:
                 continue
             text_en = strip_stress(o.get("etymology_text") or "").strip()
             tmpls = o.get("etymology_templates") or []
@@ -348,22 +349,28 @@ def main():
 
     conn = sqlite3.connect(DB_PATH)
     ensure_columns(conn)
-    ru_words = {r[0] for r in conn.execute("SELECT word FROM words_i18n WHERE lang='ru'")}
-    log(f"库中俄语词条: {len(ru_words):,}")
+    ru_rows = [r[0] for r in conn.execute("SELECT word FROM words_i18n WHERE lang='ru'")]
+    ru_words = set(ru_rows)
+    # 归一化索引：转储侧按 lower()/去重音比较，入库时回填库中原词形
+    # （此前直接用 lower() 结果与库中原形比较，导致 Китай/Москва 等大写开头专名全部漏掉）
+    ru_index = {}
+    for _w in ru_rows:
+        ru_index.setdefault(strip_stress(_w).lower(), _w)
+    log(f"库中俄语词条: {len(ru_words):,}（归一化索引 {len(ru_index):,}）")
 
     zh_map = en_map = {}
     compound = {}
     if only_roots:
         pass
     elif only_zh:
-        zh_map = collect_zh(t2s, lang_re, ru_words)
+        zh_map = collect_zh(t2s, lang_re, ru_index)
         upsert_etym(conn, zh_map, {})
     elif only_en:
-        en_map, compound = collect_en(ru_words)
+        en_map, compound = collect_en(ru_index)
         upsert_etym(conn, {}, en_map)
     else:
-        zh_map = collect_zh(t2s, lang_re, ru_words)
-        en_map, compound = collect_en(ru_words)
+        zh_map = collect_zh(t2s, lang_re, ru_index)
+        en_map, compound = collect_en(ru_index)
         upsert_etym(conn, zh_map, en_map)
 
     if not (only_zh or only_en):

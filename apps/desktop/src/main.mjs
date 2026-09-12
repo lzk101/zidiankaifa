@@ -91,7 +91,9 @@ function registerIpc() {
       throw err;
     }
   });
-  ipcMain.handle('dict:suggest', (_e, q, limit) => (q ? plain(suggest(db, String(q), Number(limit) || 20)) : []));
+  ipcMain.handle('dict:suggest', (_e, q, limit, lang) =>
+    q ? plain(suggest(db, String(q), Number(limit) || 20, lang ? String(lang) : undefined)) : [],
+  );
   ipcMain.handle('dict:breakdown', (_e, word, lang) =>
     word ? plain(breakdownWord(db, String(word), lang ? String(lang) : 'en')) : []);
   ipcMain.handle('book:list', () => plain(bookList(db)));

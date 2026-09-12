@@ -1,6 +1,6 @@
 {
   "name": "@zidiankaifa/core",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "private": true,
   "type": "module",
   "main": "./dist/index.js",
@@ -15,10 +15,11 @@
       "default": "./dist/db/index.js"
     }
   },
-  "files": ["dist"],
+  "files": ["dist", "test"],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "node test/regress.mjs"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
