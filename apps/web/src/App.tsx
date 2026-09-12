@@ -194,7 +194,10 @@ export default function App() {
           <button
             className={activePanel === 'lexicon' ? 'active' : ''}
             title="词根表与词缀表（英语 / 俄语分开）"
-            onClick={() => setActivePanel('lexicon')}
+            onClick={() => {
+              setLexFocus(null);
+              setActivePanel('lexicon');
+            }}
           >
             🌱 词根词缀
           </button>
@@ -232,7 +235,10 @@ export default function App() {
           </button>
           <button
             className={activePanel === 'lexicon' ? 'active' : ''}
-            onClick={() => setActivePanel('lexicon')}
+            onClick={() => {
+              setLexFocus(null);
+              setActivePanel('lexicon');
+            }}
           >
             词根词缀
           </button>
