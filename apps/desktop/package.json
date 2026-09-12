@@ -1,6 +1,6 @@
 {
   "name": "@zidiankaifa/desktop",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "private": true,
   "type": "module",
   "main": "src/main.mjs",
@@ -8,6 +8,7 @@
     "dev": "electron .",
     "start": "electron .",
     "build": "electron-builder --publish never",
+    "test": "node test/dbmigrate.test.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {

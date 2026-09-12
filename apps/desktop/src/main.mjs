@@ -9,6 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createUpdater } from './updater.mjs';
+import { ensureUserDb } from './dbmigrate.mjs';
 import {
   bookAdd,
   bookList,
@@ -44,22 +45,29 @@ if (!gotLock) {
 }
 
 function resolveDbPath() {
-  // 1) 环境变量显式指定
+  // 1) 环境变量显式指定（调试用，绕过升级逻辑）
   if (process.env.ZIDIANKAFA_DB && fs.existsSync(process.env.ZIDIANKAFA_DB)) {
     return process.env.ZIDIANKAFA_DB;
   }
-  // 2) 用户数据目录（可写）；首次运行时把打包内置词库复制过来
   const userData = path.join(app.getPath('userData'), 'dict.db');
   const bundled = path.join(process.resourcesPath, 'dict', 'dict.db');
-  if (!fs.existsSync(userData) && fs.existsSync(bundled)) {
+
+  // 2) 用户数据目录（可写）：与内置库指纹比对，不一致即换库并迁移生词本。
+  //    旧逻辑只在副本「不存在」时才复制，导致升级安装后仍读旧词库
+  //    （v0.7.0 用户实际仍在读 v0.2.x 的 509MB 旧库 → 词源/拆解全空）。
+  if (fs.existsSync(bundled)) {
     try {
-      fs.mkdirSync(path.dirname(userData), { recursive: true });
-      fs.copyFileSync(bundled, userData);
-      console.log('[zidiankaifa] bundled dict.db copied to userData');
+      const res = ensureUserDb({ bundled, userData, log: (m) => console.log(`[zidiankaifa] ${m}`) });
+      if (fs.existsSync(res.path)) {
+        return res.path;
+      }
     } catch (e) {
-      console.error('[zidiankaifa] copy bundled db failed:', e);
+      // 升级失败时退回内置库（只读，生词本不可写，但至少词源/拆解数据正确）
+      console.error('[zidiankaifa] dict.db 升级失败，回退到内置库:', e);
+      return bundled;
     }
   }
+
   if (fs.existsSync(userData)) {
     return userData;
   }
