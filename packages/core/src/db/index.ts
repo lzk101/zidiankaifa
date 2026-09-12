@@ -620,9 +620,13 @@ export function breakdownWord(db: DatabaseSync, rawWord: string, lang = 'en'): B
   if (w.length < 2) return [];
   const { prefixes, suffixes, roots } = loadMorphemes(db, lang);
   const isRu = lang === 'ru';
+  // 俄语 ё/е 等价（весёлый ↔ весел-、жёлтый ↔ желто-）：匹配用归一化副本。
+  // 两个字符等长，匹配位置可直接映射回原词，start/end 无需换算。
+  const mw = isRu ? w.replace(/ё/g, 'е') : w;
   // 词素原文（morpheme 字段）→ 匹配模式（去掉首尾连字符；俄语后缀额外允许屈折词尾变体）
   const all = [...prefixes, ...suffixes, ...roots].map((m) => {
-    const stem = m.morpheme.replace(/^-+|-+$/g, '');
+    const raw = m.morpheme.replace(/^-+|-+$/g, '');
+    const stem = isRu ? raw.replace(/ё/g, 'е') : raw;
     const patterns: string[] = [stem];
     if (isRu && m.kind === 'suffix' && stem.length >= 5 && /[ьйоаяеыиую]$/.test(stem)) {
       // -ость → 核心 ост，可吸收 -и/-ью 等屈折词尾；
@@ -651,7 +655,7 @@ export function breakdownWord(db: DatabaseSync, rawWord: string, lang = 'en'): B
       for (const pat of patterns) {
         const isCore = pat !== stem; // 俄语后缀的屈折核心模式
         const minLen = isRu && m.kind === 'prefix' ? 1 : 2; // 俄语有 в-/с-/у-/о- 等单字符前缀
-        if (pat.length < minLen || !w.startsWith(pat, pos)) continue;
+        if (pat.length < minLen || !mw.startsWith(pat, pos)) continue;
         // 位置约束（消除误拆，同时保住复合词/派生词覆盖率）：
         // ① 前缀只能起于词首 —— 否则 principle 的 in-（位置 1）会被误收
         // ② 后缀左侧空隙 ≤1 —— 否则 business 的 -ine（空隙 4）会被误收；
@@ -667,10 +671,11 @@ export function breakdownWord(db: DatabaseSync, rawWord: string, lang = 'en'): B
           if (w.length - (pos + pat.length) > 3) continue;
           end = w.length;
         } else if (isRu && m.kind === 'prefix' && pat.length === 1) {
-          // 单字符前缀需有后续词根/后缀支撑，避免 вода → в-|ода 这类误拆
-          const rest = w.slice(pos + 1);
+          // 单字符前缀需有【紧邻】的词根/后缀支撑，避免 вода → в-|ода、страшный → с-|трашный 这类误拆。
+          // 用 startsWith 而非 includes：远处的 -ный 不足以支撑词首的 с-
+          const rest = mw.slice(pos + 1);
           const supported = all.some(
-            (x) => x.m.kind !== 'prefix' && x.stem.length >= 3 && rest.includes(x.stem)
+            (x) => x.m.kind !== 'prefix' && x.stem.length >= 3 && rest.startsWith(x.stem)
           );
           if (!supported) continue;
         }
