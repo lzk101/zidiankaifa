@@ -24,3 +24,4 @@ data/*.txt
 apps/sync-server/dist/
 
 data/db/*.bak*
+packages/data-pipeline/_ru_etym_stats.json

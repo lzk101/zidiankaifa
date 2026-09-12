@@ -218,7 +218,7 @@ export interface DictBackend {
   /** lang: 'auto' | 'en' | 'ru'，缺省 'auto'（按输入脚本自动识别） */
   lookup(word: string, lang?: LangMode | string): Promise<WordDetail | null>;
   suggest(prefix: string, limit?: number): Promise<SuggestItem[]>;
-  breakdown(word: string): Promise<BreakdownPart[]>;
+  breakdown(word: string, lang?: LangMode | string): Promise<BreakdownPart[]>;
   bookList(): Promise<BookItem[]>;
   bookAdd(word: string, tags?: string[], lang?: string): Promise<BookItem>;
   bookRemove(word: string): Promise<void>;

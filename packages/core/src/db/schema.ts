@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS word_origins (
 
 CREATE TABLE IF NOT EXISTS word_etymology (
   word        TEXT PRIMARY KEY,
+  lang        TEXT NOT NULL DEFAULT 'en',
   text_en     TEXT,
   text_zh     TEXT,
   chain       TEXT,
@@ -73,6 +74,7 @@ CREATE INDEX IF NOT EXISTS idx_i18n_forms_form ON i18n_forms(form);
 
 CREATE TABLE IF NOT EXISTS morphemes (
   morpheme   TEXT PRIMARY KEY,
+  lang       TEXT NOT NULL DEFAULT 'en',
   kind       TEXT NOT NULL,
   meaning_zh TEXT,
   meaning_en TEXT,

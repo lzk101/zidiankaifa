@@ -124,17 +124,24 @@ export function openDatabase(path: string): DatabaseSync {
   const db = new DatabaseSync(path);
   db.exec(SCHEMA_SQL);
   migrateBookLang(db);
+  migrateAddColumn(db, 'word_etymology', 'lang', "ALTER TABLE word_etymology ADD COLUMN lang TEXT NOT NULL DEFAULT 'en'");
+  migrateAddColumn(db, 'morphemes', 'lang', "ALTER TABLE morphemes ADD COLUMN lang TEXT NOT NULL DEFAULT 'en'");
   return db;
 }
 
 /** 老库迁移：book 表补 lang 列（默认 'en'） */
 function migrateBookLang(db: DatabaseSync): void {
+  migrateAddColumn(db, 'book', 'lang', "ALTER TABLE book ADD COLUMN lang TEXT NOT NULL DEFAULT 'en'");
+}
+
+/** 通用列迁移：列不存在则 ALTER TABLE ADD COLUMN */
+function migrateAddColumn(db: DatabaseSync, table: string, column: string, ddl: string): void {
   try {
-    const cols = db.prepare('PRAGMA table_info(book)').all() as unknown as {
+    const cols = db.prepare(`PRAGMA table_info(${table})`).all() as unknown as {
       name: string;
     }[];
-    if (cols.some((c) => c.name === 'lang')) return;
-    db.exec("ALTER TABLE book ADD COLUMN lang TEXT NOT NULL DEFAULT 'en'");
+    if (cols.some((c) => c.name === column)) return;
+    db.exec(ddl);
   } catch {
     /* 表不存在或已迁移则忽略 */
   }
@@ -270,8 +277,10 @@ export function getOrigin(db: DatabaseSync, word: string): WordOrigin | null {
   return r ? rowToOrigin(r) : null;
 }
 
-export function getEtymology(db: DatabaseSync, word: string): WordEtymology | null {
-  const r = db.prepare('SELECT * FROM word_etymology WHERE word = ?').get(word) as unknown as EtymologyRow | undefined;
+export function getEtymology(db: DatabaseSync, word: string, lang = 'en'): WordEtymology | null {
+  const r = db
+    .prepare('SELECT * FROM word_etymology WHERE word = ? AND lang = ?')
+    .get(word, lang) as unknown as EtymologyRow | undefined;
   return r ? rowToEtymology(r) : null;
 }
 
@@ -332,16 +341,18 @@ function lookupI18n(db: DatabaseSync, word: string, lang: string): WordDetail | 
         /* ignore */
       }
       const withForm: I18nWord = { ...base, matchedForm: { form: word, display: word, tags } };
-      return i18nToDetail(withForm);
+      return i18nToDetail(db, withForm, lang);
     }
   }
   // 2) 直接词条
   const direct = getI18n(db, word, lang);
-  if (direct) return i18nToDetail(direct);
+  if (direct) return i18nToDetail(db, direct, lang);
   return null;
 }
 
-function i18nToDetail(i: I18nWord): WordDetail {
+/** 多语言词条 → WordDetail：补词源（词源语言与词条语言一致）与词根词缀拆解 */
+function i18nToDetail(db: DatabaseSync, i: I18nWord, lang: string): WordDetail {
+  const base = normalizeWord(i.word);
   return {
     word: i.word,
     phonetic: i.phonetic,
@@ -356,9 +367,9 @@ function i18nToDetail(i: I18nWord): WordDetail {
     exchange: null,
     audio: i.audio,
     forms: [],
-    origin: null,
-    etymology: null,
-    breakdown: [],
+    origin: getOrigin(db, base),
+    etymology: getEtymology(db, base, lang),
+    breakdown: breakdownWord(db, i.word, lang),
     inBook: false,
     i18n: i,
   };
@@ -479,12 +490,16 @@ export function suggest(db: DatabaseSync, rawQuery: string, limit = 20): Suggest
 /* ---------------- 词根词缀拆解 ---------------- */
 
 let morphemeCache: { prefixes: Morpheme[]; suffixes: Morpheme[]; roots: Morpheme[] } | null = null;
+/** 按语言缓存词素库（en 为英语，ru 为俄语） */
+const morphemeCacheByLang = new Map<string, { prefixes: Morpheme[]; suffixes: Morpheme[]; roots: Morpheme[] }>();
 
-function loadMorphemes(db: DatabaseSync) {
-  if (morphemeCache) return morphemeCache;
+function loadMorphemes(db: DatabaseSync, lang = 'en') {
+  if (lang === 'en' && morphemeCache) return morphemeCache;
+  const cached = morphemeCacheByLang.get(lang);
+  if (cached) return cached;
   const rows = db
-    .prepare('SELECT morpheme, kind, meaning_zh, meaning_en, origin, examples FROM morphemes')
-    .all() as unknown as MorphemeRow[];
+    .prepare('SELECT morpheme, kind, meaning_zh, meaning_en, origin, examples FROM morphemes WHERE lang = ?')
+    .all(lang) as unknown as MorphemeRow[];
   const list: Morpheme[] = rows.map((r) => ({
     morpheme: r.morpheme,
     kind: r.kind as MorphemeKind,
@@ -494,8 +509,10 @@ function loadMorphemes(db: DatabaseSync) {
     examples: safeJsonArray(r.examples),
   }));
   const byKind = (k: MorphemeKind) => list.filter((m) => m.kind === k).sort((a, b) => b.morpheme.length - a.morpheme.length);
-  morphemeCache = { prefixes: byKind('prefix'), suffixes: byKind('suffix'), roots: byKind('root') };
-  return morphemeCache;
+  const bundle = { prefixes: byKind('prefix'), suffixes: byKind('suffix'), roots: byKind('root') };
+  morphemeCacheByLang.set(lang, bundle);
+  if (lang === 'en') morphemeCache = bundle;
+  return bundle;
 }
 
 function safeJsonArray(s: string | null): string[] {
@@ -508,15 +525,24 @@ function safeJsonArray(s: string | null): string[] {
   }
 }
 
-export function breakdownWord(db: DatabaseSync, rawWord: string): BreakdownPart[] {
+/** 构词拆解：lang='en' 英语词素库；lang='ru' 俄语词素库（含屈折词尾与单字符前缀处理） */
+export function breakdownWord(db: DatabaseSync, rawWord: string, lang = 'en'): BreakdownPart[] {
   const w = normalizeWord(rawWord);
   if (w.length < 2) return [];
-  const { prefixes, suffixes, roots } = loadMorphemes(db);
-  // 词素原文（morpheme 字段）→ 匹配用的词干（去掉首尾连字符）
-  const all = [...prefixes, ...suffixes, ...roots].map((m) => ({
-    m,
-    stem: m.morpheme.replace(/^-+|-+$/g, ''),
-  }));
+  const { prefixes, suffixes, roots } = loadMorphemes(db, lang);
+  const isRu = lang === 'ru';
+  // 词素原文（morpheme 字段）→ 匹配模式（去掉首尾连字符；俄语后缀额外允许屈折词尾变体）
+  const all = [...prefixes, ...suffixes, ...roots].map((m) => {
+    const stem = m.morpheme.replace(/^-+|-+$/g, '');
+    const patterns: string[] = [stem];
+    if (isRu && m.kind === 'suffix' && stem.length >= 5 && /[ьйоаяеыиую]$/.test(stem)) {
+      // -ость → 核心 ост，可吸收 -и/-ью 等屈折词尾；
+      // 核心须 ≥3 字符：否则 -ать（核心 ат）会抢占 писатель 的 -тель
+      const core = stem.slice(0, -1);
+      if (core.length >= 3) patterns.push(core);
+    }
+    return { m, stem, patterns };
+  });
 
   const parts: BreakdownPart[] = [];
   const occupied: [number, number][] = [];
@@ -535,18 +561,33 @@ export function breakdownWord(db: DatabaseSync, rawWord: string): BreakdownPart[
       continue;
     }
     // 当前位置取【最长】匹配词素（词根/前缀/后缀一体比较，bio 优先于 bi）
-    let best: { m: Morpheme; stem: string } | null = null;
-    for (const { m, stem } of all) {
-      if (!stem || stem.length < 2) continue;
-      if (w.startsWith(stem, pos)) {
-        if (!best || stem.length > best.stem.length) best = { m, stem };
+    let best: { m: Morpheme; start: number; end: number } | null = null;
+    for (const { m, stem, patterns } of all) {
+      for (const pat of patterns) {
+        const isCore = pat !== stem; // 俄语后缀的屈折核心模式
+        const minLen = isRu && m.kind === 'prefix' ? 1 : 2; // 俄语有 в-/с-/у-/о- 等单字符前缀
+        if (pat.length < minLen || !w.startsWith(pat, pos)) continue;
+        let end = pos + (isCore ? w.length - pos : pat.length);
+        if (isCore) {
+          // 后缀吸收屈折词尾（-ость → -ости/-остью），词尾过长则不算同一后缀
+          if (w.length - (pos + pat.length) > 3) continue;
+          end = w.length;
+        } else if (isRu && m.kind === 'prefix' && pat.length === 1) {
+          // 单字符前缀需有后续词根/后缀支撑，避免 вода → в-|ода 这类误拆
+          const rest = w.slice(pos + 1);
+          const supported = all.some(
+            (x) => x.m.kind !== 'prefix' && x.stem.length >= 3 && rest.includes(x.stem)
+          );
+          if (!supported) continue;
+        }
+        if (!best || end - pos > best.end - best.start) best = { m, start: pos, end };
       }
     }
     if (!best) {
       pos += 1;
       continue;
     }
-    const end = pos + best.stem.length;
+    const end = best.end;
     // 与已占用区间重叠则放弃该候选（如 telephone 的 -one 后缀与 phon 冲突）
     if (occupied.some(([s, e]) => pos < e && end > s)) {
       pos += 1;
@@ -678,7 +719,8 @@ export function syncMerge(db: DatabaseSync, items: BookItem[]): { pushed: number
 
 /** 把生词按命中的词根/词缀分组（词频排序：命中词多的词素靠前） */
 export function groupBookByMorpheme(db: DatabaseSync, items: BookItem[]): MorphemeGroup[] {
-  return groupBookByMorphemeData(items, (w) => breakdownWord(db, w));
+  // 按生词条目自身的语言选词素库（俄语生词用俄语词素，否则会被英语库误拆）
+  return groupBookByMorphemeData(items, (w, lang) => breakdownWord(db, w, lang ?? 'en'));
 }
 
 /* ---------------- 词频排行工具 ---------------- */

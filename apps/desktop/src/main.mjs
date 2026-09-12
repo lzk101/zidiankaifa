@@ -75,7 +75,8 @@ function registerIpc() {
       : null,
   );
   ipcMain.handle('dict:suggest', (_e, q, limit) => (q ? suggest(db, String(q), Number(limit) || 20) : []));
-  ipcMain.handle('dict:breakdown', (_e, word) => (word ? breakdownWord(db, String(word)) : []));
+  ipcMain.handle('dict:breakdown', (_e, word, lang) =>
+    word ? breakdownWord(db, String(word), lang ? String(lang) : 'en') : []);
   ipcMain.handle('book:list', () => bookList(db));
   ipcMain.handle('book:add', (_e, word, tags, lang) =>
     bookAdd(db, String(word), Array.isArray(tags) ? tags.map(String) : [], lang ? String(lang) : 'en'),

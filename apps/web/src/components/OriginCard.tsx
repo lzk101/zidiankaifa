@@ -106,21 +106,30 @@ export default function OriginCard({
 
       {!chainWords && chainEtym && chainEtym.length > 0 && (
         <div className="origin-section">
-          <div className="origin-section-label">派生链（Wiktionary）</div>
+          <div className="origin-section-label">
+            派生链（Wiktionary）
+            {chainEtym.some((s) => s.kind === 'cognate') && (
+              <span className="cognate-hint">灰底为同源词（非派生来源）</span>
+            )}
+          </div>
           <div className="lineage" aria-label="Wiktionary 派生链">
-            {chainEtym.map((step, i) => (
-              <span className="lineage-item" key={`${step.lang}-${i}`}>
-                {i > 0 && (
-                  <span className="lineage-arrow" aria-hidden="true">
-                    ←
+            {chainEtym.map((step, i) => {
+              const isCognate = step.kind === 'cognate';
+              return (
+                <span className="lineage-item" key={`${step.lang}-${i}`}>
+                  {i > 0 && (
+                    <span className="lineage-arrow" aria-hidden="true">
+                      ←
+                    </span>
+                  )}
+                  <span className={`lineage-chip${isCognate ? ' cognate' : ''}`}>
+                    {step.word ?? step.parts?.join('+') ?? step.langZh}
+                    <LangBadge text={step.langZh} />
+                    {isCognate && <span className="cognate-tag">同源</span>}
                   </span>
-                )}
-                <span className="lineage-chip">
-                  {step.word ?? step.parts?.join('+') ?? step.langZh}
-                  <LangBadge text={step.langZh} />
                 </span>
-              </span>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

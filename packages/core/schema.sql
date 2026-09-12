@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS word_origins (
 -- 词根词缀库
 CREATE TABLE IF NOT EXISTS morphemes (
   morpheme  TEXT PRIMARY KEY,
+  lang      TEXT NOT NULL DEFAULT 'en',  -- en / ru（词素所属语言）
   kind      TEXT NOT NULL,      -- root / prefix / suffix
   meaning_zh TEXT,
   meaning_en TEXT,
@@ -52,6 +53,7 @@ CREATE TABLE IF NOT EXISTS morphemes (
 -- 词源详解（wiktextract / Wiktionary）
 CREATE TABLE IF NOT EXISTS word_etymology (
   word    TEXT PRIMARY KEY,
+  lang    TEXT NOT NULL DEFAULT 'en',  -- en / ru（词源所属语言）
   text_en TEXT,        -- 英文词源原文
   text_zh TEXT,        -- 中文词源原文（zh 转储）
   chain   TEXT,        -- JSON: [{"lang":"frm","langZh":"古法语","word":"abandouner"}, ...] 结构化派生链

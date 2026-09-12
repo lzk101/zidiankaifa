@@ -508,6 +508,31 @@ input {
   font-weight: 500;
 }
 
+/* 同源词（cognate）：非派生来源，弱化显示（v0.3 俄语词源） */
+.lineage-chip.cognate {
+  background: var(--surface-2, #f1f5f9);
+  color: var(--muted);
+  border: 1px dashed var(--border, #e2e8f0);
+  font-weight: 400;
+}
+
+.cognate-tag {
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: rgba(100, 116, 139, 0.14);
+  color: var(--muted);
+  font-size: 10px;
+  vertical-align: middle;
+}
+
+.cognate-hint {
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
 .origin-depth {
   font-size: 13px;
   color: var(--muted);

@@ -21,6 +21,7 @@ RAW = os.path.join(ROOT, "data", "raw")
 DB_PATH = os.path.join(ROOT, "data", "db", "dict.db")
 SCHEMA = os.path.join(ROOT, "packages", "core", "schema.sql")
 ROOTS_JSON = os.path.join(os.path.dirname(os.path.abspath(__file__)), "roots.json")
+ROOTS_RU_JSON = os.path.join(os.path.dirname(os.path.abspath(__file__)), "roots_ru.json")
 
 WORDS_COLS = 12
 
@@ -300,23 +301,28 @@ def build_origins(conn):
 # ---------------- morphemes ----------------
 
 def build_morphemes(conn):
-    if not os.path.exists(ROOTS_JSON):
-        log("SKIP morphemes: roots.json missing")
-        return
-    log("building morphemes ...")
-    with open(ROOTS_JSON, encoding="utf-8") as f:
-        data = json.load(f)
+    """导入词素库：英语 roots.json（lang='en'）+ 俄语 roots_ru.json（lang='ru'）"""
     cur = conn.cursor()
-    cur.execute("BEGIN")
-    n = 0
-    for m in data:
-        cur.execute(
-            "INSERT OR REPLACE INTO morphemes (morpheme, kind, meaning_zh, meaning_en, origin, examples) VALUES (?,?,?,?,?,?)",
-            (m["morpheme"], m["kind"], m.get("meaningZh", ""), m.get("meaningEn"),
-             m.get("origin"), json.dumps(m.get("examples", []), ensure_ascii=False)))
-        n += 1
-    cur.execute("COMMIT")
-    log(f"morphemes: {n}")
+    total = 0
+    for path, lang in ((ROOTS_JSON, "en"), (ROOTS_RU_JSON, "ru")):
+        if not os.path.exists(path):
+            log(f"SKIP morphemes[{lang}]: {os.path.basename(path)} missing")
+            continue
+        log(f"building morphemes[{lang}] from {os.path.basename(path)} ...")
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+        cur.execute("BEGIN")
+        n = 0
+        for m in data:
+            cur.execute(
+                "INSERT OR REPLACE INTO morphemes (morpheme, lang, kind, meaning_zh, meaning_en, origin, examples) VALUES (?,?,?,?,?,?,?)",
+                (m["morpheme"], lang, m["kind"], m.get("meaningZh", ""), m.get("meaningEn"),
+                 m.get("origin"), json.dumps(m.get("examples", []), ensure_ascii=False)))
+            n += 1
+        cur.execute("COMMIT")
+        log(f"morphemes[{lang}]: {n}")
+        total += n
+    log(f"morphemes total: {total}")
 
 # ---------------- main ----------------
 

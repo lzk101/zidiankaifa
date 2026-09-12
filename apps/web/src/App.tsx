@@ -174,7 +174,7 @@ export default function App() {
           </button>
         </nav>
         <div className="copyright">
-          我的电子辞典 v0.2.1
+          我的电子辞典 v0.3.0
           <br />
           词库来源 ECDICT
         </div>
@@ -224,18 +224,23 @@ export default function App() {
                 onPick={lookup}
                 onToggleBook={toggleBook}
               />
-              {current && !searching && !current.i18n && (
+              {current && !searching && (
                 <>
+                  {/* 词源/构词路径：英语与俄语词条共用（俄语词源来自 zh 转储中文词源 + 俄语词素库） */}
                   <OriginCard
                     origin={current.origin}
                     etymology={current.etymology}
                     breakdown={current.breakdown}
                   />
-                  <FormsCard forms={current.forms} onPick={lookup} />
+                  {!current.i18n && <FormsCard forms={current.forms} onPick={lookup} />}
                   <BreakdownCard
                     word={current.word}
                     breakdown={current.breakdown}
-                    onPick={lookup}
+                    onPick={
+                      current.i18n
+                        ? (w: string) => lookup(w, current.i18n!.lang)
+                        : lookup
+                    }
                   />
                 </>
               )}

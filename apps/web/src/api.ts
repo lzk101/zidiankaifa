@@ -110,9 +110,9 @@ const restBackend: DictBackend = {
     );
   },
 
-  async breakdown(word: string): Promise<BreakdownPart[]> {
+  async breakdown(word: string, lang = 'en'): Promise<BreakdownPart[]> {
     return restFetch<BreakdownPart[]>(
-      `/api/v1/breakdown?word=${encodeURIComponent(word)}`,
+      `/api/v1/breakdown?word=${encodeURIComponent(word)}&lang=${encodeURIComponent(lang === 'auto' ? 'en' : lang)}`,
     );
   },
 
@@ -184,15 +184,16 @@ const restBackend: DictBackend = {
     }
   },
 
-  /** 浏览器模式：生词本在本地，逐个拆解后聚合分组 */
+  /** 浏览器模式：生词本在本地，逐个拆解后聚合分组（按条目语言选用对应词素库） */
   async bookGroups(): Promise<MorphemeGroup[]> {
     const items = readLocalBook().filter((b) => !b.deleted);
     const partsMap = new Map<string, BreakdownPart[]>();
     await Promise.all(
       items.map(async (b) => {
+        const lang = b.lang ?? 'en';
         try {
           const parts = await restFetch<BreakdownPart[]>(
-            `/api/v1/breakdown?word=${encodeURIComponent(b.word)}`,
+            `/api/v1/breakdown?word=${encodeURIComponent(b.word)}&lang=${encodeURIComponent(lang === 'auto' ? 'en' : lang)}`,
           );
           partsMap.set(b.word, parts);
         } catch {
@@ -213,7 +214,7 @@ function electronBackend(): DictBackend {
   return {
     lookup: (w, lang) => api.lookup(w, lang),
     suggest: (p, l) => api.suggest(p, l),
-    breakdown: (w) => api.breakdown(w),
+    breakdown: (w, lang) => api.breakdown(w, lang),
     bookList: () => api.bookList(),
     bookAdd: (w, t, lang) => api.bookAdd(w, t, lang),
     bookRemove: (w) => api.bookRemove(w),

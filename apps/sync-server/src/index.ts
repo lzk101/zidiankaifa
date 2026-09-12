@@ -101,7 +101,7 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
       ok: true,
       words: countWords(dictDb),
       sync: 'zidiankaifa-sync-server',
-      version: '0.2.1',
+      version: '0.3.0',
     });
   }
 
@@ -119,7 +119,8 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
 
   if (req.method === 'GET' && p === '/api/v1/breakdown') {
     const word = url.searchParams.get('word') ?? '';
-    return sendJson(res, 200, breakdownWord(dictDb, word));
+    const lang = url.searchParams.get('lang') ?? 'en';
+    return sendJson(res, 200, breakdownWord(dictDb, word, lang));
   }
 
   if (req.method === 'GET' && p === '/api/v1/book') {

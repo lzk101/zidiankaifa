@@ -2,21 +2,22 @@
  * 生词本 × 词根/词缀分组（知识图谱数据层，纯函数）
  * 浏览器端安全：不依赖任何 Node 模块；拆分数据由调用方（REST 或 IPC）提供。
  */
-import type { BookItem, BreakdownPart, MorphemeGroup } from './types.js';
+import type { BookItem, BreakdownPart, LangMode, MorphemeGroup } from './types.js';
 
 /**
  * 把生词按命中的词根/词缀分组。
  * @param items 生词本条目（deleted 会被跳过）
- * @param breakdownOf 词 → 拆解结果（同步函数；异步场景请先预取再闭包传入）
+ * @param breakdownOf 词 → 拆解结果（同步函数；异步场景请先预取再闭包传入）。
+ *                   建议按条目的 lang 选用对应语言的词素库，否则俄语生词会被英语词素库拆解。
  */
 export function groupBookByMorphemeData(
   items: BookItem[],
-  breakdownOf: (word: string) => BreakdownPart[],
+  breakdownOf: (word: string, lang?: LangMode | string) => BreakdownPart[],
 ): MorphemeGroup[] {
   const map = new Map<string, MorphemeGroup>();
   for (const it of items) {
     if (it.deleted) continue;
-    const parts = breakdownOf(it.word);
+    const parts = breakdownOf(it.word, it.lang ?? 'en');
     const seen = new Set<string>();
     for (const p of parts) {
       if (!p.morpheme || seen.has(p.morpheme)) continue;
