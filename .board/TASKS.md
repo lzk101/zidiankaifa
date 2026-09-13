@@ -29,8 +29,8 @@
 | **T16** | **拆分 2 条 A2 目标断言到 `ru_morph_goals.mjs`，`ru_morph.mjs` 归 exit 0** | 功能测试 agent | ✅ **完成**（60 条恒绿 exit 0；goals 0/2 exit 2 待 v0.9.0） | `packages/core/test/ru_morph*.mjs` |
 | T13 | bump 版本 → core/web 构建 → 打包 → commit/tag/push → `gh release v0.8.0` | 项目主管 | ✅ **已完成**（源码发布，无安装包） | commit `4c89272` · tag `v0.8.0` · [Release](https://github.com/lzk101/zidiankaifa/releases/tag/v0.8.0) |
 | T14 | 补 `docs/需求总结.md` §21 + README Roadmap + 交接文档 | 需求管理 agent | ✅ **完成**（§21 全 8 小节；另订正 3 处账目） | `docs/` |
-| **T17** | **v0.9.0 准入条件实验**：内存注入候选词根，测「R 覆盖率 ↑ 且 全库 D1 计数不上升、全库空洞≥3 不上升」 | 开发编程 agent | 🔄 **进行中**（本轮派单 R6） | `scripts/exp_v9_admission.mjs` |
-| **T18** | **V9-3 全库 D1 双向计数守卫**（v0.8.0 已发布但**全库口径无守卫**——R 内灵敏度仅 6/267≈2.2%，全库 96/267=36.0%） | 功能测试 agent | 🔄 **进行中**（本轮派单 R7） | `packages/core/test/ru_morph_d1guard.mjs` |
+| **T17** | **v0.9.0 准入条件实验**：内存注入候选词根，测「R 覆盖率 ↑ 且 全库 D1 计数不上升、全库空洞≥3 不上升」 | 开发编程 agent | 🔄 **进行中**（中期：**47 条即达 45%**，成本比原估 67–70 低 15%；审定表待出） | `scripts/exp_v9_admission.mjs` · `scripts/out_v9_admission.json` |
+| T18 | **V9-3 全库 D1 双向计数守卫** | 功能测试 agent | ✅ **完成并验收**（门禁 **506/0**；双向鉴别力经 4 变体实验证实） | `packages/core/test/ru_morph_d1guard.mjs`（26 条断言） |
 
 ### ★ T18 的前提数据（主管 2026-09-16 实测，供守卫定容差）
 | 项 | 实测值 |
