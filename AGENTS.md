@@ -20,8 +20,9 @@
 
 🧹 **结构治理（每迭代必做）**：本项目有**第 4 个常驻 agent = 项目结构管理 agent**（委任书 `.board/roles/structure-agent.md`），**每次版本发布 + push 之后**做一次结构体检与清理。
 - **额度**（冻结于 `.board/BASELINE.md` §7）：已跟踪文件 ≤ **300** · `scripts/` ≤ **165** · `scripts/` 顶层 ≤ **35** · `dist-release/` ≤ **1.5 GB** · `data/` ≤ **4.5 GB**（只报不删）· 缓存合计 ≤ **1.2 GB** · 临时残留 **0** · 单文件 ≤ **20 MB**
-- **台账**：`.board/STRUCTURE.md`（只有该 agent 写）
-- **权限一句话**：**能删产物，不能删代码；能出方案，不能改架构。** 保护清单 —— `data/**` 整棵树 + 全部已跟踪文件，**只报不删**；`data/raw/` 2.93 GB 是词库重建原料，**不要因体积大就当成垃圾**
+- **台账**：`.board/STRUCTURE.md`（结构台账）· **`.board/agents.md`（agent 登记册：受保护名单恒 4 个 · 临时 agent 回收判定）**（均只有该 agent 写）
+- **权限一句话**：**能删产物，不能删代码；能出方案，不能改架构；能登记 agent，不能唤醒 agent。** 保护清单 —— `data/**` 整棵树 + 全部已跟踪文件，**只报不删**；`data/raw/` 2.93 GB 是词库重建原料，**不要因体积大就当成垃圾**
+- ⚠ **agent 层无「删除」API**：只有 `list_agents`（只读）/ `interrupt_agent`（停当前一轮）/ `send_message`（**= 唤醒**，反清理）。⇒「清理临时 agent」= 台账化 + 标记可回收 + 报主管止损。**`ready` ≠ 已死，随手重派会产出与既有结论冲突的第二版。**
 
 **测试**：`pnpm --filter @zidiankaifa/core test` → 跑 `test/regress.mjs`(99) + `test/lexicon.mjs`(67) + `test/related.mjs`(38) + `test/ru_morph.mjs`(60) + `test/ru_morph_d1fix.mjs`(194) + `test/ru_morph_d1guard.mjs`(26) + `test/book_lang.mjs`(137)（需本地 `data/db/dict.db`）→ **core 621 / 0**；`apps/desktop/test/dbmigrate.test.mjs`(22) ⇒ **门禁 643 通过 / 0 失败**（v0.10.0 后）。
 ⚠ **`book_lang.mjs` 不读 `data/db/dict.db`**（全程临时合成库），测的是 `packages/core/dist/` 构建产物 ⇒ **改 `packages/core/src/db/**` 后必须先 `pnpm --filter @zidiankaifa/core build`**，否则测的是旧实现（铁律 3）。

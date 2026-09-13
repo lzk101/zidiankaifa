@@ -4,7 +4,7 @@
 > 建立日期：2026-09-16　建立时的 HEAD：`055c753`　版本：v0.7.1
 >
 > 📁 **结构指针**：文件放哪儿、能不能改、哪些是死代码 ⇒ 见根目录 **`PROJECT_STRUCTURE.md`**（结构主文档，2026-09-16 建）。
-> 🧹 **结构治理**：**每完成一次版本发布，由第 4 个常驻 agent（项目结构管理 agent）做一次结构体检与清理** —— 额度表见 `.board/BASELINE.md` §7，职责见 `.board/roles/structure-agent.md`，台账见 `.board/STRUCTURE.md`。
+> 🧹 **结构治理**：**每完成一次版本发布，由第 4 个常驻 agent（项目结构管理 agent）做一次结构体检与清理** —— 额度表见 `.board/BASELINE.md` §7，职责见 `.board/roles/structure-agent.md`，台账见 `.board/STRUCTURE.md`，**agent 登记册见 `.board/agents.md`**（含受保护名单与临时 agent 回收判定）。
 > 📊 **当前状态**（`PROJECT_STRUCTURE.md` §10 有变更记录）：v0.10.0 已发布（tag `v0.10.0` / commit `041c6e7`）· 门禁 **643 通过 / 0 失败** · 词素库 `morphemes` **918**（en 468 / ru 450）。
 > ⚠ 本文 §9 记录的 goal 口径**已被取代** —— 旧 objective「覆盖率 30.8% → >45%」已由用户拍板取消（详见 §9）。
 
@@ -47,7 +47,7 @@
 | **需求管理 agent** | 常驻 subagent | `.board/REQ.md`、`.board/DECISIONS.md`、`.board/CHANGELOG.md` | 不写任何 `src/` 代码 |
 | **开发编程 agent** | 常驻 subagent | `packages/*/src/`、`apps/*/src/`、`packages/data-pipeline/` | 不改 `test/*.mjs` 断言 |
 | **功能测试 agent** | 常驻 subagent | `packages/core/test/*.mjs`、`apps/desktop/test/*.mjs`、`scripts/`、`.board/EVIDENCE.md` | **不改 `src/` 一行** |
-| **项目结构管理 agent** | 常驻 subagent（2026-09-16 增） | `.board/STRUCTURE.md`、`.board/structure/`、`PROJECT_STRUCTURE.md`（仅事实性更新）、`.gitignore`（只增规则）、`scripts/audit_*`/`fix_*_corruption`/`structure_*` | `data/**`、`src/**`、`test/**`、已跟踪文件的删除、**任何 git 写操作** |
+| **项目结构管理 agent** | 常驻 subagent（2026-09-16 增） | `.board/STRUCTURE.md`、**`.board/agents.md`**、`.board/structure/`、`PROJECT_STRUCTURE.md`（仅事实性更新）、`.gitignore`（只增规则）、`scripts/audit_*`/`fix_*_corruption`/`structure_*` | `data/**`、`src/**`、`test/**`、已跟踪文件的删除、**任何 git 写操作**、**向任何 agent `send_message`**、**`interrupt` 四个受保护 agent** |
 
 **独占写是硬约束**：一个文件只有一个角色能写，避免并发写入互相覆盖。跨角色需要改对方的文件，必须走项目主管转发。
 
@@ -63,6 +63,7 @@
 | `BOARD.md` | 三方追加 | 发现、阻塞、假设、异议（按角色分区） |
 | `EVIDENCE.md` | 功能测试 agent | 断言结果 + 实测证据（含原始命令与输出摘要） |
 | `STRUCTURE.md` | 项目结构管理 agent | 结构台账：九项体检实测、越线项、清理记录、根因诊断 |
+| `agents.md` | 项目结构管理 agent | **agent 登记册**：受保护名单（恒 4）· 临时 agent 登记与回收判定 · label 与职责映射 · agent 层异常分类 |
 | `roles/*.md` | 项目主管 | 各角色的常驻委任书（职责边界的事实来源），现 4 份 |
 
 **投递机制**：项目主管 `read` 议题板 → `send_message` 派单给常驻 subagent；subagent 写盘 → 只回结构化回执。**主会话只看回执，不把冗长工具输出带回主上下文**——这是保住主管自身上下文预算的关键。**现为 4 个常驻 agent**（需求管理 / 开发编程 / 功能测试 / 项目结构管理）。
@@ -124,6 +125,7 @@
 | **覆盖率尺子口径混乱** | 见 `.board/BASELINE.md`——项目里存在**三把分母不同的尺子**，提目标前必须先声明用哪把 |
 | **结构熵增**（每迭代新增脚本/产物，历史上三次误提交临时文件） | 第 4 角色**项目结构管理 agent**：每次发布后九项体检 + 额度制（`.board/BASELINE.md` §7 结构预算）+ 自主清理产物（`.board/roles/structure-agent.md` §3.1） |
 | **结构 agent 误删关键文件** | 保护清单是绝对的：`data/**` 整棵树 + 全部已跟踪文件只报不删；未跟踪且未被 gitignore 覆盖者只列清单；清理后必须复跑门禁 |
+| **临时 agent 堆积、被误唤醒重复派单** | 第 4 角色维护 `.board/agents.md` 登记册：**受保护名单恒 4 个**（主 + 三个业务常驻）· 临时 agent 逐条登记产出落盘位置 · 「可回收」需四判据全满足 · **`ready` ≠ 已死**（随手重派会产出与既有结论冲突的第二版）· 结构 agent **不得 `send_message` 任何 agent**，只能标记并请主管 `interrupt` |
 
 ---
 
