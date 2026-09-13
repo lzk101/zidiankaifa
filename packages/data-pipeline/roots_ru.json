@@ -1,5190 +1,5306 @@
 [
- {
-  "morpheme": "-ание",
-  "kind": "suffix",
-  "meaningZh": "动作、过程",
-  "meaningEn": "-tion (action noun)",
-  "origin": "古教会斯拉夫语 -ание",
-  "examples": [
-   "знание",
-   "внимание",
-   "желание"
-  ]
- },
- {
-  "morpheme": "-анин",
-  "kind": "suffix",
-  "meaningZh": "居民后缀",
-  "meaningEn": "inhabitant",
-  "origin": "原始斯拉夫语 *-janinъ",
-  "examples": [
-   "пражанин",
-   "горожанин"
-  ]
- },
- {
-  "morpheme": "-атый",
-  "kind": "suffix",
-  "meaningZh": "具有…的",
-  "meaningEn": "having, -ed",
-  "origin": "原始斯拉夫语 *-atъ",
-  "examples": [
-   "бородатый",
-   "полосатый",
-   "рогатый"
-  ]
- },
- {
-  "morpheme": "-ать",
-  "kind": "suffix",
-  "meaningZh": "动词不定式",
-  "meaningEn": "infinitive ending",
-  "origin": "原始斯拉夫语 *-ati",
-  "examples": [
-   "читать",
-   "делать",
-   "знать",
-   "думать"
-  ]
- },
- {
-  "morpheme": "-ация",
-  "kind": "suffix",
-  "meaningZh": "化、过程",
-  "meaningEn": "-ation",
-  "origin": "拉丁语 -atio",
-  "examples": [
-   "организация",
-   "информация",
-   "революция"
-  ]
- },
- {
-  "morpheme": "-вать",
-  "kind": "suffix",
-  "meaningZh": "动词后缀",
-  "meaningEn": "verbal",
-  "origin": "原始斯拉夫语 *-ovati",
-  "examples": [
-   "сбивать",
-   "одевать"
-  ]
- },
- {
-  "morpheme": "-ведение",
-  "kind": "suffix",
-  "meaningZh": "…学、研究",
-  "meaningEn": "study of, -logy",
-  "origin": "俄语复合 вести（引导）",
-  "examples": [
-   "естествоведение",
-   "материаловедение"
-  ]
- },
- {
-  "morpheme": "-видный",
-  "kind": "suffix",
-  "meaningZh": "有…样子的",
-  "meaningEn": "-like, -shaped",
-  "origin": "俄语复合 вид + -ный",
-  "examples": [
-   "щитовидный",
-   "человековидный"
-  ]
- },
- {
-  "morpheme": "-держатель",
-  "kind": "suffix",
-  "meaningZh": "持…者、支架",
-  "meaningEn": "holder",
-  "origin": "俄语复合 держать + -тель",
-  "examples": [
-   "абажуродержатель",
-   "книгодержатель"
-  ]
- },
- {
-  "morpheme": "-ейший",
-  "kind": "suffix",
-  "meaningZh": "最高级后缀",
-  "meaningEn": "superlative",
-  "origin": "原始斯拉夫语 *-ějьšii",
-  "examples": [
-   "абсолютнейший",
-   "новейший"
-  ]
- },
- {
-  "morpheme": "-ек",
-  "kind": "suffix",
-  "meaningZh": "指小后缀",
-  "meaningEn": "diminutive",
-  "origin": "原始斯拉夫语 *-ъkъ",
-  "examples": [
-   "горошек",
-   "перешеек"
-  ]
- },
- {
-  "morpheme": "-ёк",
-  "kind": "suffix",
-  "meaningZh": "指小后缀",
-  "meaningEn": "diminutive",
-  "origin": "原始斯拉夫语 *-ъkъ",
-  "examples": [
-   "королёк",
-   "мотылёк"
-  ]
- },
- {
-  "morpheme": "-ение",
-  "kind": "suffix",
-  "meaningZh": "动作、过程、结果",
-  "meaningEn": "-tion, -ing (action noun)",
-  "origin": "古教会斯拉夫语 -ение",
-  "examples": [
-   "чтение",
-   "движение",
-   "образование",
-   "решение"
-  ]
- },
- {
-  "morpheme": "-енный",
-  "kind": "suffix",
-  "meaningZh": "形容词后缀",
-  "meaningEn": "adjectival (-ed)",
-  "origin": "原始斯拉夫语 *-enъ",
-  "examples": [
-   "государственный",
-   "количественный"
-  ]
- },
- {
-  "morpheme": "-ёнок",
-  "kind": "suffix",
-  "meaningZh": "幼小后缀",
-  "meaningEn": "young animal",
-  "origin": "原始斯拉夫语 *-ę",
-  "examples": [
-   "ягнёнок",
-   "гусёнок"
-  ]
- },
- {
-  "morpheme": "-ёный",
-  "kind": "suffix",
-  "meaningZh": "形容词后缀（…过的）",
-  "meaningEn": "adjectival (participle)",
-  "origin": "原始斯拉夫语 *-enъ",
-  "examples": [
-   "варёный",
-   "копчёный"
-  ]
- },
- {
-  "morpheme": "-енький",
-  "kind": "suffix",
-  "meaningZh": "指小（形容词）",
-  "meaningEn": "diminutive adjective",
-  "origin": "原始斯拉夫语 *-ьnkъ",
-  "examples": [
-   "маленький",
-   "хорошенький",
-   "бедненький"
-  ]
- },
- {
-  "morpheme": "-ёр",
-  "kind": "suffix",
-  "meaningZh": "施事后缀",
-  "meaningEn": "agent noun (-er)",
-  "origin": "法语 -eur",
-  "examples": [
-   "дирижёр",
-   "массажёр"
-  ]
- },
- {
-  "morpheme": "-еский",
-  "kind": "suffix",
-  "meaningZh": "形容词后缀（…的）",
-  "meaningEn": "-ic, -esque",
-  "origin": "古希腊语 -ικός",
-  "examples": [
-   "греческий",
-   "коммерческий"
-  ]
- },
- {
-  "morpheme": "-ество",
-  "kind": "suffix",
-  "meaningZh": "抽象名词后缀",
-  "meaningEn": "abstract noun",
-  "origin": "原始斯拉夫语 *-ьstvo",
-  "examples": [
-   "лесничество",
-   "содружество"
-  ]
- },
- {
-  "morpheme": "-есть",
-  "kind": "suffix",
-  "meaningZh": "抽象名词（软辅音后变体）",
-  "meaningEn": "-ness (after soft consonants)",
-  "origin": "原始斯拉夫语 *-estь",
-  "examples": [
-   "свежесть",
-   "текучесть"
-  ]
- },
- {
-  "morpheme": "-еть",
-  "kind": "suffix",
-  "meaningZh": "动词不定式",
-  "meaningEn": "infinitive ending",
-  "origin": "原始斯拉夫语 *-ěti",
-  "examples": [
-   "смотреть",
-   "болеть",
-   "уметь"
-  ]
- },
- {
-  "morpheme": "-ец",
-  "kind": "suffix",
-  "meaningZh": "人称、事物",
-  "meaningEn": "-ian, -er (person)",
-  "origin": "原始斯拉夫语 *-ьcь",
-  "examples": [
-   "молодец",
-   "борец",
-   "иностранец",
-   "певец"
-  ]
- },
- {
-  "morpheme": "-ивать",
-  "kind": "suffix",
-  "meaningZh": "反复体（动词）",
-  "meaningEn": "iterative aspect",
-  "origin": "原始斯拉夫语 *-ivati",
-  "examples": [
-   "рассказывать",
-   "опаздывать",
-   "придумывать"
-  ]
- },
- {
-  "morpheme": "-ие",
-  "kind": "suffix",
-  "meaningZh": "抽象名词后缀",
-  "meaningEn": "abstract noun",
-  "origin": "原始斯拉夫语 *-ьje",
-  "examples": [
-   "бедствие",
-   "самодержавие"
-  ]
- },
- {
-  "morpheme": "-изм",
-  "kind": "suffix",
-  "meaningZh": "主义、学说",
-  "meaningEn": "-ism",
-  "origin": "古希腊语 -ισμός",
-  "examples": [
-   "капитализм",
-   "реализм",
-   "организм"
-  ]
- },
- {
-  "morpheme": "-ик",
-  "kind": "suffix",
-  "meaningZh": "指小、从事者",
-  "meaningEn": "diminutive, -er",
-  "origin": "原始斯拉夫语 *-ikъ",
-  "examples": [
-   "столик",
-   "домик",
-   "историк",
-   "физик"
-  ]
- },
- {
-  "morpheme": "-ина",
-  "kind": "suffix",
-  "meaningZh": "名词后缀（单体、肉）",
-  "meaningEn": "single item, meat",
-  "origin": "原始斯拉夫语 *-ina",
-  "examples": [
-   "свинина",
-   "виноградина"
-  ]
- },
- {
-  "morpheme": "-инка",
-  "kind": "suffix",
-  "meaningZh": "指小后缀",
-  "meaningEn": "diminutive",
-  "origin": "原始斯拉夫语 *-inka",
-  "examples": [
-   "пылинка",
-   "ворсинка"
-  ]
- },
- {
-  "morpheme": "-ист",
-  "kind": "suffix",
-  "meaningZh": "…者、…主义者",
-  "meaningEn": "-ist",
-  "origin": "古希腊语 -ιστής",
-  "examples": [
-   "артист",
-   "журналист",
-   "специалист"
-  ]
- },
- {
-  "morpheme": "-истый",
-  "kind": "suffix",
-  "meaningZh": "充满…的",
-  "meaningEn": "full of, -y",
-  "origin": "原始斯拉夫语 *-istъ",
-  "examples": [
-   "каменистый",
-   "золотистый",
-   "водянистый"
-  ]
- },
- {
-  "morpheme": "-ить",
-  "kind": "suffix",
-  "meaningZh": "动词不定式（第二变位）",
-  "meaningEn": "infinitive ending (2nd conj.)",
-  "origin": "原始斯拉夫语 *-iti",
-  "examples": [
-   "говорить",
-   "учить",
-   "любить",
-   "строить"
-  ]
- },
- {
-  "morpheme": "-ица",
-  "kind": "suffix",
-  "meaningZh": "阴性人称、事物",
-  "meaningEn": "feminine agent or thing",
-  "origin": "原始斯拉夫语 *-ica",
-  "examples": [
-   "учительница",
-   "певица",
-   "водица",
-   "страница"
-  ]
- },
- {
-  "morpheme": "-ище",
-  "kind": "suffix",
-  "meaningZh": "增大、场所",
-  "meaningEn": "augmentative, place",
-  "origin": "原始斯拉夫语 *-išče",
-  "examples": [
-   "авиаучилище",
-   "училище",
-   "жилище",
-   "сборище"
-  ]
- },
- {
-  "morpheme": "-ия",
-  "kind": "suffix",
-  "meaningZh": "抽象名词后缀",
-  "meaningEn": "abstract noun (-ia)",
-  "origin": "拉丁语 -ia",
-  "examples": [
-   "астрономия",
-   "философия"
-  ]
- },
- {
-  "morpheme": "-ка",
-  "kind": "suffix",
-  "meaningZh": "指小、动作、器物",
-  "meaningEn": "diminutive, action, instrument",
-  "origin": "原始斯拉夫语 *-ъka",
-  "examples": [
-   "книжка",
-   "ручка",
-   "стирка",
-   "зарядка"
-  ]
- },
- {
-  "morpheme": "-кать",
-  "kind": "suffix",
-  "meaningZh": "动词后缀",
-  "meaningEn": "verbal",
-  "origin": "原始斯拉夫语 *-kati",
-  "examples": [
-   "тыкать",
-   "мяукать"
-  ]
- },
- {
-  "morpheme": "-кий",
-  "kind": "suffix",
-  "meaningZh": "形容词后缀",
-  "meaningEn": "adjectival",
-  "origin": "原始斯拉夫语 *-ъkъ",
-  "examples": [
-   "громкий",
-   "тонкий"
-  ]
- },
- {
-  "morpheme": "-ко",
-  "kind": "suffix",
-  "meaningZh": "指小后缀",
-  "meaningEn": "diminutive",
-  "origin": "原始斯拉夫语 *-ъko",
-  "examples": [
-   "ведёрко",
-   "яблочко"
-  ]
- },
- {
-  "morpheme": "-ливый",
-  "kind": "suffix",
-  "meaningZh": "倾向…的",
-  "meaningEn": "prone to, -ful",
-  "origin": "原始斯拉夫语 *-livъ",
-  "examples": [
-   "счастливый",
-   "заботливый",
-   "талантливый"
-  ]
- },
- {
-  "morpheme": "-лище",
-  "kind": "suffix",
-  "meaningZh": "场所",
-  "meaningEn": "place of",
-  "origin": "原始斯拉夫语 *-lišče",
-  "examples": [
-   "училище",
-   "хранилище",
-   "вместилище"
-  ]
- },
- {
-  "morpheme": "-лка",
-  "kind": "suffix",
-  "meaningZh": "名词后缀（工具、场所）",
-  "meaningEn": "instrument, place",
-  "origin": "原始斯拉夫语 *-ьlъka",
-  "examples": [
-   "скалка",
-   "зажигалка"
-  ]
- },
- {
-  "morpheme": "-лый",
-  "kind": "suffix",
-  "meaningZh": "形容词后缀（状态）",
-  "meaningEn": "adjectival (state)",
-  "origin": "原始斯拉夫语 *-lъ",
-  "examples": [
-   "умелый",
-   "замшелый"
-  ]
- },
- {
-  "morpheme": "-льня",
-  "kind": "suffix",
-  "meaningZh": "名词后缀（场所）",
-  "meaningEn": "place noun",
-  "origin": "原始斯拉夫语 *-ьlnja",
-  "examples": [
-   "спальня",
-   "читальня"
-  ]
- },
- {
-  "morpheme": "-льщик",
-  "kind": "suffix",
-  "meaningZh": "施事后缀",
-  "meaningEn": "agent noun",
-  "origin": "原始斯拉夫语 *-ьlьščikъ",
-  "examples": [
-   "носильщик",
-   "курильщик"
-  ]
- },
- {
-  "morpheme": "-ние",
-  "kind": "suffix",
-  "meaningZh": "动作、结果",
-  "meaningEn": "-ing, -tion",
-  "origin": "原始斯拉夫语 *-nьje",
-  "examples": [
-   "знание",
-   "пение",
-   "здание"
-  ]
- },
- {
-  "morpheme": "-ний",
-  "kind": "suffix",
-  "meaningZh": "形容词后缀",
-  "meaningEn": "adjectival",
-  "origin": "原始斯拉夫语 *-ьnъ",
-  "examples": [
-   "задний",
-   "верхний",
-   "ранний"
-  ]
- },
- {
-  "morpheme": "-ник",
-  "kind": "suffix",
-  "meaningZh": "从事者、容器、集合",
-  "meaningEn": "-er, container, collection",
-  "origin": "原始斯拉夫语 *-ьnikъ",
-  "examples": [
-   "работник",
-   "ученик",
-   "чайник",
-   "лесник"
-  ]
- },
- {
-  "morpheme": "-ница",
-  "kind": "suffix",
-  "meaningZh": "名词后缀（女性、场所）",
-  "meaningEn": "female agent, place",
-  "origin": "原始斯拉夫语 *-ьnica",
-  "examples": [
-   "пятница",
-   "племянница"
-  ]
- },
- {
-  "morpheme": "-ничать",
-  "kind": "suffix",
-  "meaningZh": "动词后缀（惯常行为）",
-  "meaningEn": "verbal (habitual)",
-  "origin": "原始斯拉夫语 *-ьničati",
-  "examples": [
-   "кокетничать",
-   "садовничать"
-  ]
- },
- {
-  "morpheme": "-ность",
-  "kind": "suffix",
-  "meaningZh": "抽象名词后缀（…性）",
-  "meaningEn": "abstract noun (-ness)",
-  "origin": "原始斯拉夫语 *-ьnostь",
-  "examples": [
-   "поверхность",
-   "точность"
-  ]
- },
- {
-  "morpheme": "-нуть",
-  "kind": "suffix",
-  "meaningZh": "一次性动作",
-  "meaningEn": "semelfactive (single act)",
-  "origin": "原始斯拉夫语 *-nǫti",
-  "examples": [
-   "крикнуть",
-   "толкнуть",
-   "прыгнуть"
-  ]
- },
- {
-  "morpheme": "-ный",
-  "kind": "suffix",
-  "meaningZh": "形容词（具有…性质的）",
-  "meaningEn": "-ous, -al (adjective)",
-  "origin": "原始斯拉夫语 *-ьnъ",
-  "examples": [
-   "водный",
-   "трудный",
-   "холодный",
-   "важный"
-  ]
- },
- {
-  "morpheme": "-ня",
-  "kind": "suffix",
-  "meaningZh": "名词后缀（场所）",
-  "meaningEn": "place noun",
-  "origin": "原始斯拉夫语 *-ьnja",
-  "examples": [
-   "лесопильня",
-   "кофейня"
-  ]
- },
- {
-  "morpheme": "-о",
-  "kind": "suffix",
-  "meaningZh": "副词（由形容词构成）",
-  "meaningEn": "-ly (adverb)",
-  "origin": "原始斯拉夫语 *-o",
-  "examples": [
-   "быстро",
-   "хорошо",
-   "тихо",
-   "легко"
-  ]
- },
- {
-  "morpheme": "-образный",
-  "kind": "suffix",
-  "meaningZh": "有…形状的",
-  "meaningEn": "shaped like, -form",
-  "origin": "俄语复合 образ + -ный",
-  "examples": [
-   "сердцеобразный",
-   "волнообразный"
-  ]
- },
- {
-  "morpheme": "-овать",
-  "kind": "suffix",
-  "meaningZh": "从事、进行",
-  "meaningEn": "-ize, to do (verb)",
-  "origin": "原始斯拉夫语 *-ovati",
-  "examples": [
-   "рисовать",
-   "работать",
-   "танцевать"
-  ]
- },
- {
-  "morpheme": "-ович",
-  "kind": "suffix",
-  "meaningZh": "父称后缀",
-  "meaningEn": "patronymic",
-  "origin": "原始斯拉夫语 *-oviťь",
-  "examples": [
-   "попович",
-   "Иванович"
-  ]
- },
- {
-  "morpheme": "-овой",
-  "kind": "suffix",
-  "meaningZh": "形容词（关系）",
-  "meaningEn": "relational adjective",
-  "origin": "原始斯拉夫语 *-ovъ",
-  "examples": [
-   "мировой",
-   "передовой",
-   "деловой"
-  ]
- },
- {
-  "morpheme": "-овский",
-  "kind": "suffix",
-  "meaningZh": "形容词后缀（…的）",
-  "meaningEn": "-ovian, possessive",
-  "origin": "原始斯拉夫语 *-ovъ",
-  "examples": [
-   "мартовский",
-   "отцовский"
-  ]
- },
- {
-  "morpheme": "-овый",
-  "kind": "suffix",
-  "meaningZh": "形容词（由…构成的）",
-  "meaningEn": "-ous (made of)",
-  "origin": "原始斯拉夫语 *-ovъ",
-  "examples": [
-   "столовый",
-   "абиетиновый",
-   "берёзовый"
-  ]
- },
- {
-  "morpheme": "-ок",
-  "kind": "suffix",
-  "meaningZh": "指小",
-  "meaningEn": "diminutive",
-  "origin": "原始斯拉夫语 *-ъkъ",
-  "examples": [
-   "городок",
-   "молоток",
-   "потолок",
-   "кусок"
-  ]
- },
- {
-  "morpheme": "-ость",
-  "kind": "suffix",
-  "meaningZh": "抽象名词（性质、状态）",
-  "meaningEn": "-ness, -ity (abstract noun)",
-  "origin": "原始斯拉夫语 *-ostь",
-  "examples": [
-   "радость",
-   "молодость",
-   "скорость",
-   "новость"
-  ]
- },
- {
-  "morpheme": "-очка",
-  "kind": "suffix",
-  "meaningZh": "指小后缀",
-  "meaningEn": "diminutive",
-  "origin": "原始斯拉夫语 *-ъčka",
-  "examples": [
-   "девочка",
-   "буквочка"
-  ]
- },
- {
-  "morpheme": "-очный",
-  "kind": "suffix",
-  "meaningZh": "形容词后缀",
-  "meaningEn": "adjectival",
-  "origin": "原始斯拉夫语 *-ъčьnъ",
-  "examples": [
-   "сборочный",
-   "молочный"
-  ]
- },
- {
-  "morpheme": "-провод",
-  "kind": "suffix",
-  "meaningZh": "导管、输送",
-  "meaningEn": "conduit, -duct",
-  "origin": "俄语复合 проводить（输送）",
-  "examples": [
-   "газопровод",
-   "водопровод"
-  ]
- },
- {
-  "morpheme": "-ская",
-  "kind": "suffix",
-  "meaningZh": "形容词（关系、所属）",
-  "meaningEn": "-ic, -ian (relational adjective)",
-  "origin": "原始斯拉夫语 *-ьskъ",
-  "examples": [
-   "русский",
-   "Зеленская",
-   "детская"
-  ]
- },
- {
-  "morpheme": "-ски",
-  "kind": "suffix",
-  "meaningZh": "副词（…式地）",
-  "meaningEn": "-ly, in a ... manner",
-  "origin": "原始斯拉夫语 *-ьsky",
-  "examples": [
-   "азинокраски",
-   "английски",
-   "политически"
-  ]
- },
- {
-  "morpheme": "-ский",
-  "kind": "suffix",
-  "meaningZh": "形容词（…的、…式的）",
-  "meaningEn": "-ian, -ic",
-  "origin": "原始斯拉夫语 *-ьskъ",
-  "examples": [
-   "русский",
-   "детский",
-   "морской"
-  ]
- },
- {
-  "morpheme": "-ство",
-  "kind": "suffix",
-  "meaningZh": "状态、身份、集合",
-  "meaningEn": "-ship, -hood, -dom",
-  "origin": "原始斯拉夫语 *-ьstvo",
-  "examples": [
-   "студенчество",
-   "государство",
-   "учительство"
-  ]
- },
- {
-  "morpheme": "-ствовать",
-  "kind": "suffix",
-  "meaningZh": "从事、处于…状态",
-  "meaningEn": "to be engaged in",
-  "origin": "原始斯拉夫语 *-ьstvovati",
-  "examples": [
-   "участвовать",
-   "путешествовать",
-   "чувствовать"
-  ]
- },
- {
-  "morpheme": "-строение",
-  "kind": "suffix",
-  "meaningZh": "…制造、构造",
-  "meaningEn": "structure, manufacturing",
-  "origin": "俄语复合 строить（建造）",
-  "examples": [
-   "самолётостроение",
-   "машиностроение"
-  ]
- },
- {
-  "morpheme": "-ся",
-  "kind": "suffix",
-  "meaningZh": "反身、被动",
-  "meaningEn": "reflexive, passive",
-  "origin": "原始斯拉夫语 *sę",
-  "examples": [
-   "учиться",
-   "мыться",
-   "строиться"
-  ]
- },
- {
-  "morpheme": "-тель",
-  "kind": "suffix",
-  "meaningZh": "施动者、器具",
-  "meaningEn": "-er, -or (agent, instrument)",
-  "origin": "原始斯拉夫语 *-teljь",
-  "examples": [
-   "учитель",
-   "писатель",
-   "двигатель",
-   "выключатель"
-  ]
- },
- {
-  "morpheme": "-тельный",
-  "kind": "suffix",
-  "meaningZh": "形容词后缀（能…的）",
-  "meaningEn": "capable of (adjective)",
-  "origin": "原始斯拉夫语 *-telьnъ",
-  "examples": [
-   "утомительный",
-   "примирительный"
-  ]
- },
- {
-  "morpheme": "-тельство",
-  "kind": "suffix",
-  "meaningZh": "抽象名词后缀",
-  "meaningEn": "abstract noun",
-  "origin": "原始斯拉夫语 *-ьstvo",
-  "examples": [
-   "обстоятельство",
-   "правительство"
-  ]
- },
- {
-  "morpheme": "-тие",
-  "kind": "suffix",
-  "meaningZh": "动作（-ть 词干）",
-  "meaningEn": "-tion (after stems in -ть)",
-  "origin": "原始斯拉夫语 *-tьje",
-  "examples": [
-   "развитие",
-   "занятие",
-   "открытие",
-   "понятие"
-  ]
- },
- {
-  "morpheme": "-ун",
-  "kind": "suffix",
-  "meaningZh": "施事后缀",
-  "meaningEn": "agent noun",
-  "origin": "原始斯拉夫语 *-unъ",
-  "examples": [
-   "болтун",
-   "бегун"
-  ]
- },
- {
-  "morpheme": "-ушка",
-  "kind": "suffix",
-  "meaningZh": "指小后缀",
-  "meaningEn": "diminutive",
-  "origin": "原始斯拉夫语 *-ušьka",
-  "examples": [
-   "девушка",
-   "избушка"
-  ]
- },
- {
-  "morpheme": "-це",
-  "kind": "suffix",
-  "meaningZh": "指小后缀",
-  "meaningEn": "diminutive",
-  "origin": "原始斯拉夫语 *-ьce",
-  "examples": [
-   "деревце",
-   "оконце"
-  ]
- },
- {
-  "morpheme": "-цкий",
-  "kind": "suffix",
-  "meaningZh": "形容词后缀",
-  "meaningEn": "-ian",
-  "origin": "原始斯拉夫语 *-ьskъ",
-  "examples": [
-   "ненецкий",
-   "немецкий"
-  ]
- },
- {
-  "morpheme": "-чатый",
-  "kind": "suffix",
-  "meaningZh": "形容词后缀（有…的）",
-  "meaningEn": "having, -ed",
-  "origin": "原始斯拉夫语 *-ъčatъ",
-  "examples": [
-   "ступенчатый",
-   "бревенчатый"
-  ]
- },
- {
-  "morpheme": "-ческий",
-  "kind": "suffix",
-  "meaningZh": "形容词后缀（…学的）",
-  "meaningEn": "-ic, -ical",
-  "origin": "古希腊语 -ικός",
-  "examples": [
-   "исторический",
-   "химический"
-  ]
- },
- {
-  "morpheme": "-чивый",
-  "kind": "suffix",
-  "meaningZh": "倾向…的",
-  "meaningEn": "inclined to",
-  "origin": "原始斯拉夫语 *-čivъ",
-  "examples": [
-   "задумчивый",
-   "устойчивый",
-   "доверчивый"
-  ]
- },
- {
-  "morpheme": "-чик",
-  "kind": "suffix",
-  "meaningZh": "职业者、小称",
-  "meaningEn": "-er (agent), diminutive",
-  "origin": "原始斯拉夫语 *-čikъ",
-  "examples": [
-   "лётчик",
-   "переводчик",
-   "мальчик",
-   "стаканчик"
-  ]
- },
- {
-  "morpheme": "-ша",
-  "kind": "suffix",
-  "meaningZh": "女性名词后缀",
-  "meaningEn": "female agent",
-  "origin": "原始斯拉夫语 *-ьša",
-  "examples": [
-   "секретарша",
-   "бухгалтерша"
-  ]
- },
- {
-  "morpheme": "-щик",
-  "kind": "suffix",
-  "meaningZh": "职业者",
-  "meaningEn": "-er (occupation)",
-  "origin": "原始斯拉夫语 *-ščikъ",
-  "examples": [
-   "каменщик",
-   "часовщик",
-   "наборщик"
-  ]
- },
- {
-  "morpheme": "-щина",
-  "kind": "suffix",
-  "meaningZh": "抽象名词后缀（常含贬义）",
-  "meaningEn": "abstract (often pejorative)",
-  "origin": "原始斯拉夫语 *-ьščina",
-  "examples": [
-   "ежовщина",
-   "деревенщина"
-  ]
- },
- {
-  "morpheme": "-ывать",
-  "kind": "suffix",
-  "meaningZh": "反复体动词后缀",
-  "meaningEn": "repeated-action verb",
-  "origin": "原始斯拉夫语 *-ovati",
-  "examples": [
-   "рассказывать",
-   "обманывать",
-   "обдумывать"
-  ]
- },
- {
-  "morpheme": "-ье",
-  "kind": "suffix",
-  "meaningZh": "集合、场所名词后缀",
-  "meaningEn": "collective noun",
-  "origin": "原始斯拉夫语 *-ьje",
-  "examples": [
-   "платье",
-   "плоскогорье"
-  ]
- },
- {
-  "morpheme": "-ьё",
-  "kind": "suffix",
-  "meaningZh": "集合名词后缀",
-  "meaningEn": "collective noun",
-  "origin": "原始斯拉夫语 *-ьje",
-  "examples": [
-   "враньё",
-   "битьё"
-  ]
- },
- {
-  "morpheme": "-янин",
-  "kind": "suffix",
-  "meaningZh": "居民后缀",
-  "meaningEn": "inhabitant",
-  "origin": "原始斯拉夫语 *-janinъ",
-  "examples": [
-   "россиянин",
-   "землянин",
-   "киевлянин"
-  ]
- },
- {
-  "morpheme": "-ять",
-  "kind": "suffix",
-  "meaningZh": "动词不定式（软辅音后）",
-  "meaningEn": "infinitive ending (soft)",
-  "origin": "原始斯拉夫语 *-jati",
-  "examples": [
-   "гулять",
-   "стоять",
-   "менять"
-  ]
- },
- {
-  "morpheme": "авиа-",
-  "kind": "prefix",
-  "meaningZh": "航空、飞机",
-  "meaningEn": "aviation, aircraft",
-  "origin": "拉丁语 avis（鸟）",
-  "examples": [
-   "авианосец",
-   "авиабаза",
-   "авиабилет",
-   "авиадивизия"
-  ]
- },
- {
-  "morpheme": "авто-",
-  "kind": "prefix",
-  "meaningZh": "自己、自动",
-  "meaningEn": "auto-, self-",
-  "origin": "古希腊语 αὐτός",
-  "examples": [
-   "автомобиль",
-   "автобиография",
-   "автоматический"
-  ]
- },
- {
-  "morpheme": "агро-",
-  "kind": "prefix",
-  "meaningZh": "农业",
-  "meaningEn": "agro-, agriculture",
-  "origin": "古希腊语 ἀγρός（田地）",
-  "examples": [
-   "агроном",
-   "агрокомплекс",
-   "агротехника"
-  ]
- },
- {
-  "morpheme": "альфа-",
-  "kind": "prefix",
-  "meaningZh": "阿尔法、首个",
-  "meaningEn": "alpha-",
-  "origin": "希腊字母 α",
-  "examples": [
-   "альфа-лучи",
-   "альфа-частица"
-  ]
- },
- {
-  "morpheme": "анти-",
-  "kind": "prefix",
-  "meaningZh": "反、抗",
-  "meaningEn": "anti-",
-  "origin": "古希腊语 ἀντί",
-  "examples": [
-   "антибиотик",
-   "антипатия",
-   "античный"
-  ]
- },
- {
-  "morpheme": "астро-",
-  "kind": "prefix",
-  "meaningZh": "星、天体",
-  "meaningEn": "astro-, star",
-  "origin": "古希腊语 ἄστρον（星）",
-  "examples": [
-   "астрономия",
-   "астронавт",
-   "астрофизика"
-  ]
- },
- {
-  "morpheme": "аэро-",
-  "kind": "prefix",
-  "meaningZh": "空气、航空",
-  "meaningEn": "aero-, air",
-  "origin": "古希腊语 ἀήρ（空气）",
-  "examples": [
-   "аэроплан",
-   "аэродром",
-   "аэрофлот",
-   "аэрозоль"
-  ]
- },
- {
-  "morpheme": "баро-",
-  "kind": "prefix",
-  "meaningZh": "气压、重量",
-  "meaningEn": "baro-, pressure",
-  "origin": "古希腊语 βάρος（重量）",
-  "examples": [
-   "барометр",
-   "баротерапия"
-  ]
- },
- {
-  "morpheme": "бег-",
-  "kind": "root",
-  "meaningZh": "跑",
-  "meaningEn": "run",
-  "origin": "原始斯拉夫语 *běgati",
-  "examples": [
-   "бегать",
-   "бег",
-   "бегун"
-  ]
- },
- {
-  "morpheme": "бедн-",
-  "kind": "root",
-  "meaningZh": "穷、贫",
-  "meaningEn": "poor",
-  "origin": "原始斯拉夫语 *bědьnъ",
-  "examples": [
-   "бедность",
-   "беднота"
-  ]
- },
- {
-  "morpheme": "без-",
-  "kind": "prefix",
-  "meaningZh": "无、缺乏",
-  "meaningEn": "without, lacking",
-  "origin": "原始斯拉夫语 *bez",
-  "examples": [
-   "бездомный",
-   "безопасный",
-   "беспомощный",
-   "бессмертный"
-  ]
- },
- {
-  "morpheme": "бело-",
-  "kind": "prefix",
-  "meaningZh": "白",
-  "meaningEn": "white-",
-  "origin": "原始斯拉夫语 *bělъ",
-  "examples": [
-   "белогвардеец",
-   "белоснежный"
-  ]
- },
- {
-  "morpheme": "бес-",
-  "kind": "prefix",
-  "meaningZh": "无、缺乏（清辅音前变体）",
-  "meaningEn": "without (before voiceless consonants)",
-  "origin": "原始斯拉夫语 *bez",
-  "examples": [
-   "бесплатный",
-   "бесконечный",
-   "бесстрашный"
-  ]
- },
- {
-  "morpheme": "би-",
-  "kind": "prefix",
-  "meaningZh": "二、双",
-  "meaningEn": "bi-, two",
-  "origin": "拉丁语 bis（两次）",
-  "examples": [
-   "бинарный",
-   "биполярный",
-   "бицепс"
-  ]
- },
- {
-  "morpheme": "био-",
-  "kind": "prefix",
-  "meaningZh": "生命",
-  "meaningEn": "bio-, life",
-  "origin": "古希腊语 βίος",
-  "examples": [
-   "биология",
-   "биография",
-   "биосфера"
-  ]
- },
- {
-  "morpheme": "благо-",
-  "kind": "prefix",
-  "meaningZh": "善、好",
-  "meaningEn": "good-, well-",
-  "origin": "原始斯拉夫语 *bolgъ（好的）",
-  "examples": [
-   "благодарность",
-   "благополучие"
-  ]
- },
- {
-  "morpheme": "богат-",
-  "kind": "root",
-  "meaningZh": "富",
-  "meaningEn": "rich",
-  "origin": "原始斯拉夫语 *bogatъ",
-  "examples": [
-   "богатство",
-   "богатырь"
-  ]
- },
- {
-  "morpheme": "болезн-",
-  "kind": "root",
-  "meaningZh": "疾病",
-  "meaningEn": "illness",
-  "origin": "原始斯拉夫语 *bolěznь",
-  "examples": [
-   "болезненный",
-   "болезнетворный"
-  ]
- },
- {
-  "morpheme": "боль-",
-  "kind": "root",
-  "meaningZh": "疼痛、大",
-  "meaningEn": "pain, big",
-  "origin": "原始斯拉夫语 *bolь",
-  "examples": [
-   "боль",
-   "больной",
-   "болеть",
-   "большой"
-  ]
- },
- {
-  "morpheme": "брат-",
-  "kind": "root",
-  "meaningZh": "兄弟",
-  "meaningEn": "brother",
-  "origin": "原始斯拉夫语 *bratrъ",
-  "examples": [
-   "брат",
-   "братство",
-   "братский",
-   "собрат",
-   "побратим"
-  ]
- },
- {
-  "morpheme": "бром-",
-  "kind": "prefix",
-  "meaningZh": "溴",
-  "meaningEn": "bromo-",
-  "origin": "古希腊语 βρῶμος（恶臭）",
-  "examples": [
-   "бромный",
-   "бромбензол"
-  ]
- },
- {
-  "morpheme": "быстро-",
-  "kind": "prefix",
-  "meaningZh": "快",
-  "meaningEn": "fast, quick",
-  "origin": "原始斯拉夫语 *bystrъ",
-  "examples": [
-   "быстрорастворимый",
-   "быстроходный"
-  ]
- },
- {
-  "morpheme": "в-",
-  "kind": "prefix",
-  "meaningZh": "进入、向内",
-  "meaningEn": "into, inwards",
-  "origin": "原始斯拉夫语 *vъ(n)",
-  "examples": [
-   "входить",
-   "внести",
-   "вбежать"
-  ]
- },
- {
-  "morpheme": "важн-",
-  "kind": "root",
-  "meaningZh": "重要",
-  "meaningEn": "important",
-  "origin": "波兰语 waga（重量）",
-  "examples": [
-   "важный",
-   "важно",
-   "важность"
-  ]
- },
- {
-  "morpheme": "вер-",
-  "kind": "root",
-  "meaningZh": "相信、忠诚",
-  "meaningEn": "believe, faith",
-  "origin": "原始斯拉夫语 *věra",
-  "examples": [
-   "верить",
-   "верный",
-   "доверие"
-  ]
- },
- {
-  "morpheme": "весел-",
-  "kind": "root",
-  "meaningZh": "快乐",
-  "meaningEn": "merry",
-  "origin": "原始斯拉夫语 *veselъ",
-  "examples": [
-   "весёлый",
-   "веселье",
-   "веселиться"
-  ]
- },
- {
-  "morpheme": "ветро-",
-  "kind": "prefix",
-  "meaningZh": "风",
-  "meaningEn": "wind-",
-  "origin": "原始斯拉夫语 *větrъ",
-  "examples": [
-   "ветроэнергетика",
-   "ветрозащита"
-  ]
- },
- {
-  "morpheme": "взаимо-",
-  "kind": "prefix",
-  "meaningZh": "相互",
-  "meaningEn": "mutual, inter-",
-  "origin": "古俄语 възаимь（借贷）",
-  "examples": [
-   "взаимодействие",
-   "взаимопомощь",
-   "взаимосвязь"
-  ]
- },
- {
-  "morpheme": "вибро-",
-  "kind": "prefix",
-  "meaningZh": "振动",
-  "meaningEn": "vibro-",
-  "origin": "拉丁语 vibrare（振动）",
-  "examples": [
-   "виброфон",
-   "виброизоляция"
-  ]
- },
- {
-  "morpheme": "вид-",
-  "kind": "root",
-  "meaningZh": "看、见",
-  "meaningEn": "see, look",
-  "origin": "原始斯拉夫语 *viděti",
-  "examples": [
-   "видеть",
-   "вид",
-   "предвидеть",
-   "очевидец"
-  ]
- },
- {
-  "morpheme": "видео-",
-  "kind": "prefix",
-  "meaningZh": "影像、视频",
-  "meaningEn": "video-, image",
-  "origin": "拉丁语 videre（看）",
-  "examples": [
-   "видеодисплей",
-   "видеозапись",
-   "видеокамера",
-   "видеофильм"
-  ]
- },
- {
-  "morpheme": "вице-",
-  "kind": "prefix",
-  "meaningZh": "副、次",
-  "meaningEn": "vice-",
-  "origin": "拉丁语 vice（代替）",
-  "examples": [
-   "вице-президент",
-   "вице-губернатор"
-  ]
- },
- {
-  "morpheme": "вне-",
-  "kind": "prefix",
-  "meaningZh": "外部",
-  "meaningEn": "extra-, outside",
-  "origin": "原始斯拉夫语 *vъně",
-  "examples": [
-   "внебрачный",
-   "внеклассный"
-  ]
- },
- {
-  "morpheme": "внутри-",
-  "kind": "prefix",
-  "meaningZh": "内部",
-  "meaningEn": "intra-, inside",
-  "origin": "古俄语 вънутрь",
-  "examples": [
-   "внутриатомный",
-   "внутривенный"
-  ]
- },
- {
-  "morpheme": "вод-",
-  "kind": "root",
-  "meaningZh": "水",
-  "meaningEn": "water",
-  "origin": "原始斯拉夫语 *voda",
-  "examples": [
-   "вода",
-   "водный",
-   "подводный",
-   "водопад"
-  ]
- },
- {
-  "morpheme": "водо-",
-  "kind": "prefix",
-  "meaningZh": "水",
-  "meaningEn": "water-",
-  "origin": "原始斯拉夫语 *voda",
-  "examples": [
-   "водопровод",
-   "водород",
-   "водопад"
-  ]
- },
- {
-  "morpheme": "вожд-",
-  "kind": "root",
-  "meaningZh": "引导、带领",
-  "meaningEn": "lead, drive",
-  "origin": "原始斯拉夫语 *voditi",
-  "examples": [
-   "водить",
-   "провод",
-   "переводить",
-   "вождение"
-  ]
- },
- {
-  "morpheme": "воздухо-",
-  "kind": "prefix",
-  "meaningZh": "空气",
-  "meaningEn": "air-",
-  "origin": "古俄语 въздухъ",
-  "examples": [
-   "воздухоплавание",
-   "воздухоочиститель"
-  ]
- },
- {
-  "morpheme": "возможн-",
-  "kind": "root",
-  "meaningZh": "可能",
-  "meaningEn": "possible",
-  "origin": "俄语 мочь（能够）",
-  "examples": [
-   "возможный",
-   "возможность",
-   "невозможный"
-  ]
- },
- {
-  "morpheme": "войн-",
-  "kind": "root",
-  "meaningZh": "战争",
-  "meaningEn": "war",
-  "origin": "原始斯拉夫语 *vojna",
-  "examples": [
-   "военный",
-   "воинственный"
-  ]
- },
- {
-  "morpheme": "восьми-",
-  "kind": "prefix",
-  "meaningZh": "八",
-  "meaningEn": "eight-, octa-",
-  "origin": "原始斯拉夫语 *osmь",
-  "examples": [
-   "восьмигранный",
-   "восьмилетний"
-  ]
- },
- {
-  "morpheme": "врем-",
-  "kind": "root",
-  "meaningZh": "时间",
-  "meaningEn": "time",
-  "origin": "原始斯拉夫语 *vermę",
-  "examples": [
-   "время",
-   "временный",
-   "современный",
-   "временно"
-  ]
- },
- {
-  "morpheme": "вы-",
-  "kind": "prefix",
-  "meaningZh": "向外、出来",
-  "meaningEn": "out, out of",
-  "origin": "原始斯拉夫语 *vy",
-  "examples": [
-   "выходить",
-   "выучить",
-   "выбрать"
-  ]
- },
- {
-  "morpheme": "высок-",
-  "kind": "root",
-  "meaningZh": "高",
-  "meaningEn": "high",
-  "origin": "原始斯拉夫语 *vysokъ",
-  "examples": [
-   "высокий",
-   "высоко",
-   "повысить"
-  ]
- },
- {
-  "morpheme": "высоко-",
-  "kind": "prefix",
-  "meaningZh": "高",
-  "meaningEn": "high-, highly",
-  "origin": "原始斯拉夫语 *vysokъ",
-  "examples": [
-   "высококачественный",
-   "высокооплачиваемый"
-  ]
- },
- {
-  "morpheme": "газо-",
-  "kind": "prefix",
-  "meaningZh": "气体",
-  "meaningEn": "gas-",
-  "origin": "希腊语 χάος（混沌）",
-  "examples": [
-   "газопровод",
-   "газообразный"
-  ]
- },
- {
-  "morpheme": "гелио-",
-  "kind": "prefix",
-  "meaningZh": "太阳",
-  "meaningEn": "helio-, sun",
-  "origin": "古希腊语 ἥλιος（太阳）",
-  "examples": [
-   "гелиоцентризм",
-   "гелиотерапия"
-  ]
- },
- {
-  "morpheme": "гео-",
-  "kind": "prefix",
-  "meaningZh": "地球、地",
-  "meaningEn": "geo-, earth",
-  "origin": "古希腊语 γῆ",
-  "examples": [
-   "география",
-   "геология",
-   "геометрия"
-  ]
- },
- {
-  "morpheme": "гетеро-",
-  "kind": "prefix",
-  "meaningZh": "相异",
-  "meaningEn": "hetero-, different",
-  "origin": "古希腊语 ἕτερος（不同）",
-  "examples": [
-   "гетерогенный",
-   "гетеротрофный"
-  ]
- },
- {
-  "morpheme": "гидро-",
-  "kind": "prefix",
-  "meaningZh": "水",
-  "meaningEn": "hydro-, water",
-  "origin": "古希腊语 ὕδωρ",
-  "examples": [
-   "гидростанция",
-   "гидрология"
-  ]
- },
- {
-  "morpheme": "гипер-",
-  "kind": "prefix",
-  "meaningZh": "过度、超",
-  "meaningEn": "hyper-, over",
-  "origin": "古希腊语 ὑπέρ（超过）",
-  "examples": [
-   "гипертония",
-   "гипермаркет",
-   "гиперссылка"
-  ]
- },
- {
-  "morpheme": "гипо-",
-  "kind": "prefix",
-  "meaningZh": "下、次",
-  "meaningEn": "hypo-, under",
-  "origin": "古希腊语 ὑπό（下面）",
-  "examples": [
-   "гипотеза",
-   "гиподинамия",
-   "гипоксия"
-  ]
- },
- {
-  "morpheme": "главн-",
-  "kind": "root",
-  "meaningZh": "主要、首脑",
-  "meaningEn": "main, head",
-  "origin": "原始斯拉夫语 *glava（头）",
-  "examples": [
-   "главный",
-   "главное",
-   "возглавить"
-  ]
- },
- {
-  "morpheme": "глаз-",
-  "kind": "root",
-  "meaningZh": "眼",
-  "meaningEn": "eye",
-  "origin": "原始斯拉夫语 *glazъ",
-  "examples": [
-   "глаз",
-   "глазной",
-   "сглазить"
-  ]
- },
- {
-  "morpheme": "глубок-",
-  "kind": "root",
-  "meaningZh": "深",
-  "meaningEn": "deep",
-  "origin": "原始斯拉夫语 *glubokъ",
-  "examples": [
-   "глубокий",
-   "глубоко",
-   "углубить"
-  ]
- },
- {
-  "morpheme": "глубоко-",
-  "kind": "prefix",
-  "meaningZh": "深",
-  "meaningEn": "deep-",
-  "origin": "原始斯拉夫语 *glubokъ",
-  "examples": [
-   "глубоководный",
-   "глубокоуважаемый"
-  ]
- },
- {
-  "morpheme": "говор-",
-  "kind": "root",
-  "meaningZh": "说、谈",
-  "meaningEn": "speak, talk",
-  "origin": "原始斯拉夫语 *govoriti",
-  "examples": [
-   "говорить",
-   "разговор",
-   "приговор",
-   "договор"
-  ]
- },
- {
-  "morpheme": "год-",
-  "kind": "root",
-  "meaningZh": "年",
-  "meaningEn": "year",
-  "origin": "原始斯拉夫语 *godъ",
-  "examples": [
-   "год",
-   "годовой",
-   "ежегодный",
-   "полугодие"
-  ]
- },
- {
-  "morpheme": "голов-",
-  "kind": "root",
-  "meaningZh": "头、首",
-  "meaningEn": "head",
-  "origin": "原始斯拉夫语 *golva",
-  "examples": [
-   "голова",
-   "головной",
-   "заголовок",
-   "глава"
-  ]
- },
- {
-  "morpheme": "гомо-",
-  "kind": "prefix",
-  "meaningZh": "相同",
-  "meaningEn": "homo-, same",
-  "origin": "古希腊语 ὁμός（相同）",
-  "examples": [
-   "гомогенный",
-   "гомосексуальный"
-  ]
- },
- {
-  "morpheme": "город-",
-  "kind": "root",
-  "meaningZh": "城市",
-  "meaningEn": "city, town",
-  "origin": "原始斯拉夫语 *gordъ",
-  "examples": [
-   "город",
-   "городской",
-   "загородный",
-   "горожанин"
-  ]
- },
- {
-  "morpheme": "государ-",
-  "kind": "root",
-  "meaningZh": "国家、主君",
-  "meaningEn": "state, sovereign",
-  "origin": "古俄语 государь",
-  "examples": [
-   "государство",
-   "государственный"
-  ]
- },
- {
-  "morpheme": "град-",
-  "kind": "root",
-  "meaningZh": "城市（古/构词变体）",
-  "meaningEn": "city (variant of город)",
-  "origin": "原始斯拉夫语 *gordъ",
-  "examples": [
-   "Ленинград",
-   "Сталинград",
-   "град"
-  ]
- },
- {
-  "morpheme": "граф-",
-  "kind": "root",
-  "meaningZh": "写、记录",
-  "meaningEn": "write, record",
-  "origin": "古希腊语 γράφω",
-  "examples": [
-   "телеграф",
-   "графика",
-   "биография",
-   "фотография"
-  ]
- },
- {
-  "morpheme": "греб-",
-  "kind": "root",
-  "meaningZh": "划桨、耙",
-  "meaningEn": "row, rake",
-  "origin": "原始斯拉夫语 *grebti",
-  "examples": [
-   "гребец",
-   "гребной",
-   "гребень"
-  ]
- },
- {
-  "morpheme": "груст-",
-  "kind": "root",
-  "meaningZh": "悲伤",
-  "meaningEn": "sadness",
-  "origin": "原始斯拉夫语 *grustь",
-  "examples": [
-   "грустить",
-   "грустный",
-   "грусть"
-  ]
- },
- {
-  "morpheme": "да-",
-  "kind": "root",
-  "meaningZh": "给、授予",
-  "meaningEn": "give",
-  "origin": "原始斯拉夫语 *dati",
-  "examples": [
-   "дать",
-   "подарить",
-   "передать",
-   "издать"
-  ]
- },
- {
-  "morpheme": "дву-",
-  "kind": "prefix",
-  "meaningZh": "二、双",
-  "meaningEn": "two-, bi-",
-  "origin": "原始斯拉夫语 *dъva",
-  "examples": [
-   "двусторонний",
-   "двуполый",
-   "двувидовой"
-  ]
- },
- {
-  "morpheme": "двух-",
-  "kind": "prefix",
-  "meaningZh": "二（接元音）",
-  "meaningEn": "two-, bi-",
-  "origin": "原始斯拉夫语 *dъva",
-  "examples": [
-   "двухпалатный",
-   "двухэтажный"
-  ]
- },
- {
-  "morpheme": "де-",
-  "kind": "prefix",
-  "meaningZh": "去除、相反",
-  "meaningEn": "de-, removal",
-  "origin": "拉丁语 de（脱离）",
-  "examples": [
-   "дезинфекция",
-   "деградация",
-   "демобилизация",
-   "деформация"
-  ]
- },
- {
-  "morpheme": "девяти-",
-  "kind": "prefix",
-  "meaningZh": "九",
-  "meaningEn": "nine-, nona-",
-  "origin": "原始斯拉夫语 *devętь",
-  "examples": [
-   "девятиэтажный",
-   "девятикратный"
-  ]
- },
- {
-  "morpheme": "дел-",
-  "kind": "root",
-  "meaningZh": "做、事情",
-  "meaningEn": "do, deed",
-  "origin": "原始斯拉夫语 *dělo",
-  "examples": [
-   "делать",
-   "дело",
-   "сделать",
-   "отделить"
-  ]
- },
- {
-  "morpheme": "деньг-",
-  "kind": "root",
-  "meaningZh": "钱",
-  "meaningEn": "money",
-  "origin": "突厥语借词（古俄语 деньга）",
-  "examples": [
-   "денежный",
-   "деньжата"
-  ]
- },
- {
-  "morpheme": "дерев-",
-  "kind": "root",
-  "meaningZh": "木",
-  "meaningEn": "wood, tree",
-  "origin": "原始斯拉夫语 *dervo",
-  "examples": [
-   "деревянный",
-   "деревообработка"
-  ]
- },
- {
-  "morpheme": "деревн-",
-  "kind": "root",
-  "meaningZh": "乡村",
-  "meaningEn": "village",
-  "origin": "原始斯拉夫语 *dervьnja",
-  "examples": [
-   "деревенский",
-   "деревенщина"
-  ]
- },
- {
-  "morpheme": "держ-",
-  "kind": "root",
-  "meaningZh": "持、握、维持",
-  "meaningEn": "hold",
-  "origin": "原始斯拉夫语 *dьržati",
-  "examples": [
-   "держать",
-   "держава",
-   "содержание"
-  ]
- },
- {
-  "morpheme": "десяти-",
-  "kind": "prefix",
-  "meaningZh": "十",
-  "meaningEn": "ten-, deca-",
-  "origin": "原始斯拉夫语 *desętь",
-  "examples": [
-   "десятилетие",
-   "десятикратный"
-  ]
- },
- {
-  "morpheme": "див-",
-  "kind": "root",
-  "meaningZh": "惊奇",
-  "meaningEn": "wonder",
-  "origin": "原始斯拉夫语 *divъ",
-  "examples": [
-   "диво",
-   "удивительный",
-   "удивляться"
-  ]
- },
- {
-  "morpheme": "дн-",
-  "kind": "root",
-  "meaningZh": "日、昼",
-  "meaningEn": "day",
-  "origin": "原始斯拉夫语 *dьnь",
-  "examples": [
-   "день",
-   "дня",
-   "дни",
-   "дневной",
-   "ежедневный"
-  ]
- },
- {
-  "morpheme": "до-",
-  "kind": "prefix",
-  "meaningZh": "到达、在…之前",
-  "meaningEn": "up to, before",
-  "origin": "原始斯拉夫语 *do",
-  "examples": [
-   "доехать",
-   "дописать",
-   "дошкольный"
-  ]
- },
- {
-  "morpheme": "добро-",
-  "kind": "prefix",
-  "meaningZh": "善、好",
-  "meaningEn": "good-",
-  "origin": "原始斯拉夫语 *dobrъ",
-  "examples": [
-   "доброжелательный",
-   "добросовестный"
-  ]
- },
- {
-  "morpheme": "долг-",
-  "kind": "root",
-  "meaningZh": "长、久",
-  "meaningEn": "long",
-  "origin": "原始斯拉夫语 *dьlgъ",
-  "examples": [
-   "долгий",
-   "долго",
-   "продолжить"
-  ]
- },
- {
-  "morpheme": "долго-",
-  "kind": "prefix",
-  "meaningZh": "长（时间）",
-  "meaningEn": "long (time)",
-  "origin": "原始斯拉夫语 *dьlgъ",
-  "examples": [
-   "долговременный",
-   "долгожданный"
-  ]
- },
- {
-  "morpheme": "дом-",
-  "kind": "root",
-  "meaningZh": "家、房屋",
-  "meaningEn": "house, home",
-  "origin": "原始斯拉夫语 *domъ",
-  "examples": [
-   "дом",
-   "домашний",
-   "бездомный",
-   "домовой"
-  ]
- },
- {
-  "morpheme": "дорог-",
-  "kind": "root",
-  "meaningZh": "道路、贵",
-  "meaningEn": "road, dear",
-  "origin": "原始斯拉夫语 *dorga",
-  "examples": [
-   "дороговизна",
-   "дорогостоящий"
-  ]
- },
- {
-  "morpheme": "друг-",
-  "kind": "root",
-  "meaningZh": "朋友、另一个",
-  "meaningEn": "friend, other",
-  "origin": "原始斯拉夫语 *drugъ",
-  "examples": [
-   "друг",
-   "дружба",
-   "другой",
-   "подруга"
-  ]
- },
- {
-  "morpheme": "дум-",
-  "kind": "root",
-  "meaningZh": "思考",
-  "meaningEn": "think",
-  "origin": "原始斯拉夫语 *duma",
-  "examples": [
-   "думать",
-   "дума",
-   "раздумье"
-  ]
- },
- {
-  "morpheme": "душ-",
-  "kind": "root",
-  "meaningZh": "灵魂、精神",
-  "meaningEn": "soul, spirit",
-  "origin": "原始斯拉夫语 *duxъ",
-  "examples": [
-   "душевный",
-   "душегуб"
-  ]
- },
- {
-  "morpheme": "едино-",
-  "kind": "prefix",
-  "meaningZh": "单一、统一",
-  "meaningEn": "single, uniform",
-  "origin": "原始斯拉夫语 *edinъ（一）",
-  "examples": [
-   "единогласный",
-   "единомышленник"
-  ]
- },
- {
-  "morpheme": "езд-",
-  "kind": "root",
-  "meaningZh": "行驶、乘车",
-  "meaningEn": "ride, travel (by vehicle)",
-  "origin": "原始斯拉夫语 *ězditi",
-  "examples": [
-   "ездить",
-   "поезд",
-   "въезд",
-   "переезд"
-  ]
- },
- {
-  "morpheme": "железо-",
-  "kind": "prefix",
-  "meaningZh": "铁",
-  "meaningEn": "iron-",
-  "origin": "原始斯拉夫语 *želězo",
-  "examples": [
-   "железобетон",
-   "железнодорожный"
-  ]
- },
- {
-  "morpheme": "желто-",
-  "kind": "prefix",
-  "meaningZh": "黄",
-  "meaningEn": "yellow-",
-  "origin": "原始斯拉夫语 *žьltъ",
-  "examples": [
-   "желтолицый",
-   "желтокожий"
-  ]
- },
- {
-  "morpheme": "жизн-",
-  "kind": "root",
-  "meaningZh": "生命",
-  "meaningEn": "life",
-  "origin": "原始斯拉夫语 *žiznь",
-  "examples": [
-   "жизненный",
-   "жизнеописание"
-  ]
- },
- {
-  "morpheme": "жир-",
-  "kind": "root",
-  "meaningZh": "脂肪",
-  "meaningEn": "fat",
-  "origin": "原始斯拉夫语 *žirъ",
-  "examples": [
-   "жирный",
-   "жир",
-   "жировать"
-  ]
- },
- {
-  "morpheme": "за-",
-  "kind": "prefix",
-  "meaningZh": "开始、在…之后、超出",
-  "meaningEn": "begin, behind, beyond",
-  "origin": "原始斯拉夫语 *za",
-  "examples": [
-   "запеть",
-   "закрыть",
-   "заграница"
-  ]
- },
- {
-  "morpheme": "звезд-",
-  "kind": "root",
-  "meaningZh": "星",
-  "meaningEn": "star",
-  "origin": "原始斯拉夫语 *gvězda",
-  "examples": [
-   "звёздный",
-   "звездолёт"
-  ]
- },
- {
-  "morpheme": "звуко-",
-  "kind": "prefix",
-  "meaningZh": "声",
-  "meaningEn": "sound-",
-  "origin": "原始斯拉夫语 *zvękъ",
-  "examples": [
-   "звукозапись",
-   "звукоизоляция"
-  ]
- },
- {
-  "morpheme": "здоров-",
-  "kind": "root",
-  "meaningZh": "健康",
-  "meaningEn": "health",
-  "origin": "原始斯拉夫语 *sъdorvъ",
-  "examples": [
-   "здоровье",
-   "здоровенный"
-  ]
- },
- {
-  "morpheme": "зелено-",
-  "kind": "prefix",
-  "meaningZh": "绿",
-  "meaningEn": "green-",
-  "origin": "原始斯拉夫语 *zelenъ",
-  "examples": [
-   "зеленоглазый",
-   "зеленодольский"
-  ]
- },
- {
-  "morpheme": "зем-",
-  "kind": "root",
-  "meaningZh": "土地、地",
-  "meaningEn": "earth, land",
-  "origin": "原始斯拉夫语 *zemja",
-  "examples": [
-   "земля",
-   "земной",
-   "землетрясение",
-   "приземлиться"
-  ]
- },
- {
-  "morpheme": "земле-",
-  "kind": "prefix",
-  "meaningZh": "土地",
-  "meaningEn": "land-, earth-",
-  "origin": "原始斯拉夫语 *zemja",
-  "examples": [
-   "земледелие",
-   "землетрясение"
-  ]
- },
- {
-  "morpheme": "зло-",
-  "kind": "prefix",
-  "meaningZh": "恶、坏",
-  "meaningEn": "evil-, ill-",
-  "origin": "原始斯拉夫语 *zъlъ",
-  "examples": [
-   "злодеяние",
-   "злоупотребление"
-  ]
- },
- {
-  "morpheme": "зна-",
-  "kind": "root",
-  "meaningZh": "知道、认识",
-  "meaningEn": "know",
-  "origin": "原始斯拉夫语 *znati",
-  "examples": [
-   "знать",
-   "знание",
-   "знакомый",
-   "узнать"
-  ]
- },
- {
-  "morpheme": "золото-",
-  "kind": "prefix",
-  "meaningZh": "金",
-  "meaningEn": "gold-",
-  "origin": "原始斯拉夫语 *zolto",
-  "examples": [
-   "золотодобыча",
-   "золотоволосый"
-  ]
- },
- {
-  "morpheme": "зоо-",
-  "kind": "prefix",
-  "meaningZh": "动物",
-  "meaningEn": "zoo-, animal",
-  "origin": "古希腊语 ζῷον（动物）",
-  "examples": [
-   "зоология",
-   "зоопарк",
-   "зоомагазин"
-  ]
- },
- {
-  "morpheme": "игр-",
-  "kind": "root",
-  "meaningZh": "游戏、演奏",
-  "meaningEn": "play, game",
-  "origin": "原始斯拉夫语 *jьgra",
-  "examples": [
-   "игра",
-   "играть",
-   "игрушка",
-   "выиграть"
-  ]
- },
- {
-  "morpheme": "из-",
-  "kind": "prefix",
-  "meaningZh": "从…出来",
-  "meaningEn": "out of, from",
-  "origin": "原始斯拉夫语 *jьz",
-  "examples": [
-   "извлечь",
-   "изучать",
-   "избрать"
-  ]
- },
- {
-  "morpheme": "извест-",
-  "kind": "root",
-  "meaningZh": "知晓、著名",
-  "meaningEn": "known",
-  "origin": "原始斯拉夫语 *izvěstъ",
-  "examples": [
-   "известный",
-   "известие",
-   "неизвестный"
-  ]
- },
- {
-  "morpheme": "изо-",
-  "kind": "prefix",
-  "meaningZh": "相等、同",
-  "meaningEn": "iso-, equal",
-  "origin": "古希腊语 ἴσος（相等）",
-  "examples": [
-   "изотоп",
-   "изометрия",
-   "изоморфный"
-  ]
- },
- {
-  "morpheme": "интер-",
-  "kind": "prefix",
-  "meaningZh": "之间、国际",
-  "meaningEn": "inter-",
-  "origin": "拉丁语 inter",
-  "examples": [
-   "интернациональный",
-   "интернет",
-   "интервал"
-  ]
- },
- {
-  "morpheme": "интерес-",
-  "kind": "root",
-  "meaningZh": "兴趣",
-  "meaningEn": "interest",
-  "origin": "拉丁语 interest（有关系）",
-  "examples": [
-   "интересный",
-   "интерес",
-   "интересоваться"
-  ]
- },
- {
-  "morpheme": "инфра-",
-  "kind": "prefix",
-  "meaningZh": "下、亚",
-  "meaningEn": "infra-, below",
-  "origin": "拉丁语 infra（下面）",
-  "examples": [
-   "инфраструктура",
-   "инфразвук",
-   "инфракрасный"
-  ]
- },
- {
-  "morpheme": "ис-",
-  "kind": "prefix",
-  "meaningZh": "从…出来（清辅音前变体）",
-  "meaningEn": "out of (before voiceless consonants)",
-  "origin": "原始斯拉夫语 *jьz",
-  "examples": [
-   "использовать",
-   "исходить",
-   "исписать"
-  ]
- },
- {
-  "morpheme": "каз-",
-  "kind": "root",
-  "meaningZh": "说、指示、显现",
-  "meaningEn": "to say, to show",
-  "origin": "原始斯拉夫语 *kаzаti",
-  "examples": [
-   "показать",
-   "указать",
-   "доказать",
-   "наказание",
-   "отказать"
-  ]
- },
- {
-  "morpheme": "камен-",
-  "kind": "root",
-  "meaningZh": "石",
-  "meaningEn": "stone",
-  "origin": "原始斯拉夫语 *kamy",
-  "examples": [
-   "каменный",
-   "каменщик"
-  ]
- },
- {
-  "morpheme": "квадро-",
-  "kind": "prefix",
-  "meaningZh": "四",
-  "meaningEn": "quadro-, four",
-  "origin": "拉丁语 quattuor（四）",
-  "examples": [
-   "квадроцикл",
-   "квадрофония"
-  ]
- },
- {
-  "morpheme": "квази-",
-  "kind": "prefix",
-  "meaningZh": "准、类似",
-  "meaningEn": "quasi-, almost",
-  "origin": "拉丁语 quasi（好像）",
-  "examples": [
-   "квазинаучный",
-   "квазистационарный"
-  ]
- },
- {
-  "morpheme": "кибер-",
-  "kind": "prefix",
-  "meaningZh": "控制、网络",
-  "meaningEn": "cyber-",
-  "origin": "古希腊语 κυβερνητικός（舵手）",
-  "examples": [
-   "кибернетика",
-   "кибербезопасность"
-  ]
- },
- {
-  "morpheme": "кило-",
-  "kind": "prefix",
-  "meaningZh": "千",
-  "meaningEn": "kilo-, thousand",
-  "origin": "古希腊语 χίλιοι（千）",
-  "examples": [
-   "килограмм",
-   "километр",
-   "киловатт"
-  ]
- },
- {
-  "morpheme": "кино-",
-  "kind": "prefix",
-  "meaningZh": "电影",
-  "meaningEn": "cinema-, film",
-  "origin": "古希腊语 κίνημα（运动）",
-  "examples": [
-   "кинотеатр",
-   "кинофильм",
-   "киножурнал",
-   "киностудия"
-  ]
- },
- {
-  "morpheme": "книг-",
-  "kind": "root",
-  "meaningZh": "书",
-  "meaningEn": "book",
-  "origin": "原始斯拉夫语 *kъňiga",
-  "examples": [
-   "книга",
-   "книжный",
-   "книжка"
-  ]
- },
- {
-  "morpheme": "книж-",
-  "kind": "root",
-  "meaningZh": "书",
-  "meaningEn": "book",
-  "origin": "原始斯拉夫语 *kъniga",
-  "examples": [
-   "книжный",
-   "книжник"
-  ]
- },
- {
-  "morpheme": "контр-",
-  "kind": "prefix",
-  "meaningZh": "反、对",
-  "meaningEn": "contra-, counter-",
-  "origin": "拉丁语 contra",
-  "examples": [
-   "контроль",
-   "контратака",
-   "контрудар"
-  ]
- },
- {
-  "morpheme": "корен-",
-  "kind": "root",
-  "meaningZh": "根",
-  "meaningEn": "root",
-  "origin": "原始斯拉夫语 *korenь",
-  "examples": [
-   "коренной",
-   "корнеплод"
-  ]
- },
- {
-  "morpheme": "коротк-",
-  "kind": "root",
-  "meaningZh": "短",
-  "meaningEn": "short",
-  "origin": "原始斯拉夫语 *kortъkъ",
-  "examples": [
-   "короткий",
-   "коротко",
-   "укоротить"
-  ]
- },
- {
-  "morpheme": "космо-",
-  "kind": "prefix",
-  "meaningZh": "宇宙",
-  "meaningEn": "cosmo-, universe",
-  "origin": "古希腊语 κόσμος（宇宙）",
-  "examples": [
-   "космонавт",
-   "космодром",
-   "космополит"
-  ]
- },
- {
-  "morpheme": "крас-",
-  "kind": "root",
-  "meaningZh": "红、美",
-  "meaningEn": "red, beautiful",
-  "origin": "原始斯拉夫语 *krasьnъ",
-  "examples": [
-   "красный",
-   "красота",
-   "прекрасный",
-   "красить"
-  ]
- },
- {
-  "morpheme": "красн-",
-  "kind": "root",
-  "meaningZh": "美、红",
-  "meaningEn": "beauty, red",
-  "origin": "原始斯拉夫语 *krasьnъ",
-  "examples": [
-   "красный",
-   "красота",
-   "прекрасный"
-  ]
- },
- {
-  "morpheme": "красно-",
-  "kind": "prefix",
-  "meaningZh": "红",
-  "meaningEn": "red-",
-  "origin": "原始斯拉夫语 *krasьnъ",
-  "examples": [
-   "краснознамённый",
-   "красноречие"
-  ]
- },
- {
-  "morpheme": "крио-",
-  "kind": "prefix",
-  "meaningZh": "低温",
-  "meaningEn": "cryo-, cold",
-  "origin": "古希腊语 κρύος（寒冷）",
-  "examples": [
-   "криотерапия",
-   "криобиология"
-  ]
- },
- {
-  "morpheme": "крич-",
-  "kind": "root",
-  "meaningZh": "喊叫",
-  "meaningEn": "shout",
-  "origin": "原始斯拉夫语 *kričati",
-  "examples": [
-   "кричать",
-   "крик",
-   "крикливый"
-  ]
- },
- {
-  "morpheme": "крупно-",
-  "kind": "prefix",
-  "meaningZh": "大、粗",
-  "meaningEn": "large-, coarse-",
-  "origin": "古俄语 крупъ（粗粒）",
-  "examples": [
-   "крупномасштабный",
-   "крупнокалиберный"
-  ]
- },
- {
-  "morpheme": "кулак-",
-  "kind": "root",
-  "meaningZh": "拳头",
-  "meaningEn": "fist",
-  "origin": "原始斯拉夫语 *kulakъ",
-  "examples": [
-   "кулачный",
-   "кулак",
-   "кулачок"
-  ]
- },
- {
-  "morpheme": "легк-",
-  "kind": "root",
-  "meaningZh": "轻、容易",
-  "meaningEn": "light, easy",
-  "origin": "原始斯拉夫语 *lьgъkъ",
-  "examples": [
-   "лёгкий",
-   "легко",
-   "облегчить"
-  ]
- },
- {
-  "morpheme": "легко-",
-  "kind": "prefix",
-  "meaningZh": "轻、易",
-  "meaningEn": "light, easy",
-  "origin": "原始斯拉夫语 *lьgъkъ",
-  "examples": [
-   "легкоатлет",
-   "легковоспламеняющийся"
-  ]
- },
- {
-  "morpheme": "леж-",
-  "kind": "root",
-  "meaningZh": "躺、卧",
-  "meaningEn": "lie",
-  "origin": "原始斯拉夫语 *ležati",
-  "examples": [
-   "лежать",
-   "лежак",
-   "лежание"
-  ]
- },
- {
-  "morpheme": "лес-",
-  "kind": "root",
-  "meaningZh": "森林",
-  "meaningEn": "forest",
-  "origin": "原始斯拉夫语 *lěsъ",
-  "examples": [
-   "лесник",
-   "лесной",
-   "лесовод"
-  ]
- },
- {
-  "morpheme": "лет-",
-  "kind": "root",
-  "meaningZh": "飞",
-  "meaningEn": "fly",
-  "origin": "原始斯拉夫语 *letěti",
-  "examples": [
-   "лететь",
-   "самолёт",
-   "полёт",
-   "лётчик"
-  ]
- },
- {
-  "morpheme": "лже-",
-  "kind": "prefix",
-  "meaningZh": "伪、假",
-  "meaningEn": "false-, pseudo-",
-  "origin": "古俄语 лъжа（谎言）",
-  "examples": [
-   "лженаука",
-   "лжепророк"
-  ]
- },
- {
-  "morpheme": "лист-",
-  "kind": "root",
-  "meaningZh": "叶、纸页",
-  "meaningEn": "leaf, sheet",
-  "origin": "原始斯拉夫语 *listъ",
-  "examples": [
-   "листовой",
-   "листопад"
-  ]
- },
- {
-  "morpheme": "лог-",
-  "kind": "root",
-  "meaningZh": "词、学说、学科",
-  "meaningEn": "word, study of",
-  "origin": "古希腊语 λόγος",
-  "examples": [
-   "биология",
-   "геология",
-   "логика",
-   "диалог"
-  ]
- },
- {
-  "morpheme": "люб-",
-  "kind": "root",
-  "meaningZh": "爱、喜好",
-  "meaningEn": "love",
-  "origin": "原始斯拉夫语 *ljubiti",
-  "examples": [
-   "любить",
-   "любовь",
-   "любимый",
-   "влюбиться"
-  ]
- },
- {
-  "morpheme": "магнито-",
-  "kind": "prefix",
-  "meaningZh": "磁",
-  "meaningEn": "magneto-",
-  "origin": "古希腊语 μαγνῆτις（磁石）",
-  "examples": [
-   "магнитофон",
-   "магнитола"
-  ]
- },
- {
-  "morpheme": "макро-",
-  "kind": "prefix",
-  "meaningZh": "宏观、大",
-  "meaningEn": "macro-, large",
-  "origin": "古希腊语 μακρός（长）",
-  "examples": [
-   "макромир",
-   "макроэкономика",
-   "макроструктура"
-  ]
- },
- {
-  "morpheme": "мал-",
-  "kind": "root",
-  "meaningZh": "小、少",
-  "meaningEn": "small, little",
-  "origin": "原始斯拉夫语 *malъ",
-  "examples": [
-   "маленький",
-   "мало",
-   "умалить"
-  ]
- },
- {
-  "morpheme": "мало-",
-  "kind": "prefix",
-  "meaningZh": "少、小",
-  "meaningEn": "little, few",
-  "origin": "原始斯拉夫语 *malъ",
-  "examples": [
-   "малоизвестный",
-   "малолетний"
-  ]
- },
- {
-  "morpheme": "меж-",
-  "kind": "prefix",
-  "meaningZh": "之间、际",
-  "meaningEn": "inter-, between",
-  "origin": "原始斯拉夫语 *meďu",
-  "examples": [
-   "межрегиональный",
-   "межконтинентальный"
-  ]
- },
- {
-  "morpheme": "между-",
-  "kind": "prefix",
-  "meaningZh": "之间、际",
-  "meaningEn": "between, inter-",
-  "origin": "между（之间）",
-  "examples": [
-   "международный",
-   "междугородный"
-  ]
- },
- {
-  "morpheme": "мелко-",
-  "kind": "prefix",
-  "meaningZh": "小、细",
-  "meaningEn": "small-, fine-",
-  "origin": "原始斯拉夫语 *mělъkъ",
-  "examples": [
-   "мелкомасштабный",
-   "мелкозернистый"
-  ]
- },
- {
-  "morpheme": "мест-",
-  "kind": "root",
-  "meaningZh": "地方",
-  "meaningEn": "place",
-  "origin": "原始斯拉夫语 *město",
-  "examples": [
-   "местный",
-   "месторождение"
-  ]
- },
- {
-  "morpheme": "мета-",
-  "kind": "prefix",
-  "meaningZh": "超越、变化",
-  "meaningEn": "meta-",
-  "origin": "古希腊语 μετά（之后）",
-  "examples": [
-   "метафизика",
-   "метафора",
-   "метаболизм"
-  ]
- },
- {
-  "morpheme": "метео-",
-  "kind": "prefix",
-  "meaningZh": "气象",
-  "meaningEn": "weather-",
-  "origin": "古希腊语 μετέωρος（高空）",
-  "examples": [
-   "метеослужба",
-   "метеостанция",
-   "метеосводка"
-  ]
- },
- {
-  "morpheme": "метил-",
-  "kind": "prefix",
-  "meaningZh": "甲基",
-  "meaningEn": "methyl-",
-  "origin": "希腊语 μέθυ（酒）+ ὕλη（木材）",
-  "examples": [
-   "метиловый",
-   "метилбензол"
-  ]
- },
- {
-  "morpheme": "метр-",
-  "kind": "root",
-  "meaningZh": "测量、米",
-  "meaningEn": "measure, meter",
-  "origin": "古希腊语 μέτρον",
-  "examples": [
-   "метр",
-   "термометр",
-   "геометрия",
-   "километр"
-  ]
- },
- {
-  "morpheme": "мечт-",
-  "kind": "root",
-  "meaningZh": "梦想",
-  "meaningEn": "dream",
-  "origin": "原始斯拉夫语 *mьčta",
-  "examples": [
-   "мечтать",
-   "мечта",
-   "мечтатель"
-  ]
- },
- {
-  "morpheme": "микро-",
-  "kind": "prefix",
-  "meaningZh": "微小",
-  "meaningEn": "micro-, small",
-  "origin": "古希腊语 μικρός",
-  "examples": [
-   "микрофон",
-   "микроскоп",
-   "микроб"
-  ]
- },
- {
-  "morpheme": "милли-",
-  "kind": "prefix",
-  "meaningZh": "千分之一、毫",
-  "meaningEn": "milli-, thousandth",
-  "origin": "拉丁语 mille（千）",
-  "examples": [
-   "миллиметр",
-   "миллиграмм",
-   "миллисекунда"
-  ]
- },
- {
-  "morpheme": "мир-",
-  "kind": "root",
-  "meaningZh": "世界、和平",
-  "meaningEn": "world, peace",
-  "origin": "原始斯拉夫语 *mirъ",
-  "examples": [
-   "мир",
-   "мирный",
-   "мировой",
-   "примирение"
-  ]
- },
- {
-  "morpheme": "много-",
-  "kind": "prefix",
-  "meaningZh": "多",
-  "meaningEn": "many, multi-",
-  "origin": "много（多）",
-  "examples": [
-   "многочисленный",
-   "многозначный",
-   "многоугольник"
-  ]
- },
- {
-  "morpheme": "молод-",
-  "kind": "root",
-  "meaningZh": "年轻",
-  "meaningEn": "young",
-  "origin": "原始斯拉夫语 *moldъ",
-  "examples": [
-   "молодость",
-   "молодожён"
-  ]
- },
- {
-  "morpheme": "молч-",
-  "kind": "root",
-  "meaningZh": "沉默",
-  "meaningEn": "be silent",
-  "origin": "原始斯拉夫语 *mьlčati",
-  "examples": [
-   "молчать",
-   "молчание",
-   "молчаливый"
-  ]
- },
- {
-  "morpheme": "моно-",
-  "kind": "prefix",
-  "meaningZh": "单一",
-  "meaningEn": "mono-, single",
-  "origin": "古希腊语 μόνος（单独）",
-  "examples": [
-   "монополия",
-   "монолог",
-   "монотонный"
-  ]
- },
- {
-  "morpheme": "море-",
-  "kind": "prefix",
-  "meaningZh": "海",
-  "meaningEn": "sea-",
-  "origin": "原始斯拉夫语 *morje",
-  "examples": [
-   "мореплавание",
-   "морепродукты"
-  ]
- },
- {
-  "morpheme": "мудр-",
-  "kind": "root",
-  "meaningZh": "智慧、明智",
-  "meaningEn": "wise",
-  "origin": "原始斯拉夫语 *mǫdrъ",
-  "examples": [
-   "мудрость",
-   "мудрец"
-  ]
- },
- {
-  "morpheme": "мульти-",
-  "kind": "prefix",
-  "meaningZh": "多、复合",
-  "meaningEn": "multi-, many",
-  "origin": "拉丁语 multus（多）",
-  "examples": [
-   "мультимедиа",
-   "мультинациональный",
-   "мультипликация"
-  ]
- },
- {
-  "morpheme": "мысл-",
-  "kind": "root",
-  "meaningZh": "想、思想",
-  "meaningEn": "think, thought",
-  "origin": "原始斯拉夫语 *myslь",
-  "examples": [
-   "мысль",
-   "мыслить",
-   "замысел",
-   "промысел"
-  ]
- },
- {
-  "morpheme": "на-",
-  "kind": "prefix",
-  "meaningZh": "在…上、积累",
-  "meaningEn": "on, onto, accumulate",
-  "origin": "原始斯拉夫语 *na",
-  "examples": [
-   "написать",
-   "настенный",
-   "набрать"
-  ]
- },
- {
-  "morpheme": "над-",
-  "kind": "prefix",
-  "meaningZh": "在…之上",
-  "meaningEn": "above, over",
-  "origin": "原始斯拉夫语 *nadъ",
-  "examples": [
-   "надав",
-   "надстроить",
-   "надзирать"
-  ]
- },
- {
-  "morpheme": "надежд-",
-  "kind": "root",
-  "meaningZh": "希望",
-  "meaningEn": "hope",
-  "origin": "原始斯拉夫语 *nadeďa",
-  "examples": [
-   "надежда",
-   "надеяться",
-   "безнадёжный"
-  ]
- },
- {
-  "morpheme": "наи-",
-  "kind": "prefix",
-  "meaningZh": "最（最高级前缀）",
-  "meaningEn": "most (superlative)",
-  "origin": "原始斯拉夫语 *najь",
-  "examples": [
-   "наилучший",
-   "наибольший",
-   "наименьший"
-  ]
- },
- {
-  "morpheme": "нано-",
-  "kind": "prefix",
-  "meaningZh": "纳米、极小",
-  "meaningEn": "nano-",
-  "origin": "古希腊语 νᾶνος（侏儒）",
-  "examples": [
-   "нанотехнология",
-   "нанометр"
-  ]
- },
- {
-  "morpheme": "народ-",
-  "kind": "root",
-  "meaningZh": "人民、民族",
-  "meaningEn": "people, nation",
-  "origin": "原始斯拉夫语 *narodъ",
-  "examples": [
-   "народ",
-   "народный",
-   "международный"
-  ]
- },
- {
-  "morpheme": "не-",
-  "kind": "prefix",
-  "meaningZh": "否定、非",
-  "meaningEn": "not, non-",
-  "origin": "原始斯拉夫语 *ne",
-  "examples": [
-   "нельзя",
-   "некрасивый",
-   "неправда"
-  ]
- },
- {
-  "morpheme": "недо-",
-  "kind": "prefix",
-  "meaningZh": "不足、欠缺",
-  "meaningEn": "insufficiently, under-",
-  "origin": "не + до",
-  "examples": [
-   "недостаток",
-   "недооценить",
-   "недобиток"
-  ]
- },
- {
-  "morpheme": "нейро-",
-  "kind": "prefix",
-  "meaningZh": "神经",
-  "meaningEn": "neuro-",
-  "origin": "古希腊语 νεῦρον（神经）",
-  "examples": [
-   "нейрохирург",
-   "нейробиология"
-  ]
- },
- {
-  "morpheme": "нео-",
-  "kind": "prefix",
-  "meaningZh": "新",
-  "meaningEn": "neo-, new",
-  "origin": "古希腊语 νέος（新）",
-  "examples": [
-   "неолиберализм",
-   "неонацизм"
-  ]
- },
- {
-  "morpheme": "нес-",
-  "kind": "root",
-  "meaningZh": "携带、运送",
-  "meaningEn": "carry",
-  "origin": "原始斯拉夫语 *nesti",
-  "examples": [
-   "нести",
-   "принести",
-   "перенести",
-   "носить"
-  ]
- },
- {
-  "morpheme": "нефте-",
-  "kind": "prefix",
-  "meaningZh": "石油",
-  "meaningEn": "oil-, petro-",
-  "origin": "古希腊语 νάφθα（石油）",
-  "examples": [
-   "нефтепровод",
-   "нефтепереработка"
-  ]
- },
- {
-  "morpheme": "низ-",
-  "kind": "prefix",
-  "meaningZh": "向下",
-  "meaningEn": "down",
-  "origin": "原始斯拉夫语 *nizъ",
-  "examples": [
-   "низать",
-   "ниспадать"
-  ]
- },
- {
-  "morpheme": "низко-",
-  "kind": "prefix",
-  "meaningZh": "低",
-  "meaningEn": "low-, lowly",
-  "origin": "原始斯拉夫语 *nizkъ",
-  "examples": [
-   "низкокалорийный",
-   "низкорослый"
-  ]
- },
- {
-  "morpheme": "нов-",
-  "kind": "root",
-  "meaningZh": "新",
-  "meaningEn": "new",
-  "origin": "原始斯拉夫语 *novъ",
-  "examples": [
-   "новый",
-   "новость",
-   "обновить",
-   "новатор"
-  ]
- },
- {
-  "morpheme": "ноч-",
-  "kind": "root",
-  "meaningZh": "夜",
-  "meaningEn": "night",
-  "origin": "原始斯拉夫语 *noťь",
-  "examples": [
-   "ночной",
-   "ночлег",
-   "ночевать"
-  ]
- },
- {
-  "morpheme": "нужн-",
-  "kind": "root",
-  "meaningZh": "需要",
-  "meaningEn": "need",
-  "origin": "原始斯拉夫语 *nuďa",
-  "examples": [
-   "нужный",
-   "нужда",
-   "нуждаться"
-  ]
- },
- {
-  "morpheme": "о-",
-  "kind": "prefix",
-  "meaningZh": "环绕、使成为",
-  "meaningEn": "around, make",
-  "origin": "原始斯拉夫语 *o(b)",
-  "examples": [
-   "окружить",
-   "осмотреть",
-   "описать"
-  ]
- },
- {
-  "morpheme": "об-",
-  "kind": "prefix",
-  "meaningZh": "环绕、遍及",
-  "meaningEn": "around, about",
-  "origin": "原始斯拉夫语 *ob",
-  "examples": [
-   "обойти",
-   "объяснить",
-   "обучить"
-  ]
- },
- {
-  "morpheme": "обер-",
-  "kind": "prefix",
-  "meaningZh": "上级、总",
-  "meaningEn": "chief-, head",
-  "origin": "德语 ober（上面）",
-  "examples": [
-   "обер-офицер",
-   "обер-прокурор"
-  ]
- },
- {
-  "morpheme": "обще-",
-  "kind": "prefix",
-  "meaningZh": "公共、共同",
-  "meaningEn": "common, social",
-  "origin": "古俄语 обьщь（共同）",
-  "examples": [
-   "общество",
-   "общежитие",
-   "общедоступный"
-  ]
- },
- {
-  "morpheme": "обществ-",
-  "kind": "root",
-  "meaningZh": "社会",
-  "meaningEn": "society",
-  "origin": "古俄语 обьщьство",
-  "examples": [
-   "общественный",
-   "обществоведение"
-  ]
- },
- {
-  "morpheme": "обычн-",
-  "kind": "root",
-  "meaningZh": "平常、习惯",
-  "meaningEn": "usual, custom",
-  "origin": "原始斯拉夫语 *obyčajь",
-  "examples": [
-   "обычный",
-   "обычно",
-   "необычный"
-  ]
- },
- {
-  "morpheme": "огне-",
-  "kind": "prefix",
-  "meaningZh": "火",
-  "meaningEn": "fire-",
-  "origin": "原始斯拉夫语 *ognь",
-  "examples": [
-   "огнестрельный",
-   "огнеупорный"
-  ]
- },
- {
-  "morpheme": "один-",
-  "kind": "root",
-  "meaningZh": "一、独自",
-  "meaningEn": "one, alone",
-  "origin": "原始斯拉夫语 *edinъ",
-  "examples": [
-   "один",
-   "одинокий",
-   "одиночество",
-   "одинаковый"
-  ]
- },
- {
-  "morpheme": "одно-",
-  "kind": "prefix",
-  "meaningZh": "同、单",
-  "meaningEn": "one-, same",
-  "origin": "原始斯拉夫语 *edinъ",
-  "examples": [
-   "одновременный",
-   "одноклассник",
-   "однообразный"
-  ]
- },
- {
-  "morpheme": "около-",
-  "kind": "prefix",
-  "meaningZh": "附近、近似",
-  "meaningEn": "near-, about",
-  "origin": "古俄语 около（附近）",
-  "examples": [
-   "околоземный",
-   "околоцветник"
-  ]
- },
- {
-  "morpheme": "орто-",
-  "kind": "prefix",
-  "meaningZh": "正、直",
-  "meaningEn": "ortho-, straight",
-  "origin": "古希腊语 ὀρθός（直的）",
-  "examples": [
-   "ортодоксальный",
-   "ортопедия"
-  ]
- },
- {
-  "morpheme": "от-",
-  "kind": "prefix",
-  "meaningZh": "离开、分离",
-  "meaningEn": "away, off",
-  "origin": "原始斯拉夫语 *otъ",
-  "examples": [
-   "отойти",
-   "открыть",
-   "отдать"
-  ]
- },
- {
-  "morpheme": "памят-",
-  "kind": "root",
-  "meaningZh": "记忆",
-  "meaningEn": "memory",
-  "origin": "原始斯拉夫语 *pamętь",
-  "examples": [
-   "память",
-   "памятный",
-   "памятник"
-  ]
- },
- {
-  "morpheme": "пара-",
-  "kind": "prefix",
-  "meaningZh": "旁、类",
-  "meaningEn": "para-, beside",
-  "origin": "古希腊语 παρά（旁边）",
-  "examples": [
-   "парадокс",
-   "парапсихология"
-  ]
- },
- {
-  "morpheme": "паро-",
-  "kind": "prefix",
-  "meaningZh": "蒸汽",
-  "meaningEn": "steam-",
-  "origin": "原始斯拉夫语 *para（蒸汽）",
-  "examples": [
-   "паровоз",
-   "пароход"
-  ]
- },
- {
-  "morpheme": "перво-",
-  "kind": "prefix",
-  "meaningZh": "第一、最初",
-  "meaningEn": "first-, proto-",
-  "origin": "原始斯拉夫语 *pьrvъ",
-  "examples": [
-   "первоисточник",
-   "первоклассник"
-  ]
- },
- {
-  "morpheme": "пере-",
-  "kind": "prefix",
-  "meaningZh": "越过、重新",
-  "meaningEn": "across, re-",
-  "origin": "原始斯拉夫语 *per",
-  "examples": [
-   "перевести",
-   "переписать",
-   "переход"
-  ]
- },
- {
-  "morpheme": "печал-",
-  "kind": "root",
-  "meaningZh": "悲哀",
-  "meaningEn": "sorrow",
-  "origin": "原始斯拉夫语 *pečalь",
-  "examples": [
-   "печальный",
-   "печаль",
-   "опечалить"
-  ]
- },
- {
-  "morpheme": "пис-",
-  "kind": "root",
-  "meaningZh": "写",
-  "meaningEn": "write",
-  "origin": "原始斯拉夫语 *pьsati",
-  "examples": [
-   "писать",
-   "писатель",
-   "записать",
-   "подпись"
-  ]
- },
- {
-  "morpheme": "письм-",
-  "kind": "root",
-  "meaningZh": "书写、信件",
-  "meaningEn": "writing, letter",
-  "origin": "原始斯拉夫语 *pisьmo",
-  "examples": [
-   "письменность",
-   "письмоносец"
-  ]
- },
- {
-  "morpheme": "плак-",
-  "kind": "root",
-  "meaningZh": "哭泣",
-  "meaningEn": "cry",
-  "origin": "原始斯拉夫语 *plakati",
-  "examples": [
-   "плакать",
-   "плакса",
-   "заплакать"
-  ]
- },
- {
-  "morpheme": "плох-",
-  "kind": "root",
-  "meaningZh": "坏",
-  "meaningEn": "bad",
-  "origin": "原始斯拉夫语 *ploxъ",
-  "examples": [
-   "плохой",
-   "плохо",
-   "ухудшить"
-  ]
- },
- {
-  "morpheme": "по-",
-  "kind": "prefix",
-  "meaningZh": "稍微、开始、沿着",
-  "meaningEn": "a bit, start, along",
-  "origin": "原始斯拉夫语 *po",
-  "examples": [
-   "пойти",
-   "почитать",
-   "подарить"
-  ]
- },
- {
-  "morpheme": "под-",
-  "kind": "prefix",
-  "meaningZh": "在…之下",
-  "meaningEn": "under, beneath",
-  "origin": "原始斯拉夫语 *podъ",
-  "examples": [
-   "подводный",
-   "подписать",
-   "подойти"
-  ]
- },
- {
-  "morpheme": "пол-",
-  "kind": "root",
-  "meaningZh": "田地；地板；一半",
-  "meaningEn": "field; floor; half",
-  "origin": "原始斯拉夫语 *polje / *polъ",
-  "examples": [
-   "поле",
-   "полевой",
-   "пол",
-   "половина",
-   "наполовину"
-  ]
- },
- {
-  "morpheme": "поли-",
-  "kind": "prefix",
-  "meaningZh": "多",
-  "meaningEn": "poly-, many",
-  "origin": "古希腊语 πολύς（多）",
-  "examples": [
-   "поликлиника",
-   "полимер",
-   "полифония"
-  ]
- },
- {
-  "morpheme": "полно-",
-  "kind": "prefix",
-  "meaningZh": "完全、充分",
-  "meaningEn": "full-, fully",
-  "origin": "原始斯拉夫语 *pьlnъ",
-  "examples": [
-   "полноценный",
-   "полнометражный"
-  ]
- },
- {
-  "morpheme": "полу-",
-  "kind": "prefix",
-  "meaningZh": "半",
-  "meaningEn": "half, semi-",
-  "origin": "пол（半）",
-  "examples": [
-   "полуостров",
-   "полугодие",
-   "полумесяц"
-  ]
- },
- {
-  "morpheme": "порт-",
-  "kind": "root",
-  "meaningZh": "搬运、港口",
-  "meaningEn": "carry, port",
-  "origin": "拉丁语 portare",
-  "examples": [
-   "транспорт",
-   "порт",
-   "экспорт",
-   "импорт"
-  ]
- },
- {
-  "morpheme": "после-",
-  "kind": "prefix",
-  "meaningZh": "之后",
-  "meaningEn": "post-, after",
-  "origin": "原始斯拉夫语 *poslě",
-  "examples": [
-   "послесловие",
-   "послеоперационный"
-  ]
- },
- {
-  "morpheme": "пост-",
-  "kind": "prefix",
-  "meaningZh": "后、之后",
-  "meaningEn": "post-",
-  "origin": "拉丁语 post",
-  "originNote": "",
-  "examples": [
-   "постав",
-   "постсоветский"
-  ]
- },
- {
-  "morpheme": "пра-",
-  "kind": "prefix",
-  "meaningZh": "原始、曾祖",
-  "meaningEn": "proto-, great-",
-  "origin": "原始斯拉夫语 *pra",
-  "examples": [
-   "прадед",
-   "праязык",
-   "праславянский"
-  ]
- },
- {
-  "morpheme": "прав-",
-  "kind": "root",
-  "meaningZh": "正确、权利",
-  "meaningEn": "right, correct",
-  "origin": "原始斯拉夫语 *pravъ",
-  "examples": [
-   "право",
-   "правильный",
-   "правда",
-   "управлять"
-  ]
- },
- {
-  "morpheme": "пре-",
-  "kind": "prefix",
-  "meaningZh": "非常、转变",
-  "meaningEn": "very, trans-",
-  "origin": "古教会斯拉夫语 прѣ",
-  "examples": [
-   "прекрасный",
-   "превратить",
-   "преувеличить"
-  ]
- },
- {
-  "morpheme": "пред-",
-  "kind": "prefix",
-  "meaningZh": "在…之前",
-  "meaningEn": "before, fore-",
-  "origin": "原始斯拉夫语 *perdъ",
-  "examples": [
-   "предвидеть",
-   "предававшийся",
-   "предгорье"
-  ]
- },
- {
-  "morpheme": "при-",
-  "kind": "prefix",
-  "meaningZh": "靠近、附加",
-  "meaningEn": "approach, attach",
-  "origin": "原始斯拉夫语 *pri",
-  "examples": [
-   "прийти",
-   "приписать",
-   "приморский"
-  ]
- },
- {
-  "morpheme": "про-",
-  "kind": "prefix",
-  "meaningZh": "穿过、经过",
-  "meaningEn": "through, past",
-  "origin": "原始斯拉夫语 *pro",
-  "examples": [
-   "пройти",
-   "прочитать",
-   "провести"
-  ]
- },
- {
-  "morpheme": "прост-",
-  "kind": "root",
-  "meaningZh": "简单、朴素",
-  "meaningEn": "simple",
-  "origin": "原始斯拉夫语 *prostъ",
-  "examples": [
-   "простой",
-   "простота",
-   "упростить"
-  ]
- },
- {
-  "morpheme": "против-",
-  "kind": "prefix",
-  "meaningZh": "反对、抗",
-  "meaningEn": "against, anti-",
-  "origin": "原始斯拉夫语 *protivъ",
-  "examples": [
-   "противоядие",
-   "противодействие"
-  ]
- },
- {
-  "morpheme": "противо-",
-  "kind": "prefix",
-  "meaningZh": "反对、抗",
-  "meaningEn": "against, anti-",
-  "origin": "против（反对）",
-  "examples": [
-   "противоречие",
-   "противогаз",
-   "противодействие"
-  ]
- },
- {
-  "morpheme": "прото-",
-  "kind": "prefix",
-  "meaningZh": "最初、原型",
-  "meaningEn": "proto-, first",
-  "origin": "古希腊语 πρῶτος（第一）",
-  "examples": [
-   "прототип",
-   "протоплазма"
-  ]
- },
- {
-  "morpheme": "псевдо-",
-  "kind": "prefix",
-  "meaningZh": "伪、假",
-  "meaningEn": "pseudo-, false",
-  "origin": "古希腊语 ψευδής（虚假）",
-  "examples": [
-   "псевдонаука",
-   "псевдоним"
-  ]
- },
- {
-  "morpheme": "психо-",
-  "kind": "prefix",
-  "meaningZh": "心理、精神",
-  "meaningEn": "psycho-",
-  "origin": "古希腊语 ψυχή（灵魂）",
-  "examples": [
-   "психология",
-   "психотерапия",
-   "психоанализ"
-  ]
- },
- {
-  "morpheme": "птиц-",
-  "kind": "root",
-  "meaningZh": "鸟",
-  "meaningEn": "bird",
-  "origin": "原始斯拉夫语 *pъtica",
-  "examples": [
-   "птицеводство",
-   "птицелов"
-  ]
- },
- {
-  "morpheme": "пусто-",
-  "kind": "prefix",
-  "meaningZh": "空",
-  "meaningEn": "empty-",
-  "origin": "原始斯拉夫语 *pustъ",
-  "examples": [
-   "пустоцвет",
-   "пустозвон"
-  ]
- },
- {
-  "morpheme": "путешеств-",
-  "kind": "root",
-  "meaningZh": "旅行（путь 道路 + шествие 行走）",
-  "meaningEn": "travel, journey",
-  "origin": "путь + -шеств-",
-  "examples": [
-   "путешествие",
-   "путешественник",
-   "путешествовать"
-  ]
- },
- {
-  "morpheme": "пяти-",
-  "kind": "prefix",
-  "meaningZh": "五",
-  "meaningEn": "five-, penta-",
-  "origin": "原始斯拉夫语 *pętь",
-  "examples": [
-   "пятилетка",
-   "пятиугольник"
-  ]
- },
- {
-  "morpheme": "работ-",
-  "kind": "root",
-  "meaningZh": "工作、劳动",
-  "meaningEn": "work, labor",
-  "origin": "原始斯拉夫语 *orbota",
-  "examples": [
-   "работа",
-   "работать",
-   "работник",
-   "заработок"
-  ]
- },
- {
-  "morpheme": "равно-",
-  "kind": "prefix",
-  "meaningZh": "相等、平等",
-  "meaningEn": "equal, equi-",
-  "origin": "原始斯拉夫语 *orvьnъ",
-  "examples": [
-   "равноправие",
-   "равновесие"
-  ]
- },
- {
-  "morpheme": "радио-",
-  "kind": "prefix",
-  "meaningZh": "无线电、射线",
-  "meaningEn": "radio-, radiation",
-  "origin": "拉丁语 radius（射线）",
-  "examples": [
-   "радиоузел",
-   "радиоволна",
-   "радиопередача",
-   "радиостанция"
-  ]
- },
- {
-  "morpheme": "радост-",
-  "kind": "root",
-  "meaningZh": "喜悦",
-  "meaningEn": "joy",
-  "origin": "原始斯拉夫语 *radostь",
-  "examples": [
-   "радостный",
-   "радость",
-   "порадовать"
-  ]
- },
- {
-  "morpheme": "раз-",
-  "kind": "prefix",
-  "meaningZh": "分散、展开",
-  "meaningEn": "apart, un-",
-  "origin": "原始斯拉夫语 *orz",
-  "examples": [
-   "разбить",
-   "раздать",
-   "разговор"
-  ]
- },
- {
-  "morpheme": "разно-",
-  "kind": "prefix",
-  "meaningZh": "多样、不同",
-  "meaningEn": "various, diverse",
-  "origin": "原始斯拉夫语 *raznъ",
-  "examples": [
-   "разнообразие",
-   "разносторонний"
-  ]
- },
- {
-  "morpheme": "рас-",
-  "kind": "prefix",
-  "meaningZh": "分散、展开（清辅音前变体）",
-  "meaningEn": "apart (before voiceless consonants)",
-  "origin": "原始斯拉夫语 *orz",
-  "examples": [
-   "рассказать",
-   "расписать",
-   "раскрыть"
-  ]
- },
- {
-  "morpheme": "ре-",
-  "kind": "prefix",
-  "meaningZh": "再、重新",
-  "meaningEn": "re-, again",
-  "origin": "拉丁语 re（再）",
-  "examples": [
-   "реконструкция",
-   "реформа",
-   "реорганизация",
-   "реставрация"
-  ]
- },
- {
-  "morpheme": "рук-",
-  "kind": "root",
-  "meaningZh": "手",
-  "meaningEn": "hand, arm",
-  "origin": "原始斯拉夫语 *rǫka",
-  "examples": [
-   "рука",
-   "ручной",
-   "ручка",
-   "поручить"
-  ]
- },
- {
-  "morpheme": "русс-",
-  "kind": "root",
-  "meaningZh": "俄罗斯的、罗斯",
-  "meaningEn": "Russian, Rus",
-  "origin": "古东斯拉夫语 Русь",
-  "examples": [
-   "русский",
-   "Белоруссия",
-   "по-русски"
-  ]
- },
- {
-  "morpheme": "рыб-",
-  "kind": "root",
-  "meaningZh": "鱼",
-  "meaningEn": "fish",
-  "origin": "原始斯拉夫语 *ryba",
-  "examples": [
-   "рыбак",
-   "рыбоводство"
-  ]
- },
- {
-  "morpheme": "с-",
-  "kind": "prefix",
-  "meaningZh": "一起、向下",
-  "meaningEn": "together, down",
-  "origin": "原始斯拉夫语 *sъ(n)",
-  "examples": [
-   "сделать",
-   "сойти",
-   "собрать"
-  ]
- },
- {
-  "morpheme": "сад-",
-  "kind": "root",
-  "meaningZh": "园子、种植",
-  "meaningEn": "garden, to plant",
-  "origin": "原始斯拉夫语 *sadъ",
-  "examples": [
-   "сад",
-   "садовник",
-   "сажать",
-   "посадить",
-   "рассада"
-  ]
- },
- {
-  "morpheme": "само-",
-  "kind": "prefix",
-  "meaningZh": "自我、自动",
-  "meaningEn": "self-",
-  "origin": "сам（自己）",
-  "examples": [
-   "самолёт",
-   "самостоятельный",
-   "самообразование"
-  ]
- },
- {
-  "morpheme": "сверх-",
-  "kind": "prefix",
-  "meaningZh": "超过、超",
-  "meaningEn": "super-, over-",
-  "origin": "сверх（之上）",
-  "examples": [
-   "сверхактивный",
-   "сверхчеловек"
-  ]
- },
- {
-  "morpheme": "свет-",
-  "kind": "root",
-  "meaningZh": "光、世界",
-  "meaningEn": "light, world",
-  "origin": "原始斯拉夫语 *světъ",
-  "examples": [
-   "свет",
-   "светлый",
-   "просвет",
-   "светить"
-  ]
- },
- {
-  "morpheme": "свето-",
-  "kind": "prefix",
-  "meaningZh": "光",
-  "meaningEn": "light-",
-  "origin": "原始斯拉夫语 *světъ",
-  "examples": [
-   "светофор",
-   "светочувствительный"
-  ]
- },
- {
-  "morpheme": "сейсмо-",
-  "kind": "prefix",
-  "meaningZh": "地震",
-  "meaningEn": "seismo-, earthquake",
-  "origin": "古希腊语 σεισμός（震动）",
-  "examples": [
-   "сейсмология",
-   "сейсмостанция"
-  ]
- },
- {
-  "morpheme": "семи-",
-  "kind": "prefix",
-  "meaningZh": "七",
-  "meaningEn": "seven-, hepta-",
-  "origin": "原始斯拉夫语 *sedmь",
-  "examples": [
-   "семилетний",
-   "семицветный"
-  ]
- },
- {
-  "morpheme": "сердц-",
-  "kind": "root",
-  "meaningZh": "心",
-  "meaningEn": "heart",
-  "origin": "原始斯拉夫语 *sьrdьce",
-  "examples": [
-   "сердце",
-   "сердечный",
-   "сердиться"
-  ]
- },
- {
-  "morpheme": "серебр-",
-  "kind": "root",
-  "meaningZh": "银",
-  "meaningEn": "silver",
-  "origin": "原始斯拉夫语 *sьrebro",
-  "examples": [
-   "серебряный",
-   "серебристый"
-  ]
- },
- {
-  "morpheme": "серо-",
-  "kind": "prefix",
-  "meaningZh": "灰",
-  "meaningEn": "grey-",
-  "origin": "原始斯拉夫语 *sěrъ",
-  "examples": [
-   "сероглазый",
-   "серобородый"
-  ]
- },
- {
-  "morpheme": "сид-",
-  "kind": "root",
-  "meaningZh": "坐",
-  "meaningEn": "sit",
-  "origin": "原始斯拉夫语 *sěděti",
-  "examples": [
-   "сидеть",
-   "сидение",
-   "сиделка"
-  ]
- },
- {
-  "morpheme": "сил-",
-  "kind": "root",
-  "meaningZh": "力量",
-  "meaningEn": "strength, force",
-  "origin": "原始斯拉夫语 *sila",
-  "examples": [
-   "сила",
-   "сильный",
-   "усилие",
-   "насилие"
-  ]
- },
- {
-  "morpheme": "силь-",
-  "kind": "root",
-  "meaningZh": "力量",
-  "meaningEn": "strength",
-  "origin": "原始斯拉夫语 *sila",
-  "examples": [
-   "сила",
-   "сильный",
-   "усилить"
-  ]
- },
- {
-  "morpheme": "сильн-",
-  "kind": "root",
-  "meaningZh": "强",
-  "meaningEn": "strong",
-  "origin": "原始斯拉夫语 *silьnъ",
-  "examples": [
-   "сильный",
-   "сильнодействующий"
-  ]
- },
- {
-  "morpheme": "сине-",
-  "kind": "prefix",
-  "meaningZh": "蓝",
-  "meaningEn": "blue-",
-  "origin": "原始斯拉夫语 *sinь",
-  "examples": [
-   "синеглазый",
-   "синеватый"
-  ]
- },
- {
-  "morpheme": "сказ-",
-  "kind": "root",
-  "meaningZh": "说、讲述",
-  "meaningEn": "to say, to tell",
-  "origin": "原始斯拉夫语 *kаzаti",
-  "examples": [
-   "сказка",
-   "сказать",
-   "рассказать",
-   "сказочный",
-   "подсказка"
-  ]
- },
- {
-  "morpheme": "скоп-",
-  "kind": "root",
-  "meaningZh": "观察、镜",
-  "meaningEn": "observe, -scope",
-  "origin": "古希腊语 σκοπέω",
-  "examples": [
-   "телескоп",
-   "микроскоп",
-   "перископ"
-  ]
- },
- {
-  "morpheme": "скоро-",
-  "kind": "prefix",
-  "meaningZh": "快、速",
-  "meaningEn": "speed-, quick",
-  "origin": "原始斯拉夫语 *skorъ",
-  "examples": [
-   "скороход",
-   "скоропортящийся"
-  ]
- },
- {
-  "morpheme": "скуч-",
-  "kind": "root",
-  "meaningZh": "无聊、思念",
-  "meaningEn": "boredom, miss",
-  "origin": "原始斯拉夫语 *skučati",
-  "examples": [
-   "скучать",
-   "скучный",
-   "скука"
-  ]
- },
- {
-  "morpheme": "слаб-",
-  "kind": "root",
-  "meaningZh": "弱",
-  "meaningEn": "weak",
-  "origin": "原始斯拉夫语 *slabъ",
-  "examples": [
-   "слабость",
-   "ослабеть"
-  ]
- },
- {
-  "morpheme": "слабо-",
-  "kind": "prefix",
-  "meaningZh": "弱、微",
-  "meaningEn": "weak-, slightly",
-  "origin": "原始斯拉夫语 *slabъ",
-  "examples": [
-   "слаборазвитый",
-   "слабовидящий"
-  ]
- },
- {
-  "morpheme": "слав-",
-  "kind": "root",
-  "meaningZh": "光荣、斯拉夫",
-  "meaningEn": "glory, Slav",
-  "origin": "原始斯拉夫语 *slava",
-  "examples": [
-   "слава",
-   "славный",
-   "прославить"
-  ]
- },
- {
-  "morpheme": "слов-",
-  "kind": "root",
-  "meaningZh": "词、话语",
-  "meaningEn": "word",
-  "origin": "原始斯拉夫语 *slovo",
-  "examples": [
-   "слово",
-   "словарь",
-   "словесный",
-   "пословица"
-  ]
- },
- {
-  "morpheme": "сложн-",
-  "kind": "root",
-  "meaningZh": "复杂、复合",
-  "meaningEn": "complex, compound",
-  "origin": "俄语 сложить（组合）",
-  "examples": [
-   "сложный",
-   "сложность",
-   "усложнить"
-  ]
- },
- {
-  "morpheme": "слыш-",
-  "kind": "root",
-  "meaningZh": "听见",
-  "meaningEn": "hear",
-  "origin": "原始斯拉夫语 *slyšati",
-  "examples": [
-   "слышать",
-   "услышать",
-   "слышимый"
-  ]
- },
- {
-  "morpheme": "смерт-",
-  "kind": "root",
-  "meaningZh": "死亡",
-  "meaningEn": "death",
-  "origin": "原始斯拉夫语 *sъmьrtь",
-  "examples": [
-   "смертный",
-   "смертоносный"
-  ]
- },
- {
-  "morpheme": "смеш-",
-  "kind": "root",
-  "meaningZh": "可笑",
-  "meaningEn": "funny",
-  "origin": "原始斯拉夫语 *směxъ",
-  "examples": [
-   "смешной",
-   "насмешка",
-   "смешно"
-  ]
- },
- {
-  "morpheme": "смотр-",
-  "kind": "root",
-  "meaningZh": "观看、检视",
-  "meaningEn": "look, inspect",
-  "origin": "原始斯拉夫语 *motriti",
-  "examples": [
-   "смотреть",
-   "осмотр",
-   "смотритель"
-  ]
- },
- {
-  "morpheme": "снег-",
-  "kind": "root",
-  "meaningZh": "雪",
-  "meaningEn": "snow",
-  "origin": "原始斯拉夫语 *sněgъ",
-  "examples": [
-   "снеговик",
-   "снегурочка"
-  ]
- },
- {
-  "morpheme": "снего-",
-  "kind": "prefix",
-  "meaningZh": "雪",
-  "meaningEn": "snow-",
-  "origin": "原始斯拉夫语 *sněgъ",
-  "examples": [
-   "снегоход",
-   "снегопад"
-  ]
- },
- {
-  "morpheme": "со-",
-  "kind": "prefix",
-  "meaningZh": "共同、一起",
-  "meaningEn": "co-, together",
-  "origin": "原始斯拉夫语 *sъ(n)",
-  "examples": [
-   "сотрудник",
-   "соединить",
-   "сочувствие"
-  ]
- },
- {
-  "morpheme": "солнц-",
-  "kind": "root",
-  "meaningZh": "太阳",
-  "meaningEn": "sun",
-  "origin": "原始斯拉夫语 *sъlnьce",
-  "examples": [
-   "солнечный",
-   "солнцестояние"
-  ]
- },
- {
-  "morpheme": "социо-",
-  "kind": "prefix",
-  "meaningZh": "社会",
-  "meaningEn": "socio-",
-  "origin": "拉丁语 socius（同伴）",
-  "examples": [
-   "социология",
-   "социокультурный"
-  ]
- },
- {
-  "morpheme": "спектро-",
-  "kind": "prefix",
-  "meaningZh": "光谱",
-  "meaningEn": "spectro-",
-  "origin": "拉丁语 spectrum（影像）",
-  "examples": [
-   "спектроскоп",
-   "спектрометр"
-  ]
- },
- {
-  "morpheme": "средне-",
-  "kind": "prefix",
-  "meaningZh": "中、中等",
-  "meaningEn": "middle, medium",
-  "origin": "原始斯拉夫语 *serdьnъ",
-  "examples": [
-   "средневековье",
-   "среднеазиатский"
-  ]
- },
- {
-  "morpheme": "став-",
-  "kind": "root",
-  "meaningZh": "放置、设置",
-  "meaningEn": "put, place",
-  "origin": "原始斯拉夫语 *staviti",
-  "examples": [
-   "ставить",
-   "поставить",
-   "авиавыставка",
-   "устав"
-  ]
- },
- {
-  "morpheme": "стар-",
-  "kind": "root",
-  "meaningZh": "老、旧",
-  "meaningEn": "old",
-  "origin": "原始斯拉夫语 *starъ",
-  "examples": [
-   "старый",
-   "старость",
-   "устареть",
-   "старик"
-  ]
- },
- {
-  "morpheme": "стерео-",
-  "kind": "prefix",
-  "meaningZh": "立体",
-  "meaningEn": "stereo-",
-  "origin": "古希腊语 στερεός（立体）",
-  "examples": [
-   "стереоскоп",
-   "стереозвук",
-   "стереофония"
-  ]
- },
- {
-  "morpheme": "стой-",
-  "kind": "root",
-  "meaningZh": "站立、持久",
-  "meaningEn": "stand, endure",
-  "origin": "原始斯拉夫语 *stojati",
-  "examples": [
-   "стоять",
-   "стойкий",
-   "стойкость"
-  ]
- },
- {
-  "morpheme": "стол-",
-  "kind": "root",
-  "meaningZh": "桌子、案台；王座",
-  "meaningEn": "table, throne",
-  "origin": "原始斯拉夫语 *stolъ",
-  "examples": [
-   "стол",
-   "столик",
-   "столовая",
-   "столешница",
-   "престол"
-  ]
- },
- {
-  "morpheme": "стран-",
-  "kind": "root",
-  "meaningZh": "国家、地方",
-  "meaningEn": "country, land",
-  "origin": "原始斯拉夫语 *strana",
-  "examples": [
-   "страна",
-   "странный",
-   "иностранец",
-   "путешествие"
-  ]
- },
- {
-  "morpheme": "страх-",
-  "kind": "root",
-  "meaningZh": "恐惧",
-  "meaningEn": "fear",
-  "origin": "原始斯拉夫语 *straxъ",
-  "examples": [
-   "страшный",
-   "страх",
-   "устрашить"
-  ]
- },
- {
-  "morpheme": "страш-",
-  "kind": "root",
-  "meaningZh": "可怕的、恐惧",
-  "meaningEn": "fearful, terrible",
-  "origin": "原始斯拉夫语 *strašьnъ",
-  "examples": [
-   "страшный",
-   "страшно",
-   "устрашающий"
-  ]
- },
- {
-  "morpheme": "суб-",
-  "kind": "prefix",
-  "meaningZh": "次、下、亚",
-  "meaningEn": "sub-, under",
-  "origin": "拉丁语 sub（下面）",
-  "examples": [
-   "субтропики",
-   "субкультура",
-   "субординация"
-  ]
- },
- {
-  "morpheme": "судо-",
-  "kind": "prefix",
-  "meaningZh": "船",
-  "meaningEn": "ship-",
-  "origin": "原始斯拉夫语 *sǫdъ",
-  "examples": [
-   "судостроение",
-   "судоходство"
-  ]
- },
- {
-  "morpheme": "супер-",
-  "kind": "prefix",
-  "meaningZh": "超级、超",
-  "meaningEn": "super-",
-  "origin": "拉丁语 super",
-  "examples": [
-   "супермаркет",
-   "супермен",
-   "супер-цемент"
-  ]
- },
- {
-  "morpheme": "счаст-",
-  "kind": "root",
-  "meaningZh": "幸福",
-  "meaningEn": "happiness",
-  "origin": "原始斯拉夫语 *sъčęstьje",
-  "examples": [
-   "счастливый",
-   "счастье",
-   "несчастный"
-  ]
- },
- {
-  "morpheme": "твор-",
-  "kind": "root",
-  "meaningZh": "创造",
-  "meaningEn": "create",
-  "origin": "原始斯拉夫语 *tvoriti",
-  "examples": [
-   "творить",
-   "творчество",
-   "творение"
-  ]
- },
- {
-  "morpheme": "тел-",
-  "kind": "root",
-  "meaningZh": "身体、体",
-  "meaningEn": "body",
-  "origin": "原始斯拉夫语 *tělo",
-  "examples": [
-   "тело",
-   "телесный",
-   "телефон"
-  ]
- },
- {
-  "morpheme": "теле-",
-  "kind": "prefix",
-  "meaningZh": "远",
-  "meaningEn": "tele-, far",
-  "origin": "古希腊语 τῆλε",
-  "examples": [
-   "телефон",
-   "телевизор",
-   "телеграф",
-   "телескоп"
-  ]
- },
- {
-  "morpheme": "темн-",
-  "kind": "root",
-  "meaningZh": "暗",
-  "meaningEn": "dark",
-  "origin": "原始斯拉夫语 *tьmьnъ",
-  "examples": [
-   "темнота",
-   "темнеть"
-  ]
- },
- {
-  "morpheme": "тепл-",
-  "kind": "root",
-  "meaningZh": "暖",
-  "meaningEn": "warm",
-  "origin": "原始斯拉夫语 *teplъ",
-  "examples": [
-   "тёплый",
-   "теплица"
-  ]
- },
- {
-  "morpheme": "тепло-",
-  "kind": "prefix",
-  "meaningZh": "热",
-  "meaningEn": "heat-",
-  "origin": "原始斯拉夫语 *teplъ",
-  "examples": [
-   "теплоход",
-   "теплоснабжение"
-  ]
- },
- {
-  "morpheme": "термо-",
-  "kind": "prefix",
-  "meaningZh": "热",
-  "meaningEn": "thermo-, heat",
-  "origin": "古希腊语 θερμός",
-  "examples": [
-   "термометр",
-   "термос",
-   "термоядерный"
-  ]
- },
- {
-  "morpheme": "техно-",
-  "kind": "prefix",
-  "meaningZh": "技术",
-  "meaningEn": "techno-",
-  "origin": "古希腊语 τέχνη（技艺）",
-  "examples": [
-   "технология",
-   "технократия",
-   "технопарк"
-  ]
- },
- {
-  "morpheme": "толст-",
-  "kind": "root",
-  "meaningZh": "厚、胖",
-  "meaningEn": "thick, fat",
-  "origin": "原始斯拉夫语 *tъlstъ",
-  "examples": [
-   "толстый",
-   "толстяк",
-   "утолстить"
-  ]
- },
- {
-  "morpheme": "тонк-",
-  "kind": "root",
-  "meaningZh": "薄、细",
-  "meaningEn": "thin, fine",
-  "origin": "原始斯拉夫语 *tъnъkъ",
-  "examples": [
-   "тонкий",
-   "тонко",
-   "утончённый"
-  ]
- },
- {
-  "morpheme": "тоск-",
-  "kind": "root",
-  "meaningZh": "忧愁、苦闷",
-  "meaningEn": "melancholy, longing",
-  "origin": "原始斯拉夫语 *tъska",
-  "examples": [
-   "тосковать",
-   "тоскливый",
-   "тоска"
-  ]
- },
- {
-  "morpheme": "трав-",
-  "kind": "root",
-  "meaningZh": "草",
-  "meaningEn": "grass",
-  "origin": "原始斯拉夫语 *trava",
-  "examples": [
-   "травяной",
-   "травоядный"
-  ]
- },
- {
-  "morpheme": "транс-",
-  "kind": "prefix",
-  "meaningZh": "跨越、横穿",
-  "meaningEn": "trans-",
-  "origin": "拉丁语 trans",
-  "examples": [
-   "транспорт",
-   "трансатлантический",
-   "трансляция"
-  ]
- },
- {
-  "morpheme": "трёх-",
-  "kind": "prefix",
-  "meaningZh": "三",
-  "meaningEn": "three-, tri-",
-  "origin": "原始斯拉夫语 *trije",
-  "examples": [
-   "трёхэтажный",
-   "трёхсторонний"
-  ]
- },
- {
-  "morpheme": "три-",
-  "kind": "prefix",
-  "meaningZh": "三",
-  "meaningEn": "tri-, three",
-  "origin": "希腊语 τρεῖς（三）",
-  "examples": [
-   "трилогия",
-   "триумвират",
-   "тригонометрия"
-  ]
- },
- {
-  "morpheme": "труд-",
-  "kind": "root",
-  "meaningZh": "劳动、工作",
-  "meaningEn": "labour, work",
-  "origin": "原始斯拉夫语 *trudъ",
-  "examples": [
-   "трудовой",
-   "трудоустройство"
-  ]
- },
- {
-  "morpheme": "трудн-",
-  "kind": "root",
-  "meaningZh": "困难",
-  "meaningEn": "difficult",
-  "origin": "原始斯拉夫语 *trudьnъ",
-  "examples": [
-   "трудный",
-   "трудно",
-   "затруднение"
-  ]
- },
- {
-  "morpheme": "турбо-",
-  "kind": "prefix",
-  "meaningZh": "涡轮",
-  "meaningEn": "turbo-",
-  "origin": "拉丁语 turbo（旋风）",
-  "examples": [
-   "турбореактивный",
-   "турбогенератор"
-  ]
- },
- {
-  "morpheme": "тяжел-",
-  "kind": "root",
-  "meaningZh": "重、沉重",
-  "meaningEn": "heavy",
-  "origin": "原始斯拉夫语 *tęžьkъ",
-  "examples": [
-   "тяжёлый",
-   "тяжело",
-   "тяжесть"
-  ]
- },
- {
-  "morpheme": "у-",
-  "kind": "prefix",
-  "meaningZh": "离开、减少",
-  "meaningEn": "away, reduce",
-  "origin": "原始斯拉夫语 *u",
-  "examples": [
-   "уйти",
-   "уменьшить",
-   "убрать"
-  ]
- },
- {
-  "morpheme": "угле-",
-  "kind": "prefix",
-  "meaningZh": "碳、煤",
-  "meaningEn": "coal-, carbon-",
-  "origin": "原始斯拉夫语 *ǫglь",
-  "examples": [
-   "углеводород",
-   "углекислый"
-  ]
- },
- {
-  "morpheme": "узко-",
-  "kind": "prefix",
-  "meaningZh": "窄、狭隘",
-  "meaningEn": "narrow-",
-  "origin": "原始斯拉夫语 *ǫzъkъ",
-  "examples": [
-   "узкоколейный",
-   "узколобый"
-  ]
- },
- {
-  "morpheme": "ультра-",
-  "kind": "prefix",
-  "meaningZh": "超、极",
-  "meaningEn": "ultra-, beyond",
-  "origin": "拉丁语 ultra（超过）",
-  "examples": [
-   "ультрафиолет",
-   "ультразвук",
-   "ультрамодный"
-  ]
- },
- {
-  "morpheme": "уч-",
-  "kind": "root",
-  "meaningZh": "学、教",
-  "meaningEn": "learn, teach",
-  "origin": "原始斯拉夫语 *učiti",
-  "examples": [
-   "учить",
-   "учитель",
-   "ученик",
-   "учебник"
-  ]
- },
- {
-  "morpheme": "ферро-",
-  "kind": "prefix",
-  "meaningZh": "铁",
-  "meaningEn": "ferro-, iron",
-  "origin": "拉丁语 ferrum（铁）",
-  "examples": [
-   "ферросплав",
-   "ферромагнитный"
-  ]
- },
- {
-  "morpheme": "фито-",
-  "kind": "prefix",
-  "meaningZh": "植物",
-  "meaningEn": "phyto-, plant",
-  "origin": "古希腊语 φυτόν（植物）",
-  "examples": [
-   "фитотерапия",
-   "фитопланктон"
-  ]
- },
- {
-  "morpheme": "фон-",
-  "kind": "root",
-  "meaningZh": "声音",
-  "meaningEn": "sound, voice",
-  "origin": "古希腊语 φωνή",
-  "examples": [
-   "телефон",
-   "микрофон",
-   "фонетика",
-   "Блумфонтейн"
-  ]
- },
- {
-  "morpheme": "форм-",
-  "kind": "root",
-  "meaningZh": "形状、形式",
-  "meaningEn": "form, shape",
-  "origin": "拉丁语 forma",
-  "examples": [
-   "форма",
-   "формировать",
-   "информация",
-   "реформа"
-  ]
- },
- {
-  "morpheme": "фото-",
-  "kind": "prefix",
-  "meaningZh": "光、摄影",
-  "meaningEn": "photo-, light",
-  "origin": "古希腊语 φῶς",
-  "examples": [
-   "фотография",
-   "фотоаппарат",
-   "фотосинтез"
-  ]
- },
- {
-  "morpheme": "хлад-",
-  "kind": "root",
-  "meaningZh": "寒冷（诗歌/古语）",
-  "meaningEn": "cold (poetic)",
-  "origin": "原始斯拉夫语 *xoldъ",
-  "examples": [
-   "хладнокровный",
-   "хладобойня",
-   "прохлада"
-  ]
- },
- {
-  "morpheme": "хлеб-",
-  "kind": "root",
-  "meaningZh": "面包、粮食",
-  "meaningEn": "bread, grain",
-  "origin": "原始斯拉夫语 *xlěbъ",
-  "examples": [
-   "хлебозавод",
-   "хлебороб"
-  ]
- },
- {
-  "morpheme": "ход-",
-  "kind": "root",
-  "meaningZh": "走、行走",
-  "meaningEn": "go, walk",
-  "origin": "原始斯拉夫语 *xoditi",
-  "examples": [
-   "ходить",
-   "поход",
-   "выход",
-   "переход"
-  ]
- },
- {
-  "morpheme": "холод-",
-  "kind": "root",
-  "meaningZh": "冷",
-  "meaningEn": "cold",
-  "origin": "原始斯拉夫语 *xoldъ",
-  "examples": [
-   "холодный",
-   "холодок"
-  ]
- },
- {
-  "morpheme": "холодо-",
-  "kind": "prefix",
-  "meaningZh": "冷",
-  "meaningEn": "cold-",
-  "origin": "原始斯拉夫语 *xoldъ",
-  "examples": [
-   "холодостойкий",
-   "холоднокровный"
-  ]
- },
- {
-  "morpheme": "хорош-",
-  "kind": "root",
-  "meaningZh": "好",
-  "meaningEn": "good",
-  "origin": "原始斯拉夫语 *xorošь",
-  "examples": [
-   "хороший",
-   "хорошо",
-   "улучшить"
-  ]
- },
- {
-  "morpheme": "хромо-",
-  "kind": "prefix",
-  "meaningZh": "颜色、铬",
-  "meaningEn": "chromo-, colour",
-  "origin": "古希腊语 χρῶμα（颜色）",
-  "examples": [
-   "хромосома",
-   "хромолитография"
-  ]
- },
- {
-  "morpheme": "цар-",
-  "kind": "root",
-  "meaningZh": "沙皇、统治",
-  "meaningEn": "tsar, rule",
-  "origin": "古俄语 цьсарь（凯撒）",
-  "examples": [
-   "царский",
-   "царствование"
-  ]
- },
- {
-  "morpheme": "цвет-",
-  "kind": "root",
-  "meaningZh": "颜色、花",
-  "meaningEn": "color, flower",
-  "origin": "原始斯拉夫语 *květъ",
-  "examples": [
-   "цвет",
-   "цветок",
-   "цветной",
-   "расцвет"
-  ]
- },
- {
-  "morpheme": "цвето-",
-  "kind": "prefix",
-  "meaningZh": "色、花",
-  "meaningEn": "colour-, flower-",
-  "origin": "原始斯拉夫语 *květъ",
-  "examples": [
-   "цветоводство",
-   "цветомузыка"
-  ]
- },
- {
-  "morpheme": "цен-",
-  "kind": "root",
-  "meaningZh": "价、价值",
-  "meaningEn": "price, value",
-  "origin": "原始斯拉夫语 *cěna",
-  "examples": [
-   "ценный",
-   "ценообразование"
-  ]
- },
- {
-  "morpheme": "цито-",
-  "kind": "prefix",
-  "meaningZh": "细胞",
-  "meaningEn": "cyto-, cell",
-  "origin": "古希腊语 κύτος（容器）",
-  "examples": [
-   "цитология",
-   "цитоплазма"
-  ]
- },
- {
-  "morpheme": "человек-",
-  "kind": "root",
-  "meaningZh": "人",
-  "meaningEn": "human, person",
-  "origin": "原始斯拉夫语 *čelověkъ",
-  "examples": [
-   "человек",
-   "человеческий",
-   "человечество"
-  ]
- },
- {
-  "morpheme": "черно-",
-  "kind": "prefix",
-  "meaningZh": "黑",
-  "meaningEn": "black-",
-  "origin": "原始斯拉夫语 *čьrnъ",
-  "examples": [
-   "черноволосый",
-   "чернозём"
-  ]
- },
- {
-  "morpheme": "четырёх-",
-  "kind": "prefix",
-  "meaningZh": "四",
-  "meaningEn": "four-, quadri-",
-  "origin": "原始斯拉夫语 *četyre",
-  "examples": [
-   "четырёхугольник",
-   "четырёхлетний"
-  ]
- },
- {
-  "morpheme": "числ-",
-  "kind": "root",
-  "meaningZh": "数",
-  "meaningEn": "number",
-  "origin": "原始斯拉夫语 *čislo",
-  "examples": [
-   "числовой",
-   "числитель"
-  ]
- },
- {
-  "morpheme": "чисто-",
-  "kind": "prefix",
-  "meaningZh": "纯、净",
-  "meaningEn": "pure-, clean-",
-  "origin": "原始斯拉夫语 *čistъ",
-  "examples": [
-   "чистокровный",
-   "чистосердечный"
-  ]
- },
- {
-  "morpheme": "чит-",
-  "kind": "root",
-  "meaningZh": "读",
-  "meaningEn": "read",
-  "origin": "原始斯拉夫语 *čitati",
-  "examples": [
-   "читать",
-   "читатель",
-   "прочитать",
-   "чтение"
-  ]
- },
- {
-  "morpheme": "чувств-",
-  "kind": "root",
-  "meaningZh": "感觉、情感",
-  "meaningEn": "feeling",
-  "origin": "原始斯拉夫语 *čuvьstvo",
-  "examples": [
-   "чувство",
-   "чувствовать",
-   "бесчувственный"
-  ]
- },
- {
-  "morpheme": "шеств-",
-  "kind": "root",
-  "meaningZh": "行走、行进",
-  "meaningEn": "to walk, procession",
-  "origin": "原始斯拉夫语 *šьstvьje",
-  "examples": [
-   "шествие",
-   "шествовать",
-   "путешествие",
-   "прошествие"
-  ]
- },
- {
-  "morpheme": "шести-",
-  "kind": "prefix",
-  "meaningZh": "六",
-  "meaningEn": "six-, hexa-",
-  "origin": "原始斯拉夫语 *šestь",
-  "examples": [
-   "шестикрылый",
-   "шестиугольник"
-  ]
- },
- {
-  "morpheme": "широк-",
-  "kind": "root",
-  "meaningZh": "宽、广",
-  "meaningEn": "wide, broad",
-  "origin": "原始斯拉夫语 *širokъ",
-  "examples": [
-   "широкий",
-   "широко",
-   "расширить"
-  ]
- },
- {
-  "morpheme": "широко-",
-  "kind": "prefix",
-  "meaningZh": "宽、广",
-  "meaningEn": "wide-, broad-",
-  "origin": "原始斯拉夫语 *širokъ",
-  "examples": [
-   "широкоэкранный",
-   "широкомасштабный"
-  ]
- },
- {
-  "morpheme": "школ-",
-  "kind": "root",
-  "meaningZh": "学校",
-  "meaningEn": "school",
-  "origin": "拉丁语 schola",
-  "examples": [
-   "школьный",
-   "школьник"
-  ]
- },
- {
-  "morpheme": "эко-",
-  "kind": "prefix",
-  "meaningZh": "生态、环境",
-  "meaningEn": "eco-",
-  "origin": "古希腊语 οἶκος（家）",
-  "examples": [
-   "экология",
-   "экосистема",
-   "экотуризм"
-  ]
- },
- {
-  "morpheme": "экс-",
-  "kind": "prefix",
-  "meaningZh": "前、前…",
-  "meaningEn": "ex-",
-  "origin": "拉丁语 ex",
-  "examples": [
-   "эксгаустер",
-   "экспорт",
-   "экскурсия"
-  ]
- },
- {
-  "morpheme": "экстра-",
-  "kind": "prefix",
-  "meaningZh": "额外、超",
-  "meaningEn": "extra-, outside",
-  "origin": "拉丁语 extra（之外）",
-  "examples": [
-   "экстракт",
-   "экстраординарный",
-   "экстрасенс"
-  ]
- },
- {
-  "morpheme": "электро-",
-  "kind": "prefix",
-  "meaningZh": "电",
-  "meaningEn": "electro-",
-  "origin": "古希腊语 ἤλεκτρον（琥珀）",
-  "examples": [
-   "электростанция",
-   "электроприбор",
-   "электронный"
-  ]
- },
- {
-  "morpheme": "этил-",
-  "kind": "prefix",
-  "meaningZh": "乙基",
-  "meaningEn": "ethyl-",
-  "origin": "希腊语 αἰθήρ（以太）",
-  "examples": [
-   "этиловый",
-   "этилбензол"
-  ]
- },
- {
-  "morpheme": "язык-",
-  "kind": "root",
-  "meaningZh": "语言、舌",
-  "meaningEn": "language, tongue",
-  "origin": "原始斯拉夫语 *językъ",
-  "examples": [
-   "язык",
-   "языковой",
-   "языкознание"
-  ]
- }
+  {
+    "morpheme": "-ание",
+    "kind": "suffix",
+    "meaningZh": "动作、过程",
+    "meaningEn": "-tion (action noun)",
+    "origin": "古教会斯拉夫语 -ание",
+    "examples": [
+      "знание",
+      "внимание",
+      "желание"
+    ]
+  },
+  {
+    "morpheme": "-анин",
+    "kind": "suffix",
+    "meaningZh": "居民后缀",
+    "meaningEn": "inhabitant",
+    "origin": "原始斯拉夫语 *-janinъ",
+    "examples": [
+      "пражанин",
+      "горожанин"
+    ]
+  },
+  {
+    "morpheme": "-атый",
+    "kind": "suffix",
+    "meaningZh": "具有…的",
+    "meaningEn": "having, -ed",
+    "origin": "原始斯拉夫语 *-atъ",
+    "examples": [
+      "бородатый",
+      "полосатый",
+      "рогатый"
+    ]
+  },
+  {
+    "morpheme": "-ать",
+    "kind": "suffix",
+    "meaningZh": "动词不定式",
+    "meaningEn": "infinitive ending",
+    "origin": "原始斯拉夫语 *-ati",
+    "examples": [
+      "читать",
+      "делать",
+      "знать",
+      "думать"
+    ]
+  },
+  {
+    "morpheme": "-ация",
+    "kind": "suffix",
+    "meaningZh": "化、过程",
+    "meaningEn": "-ation",
+    "origin": "拉丁语 -atio",
+    "examples": [
+      "организация",
+      "информация",
+      "революция"
+    ]
+  },
+  {
+    "morpheme": "-вать",
+    "kind": "suffix",
+    "meaningZh": "动词后缀",
+    "meaningEn": "verbal",
+    "origin": "原始斯拉夫语 *-ovati",
+    "examples": [
+      "сбивать",
+      "одевать"
+    ]
+  },
+  {
+    "morpheme": "-ведение",
+    "kind": "suffix",
+    "meaningZh": "…学、研究",
+    "meaningEn": "study of, -logy",
+    "origin": "俄语复合 вести（引导）",
+    "examples": [
+      "естествоведение",
+      "материаловедение"
+    ]
+  },
+  {
+    "morpheme": "-видный",
+    "kind": "suffix",
+    "meaningZh": "有…样子的",
+    "meaningEn": "-like, -shaped",
+    "origin": "俄语复合 вид + -ный",
+    "examples": [
+      "щитовидный",
+      "человековидный"
+    ]
+  },
+  {
+    "morpheme": "-держатель",
+    "kind": "suffix",
+    "meaningZh": "持…者、支架",
+    "meaningEn": "holder",
+    "origin": "俄语复合 держать + -тель",
+    "examples": [
+      "абажуродержатель",
+      "книгодержатель"
+    ]
+  },
+  {
+    "morpheme": "-ейший",
+    "kind": "suffix",
+    "meaningZh": "最高级后缀",
+    "meaningEn": "superlative",
+    "origin": "原始斯拉夫语 *-ějьšii",
+    "examples": [
+      "абсолютнейший",
+      "новейший"
+    ]
+  },
+  {
+    "morpheme": "-ек",
+    "kind": "suffix",
+    "meaningZh": "指小后缀",
+    "meaningEn": "diminutive",
+    "origin": "原始斯拉夫语 *-ъkъ",
+    "examples": [
+      "горошек",
+      "перешеек"
+    ]
+  },
+  {
+    "morpheme": "-ение",
+    "kind": "suffix",
+    "meaningZh": "动作、过程、结果",
+    "meaningEn": "-tion, -ing (action noun)",
+    "origin": "古教会斯拉夫语 -ение",
+    "examples": [
+      "чтение",
+      "движение",
+      "образование",
+      "решение"
+    ]
+  },
+  {
+    "morpheme": "-енный",
+    "kind": "suffix",
+    "meaningZh": "形容词后缀",
+    "meaningEn": "adjectival (-ed)",
+    "origin": "原始斯拉夫语 *-enъ",
+    "examples": [
+      "государственный",
+      "количественный"
+    ]
+  },
+  {
+    "morpheme": "-енький",
+    "kind": "suffix",
+    "meaningZh": "指小（形容词）",
+    "meaningEn": "diminutive adjective",
+    "origin": "原始斯拉夫语 *-ьnkъ",
+    "examples": [
+      "маленький",
+      "хорошенький",
+      "бедненький"
+    ]
+  },
+  {
+    "morpheme": "-еский",
+    "kind": "suffix",
+    "meaningZh": "形容词后缀（…的）",
+    "meaningEn": "-ic, -esque",
+    "origin": "古希腊语 -ικός",
+    "examples": [
+      "греческий",
+      "коммерческий"
+    ]
+  },
+  {
+    "morpheme": "-ество",
+    "kind": "suffix",
+    "meaningZh": "抽象名词后缀",
+    "meaningEn": "abstract noun",
+    "origin": "原始斯拉夫语 *-ьstvo",
+    "examples": [
+      "лесничество",
+      "содружество"
+    ]
+  },
+  {
+    "morpheme": "-есть",
+    "kind": "suffix",
+    "meaningZh": "抽象名词（软辅音后变体）",
+    "meaningEn": "-ness (after soft consonants)",
+    "origin": "原始斯拉夫语 *-estь",
+    "examples": [
+      "свежесть",
+      "текучесть"
+    ]
+  },
+  {
+    "morpheme": "-еть",
+    "kind": "suffix",
+    "meaningZh": "动词不定式",
+    "meaningEn": "infinitive ending",
+    "origin": "原始斯拉夫语 *-ěti",
+    "examples": [
+      "смотреть",
+      "болеть",
+      "уметь"
+    ]
+  },
+  {
+    "morpheme": "-ец",
+    "kind": "suffix",
+    "meaningZh": "人称、事物",
+    "meaningEn": "-ian, -er (person)",
+    "origin": "原始斯拉夫语 *-ьcь",
+    "examples": [
+      "молодец",
+      "борец",
+      "иностранец",
+      "певец"
+    ]
+  },
+  {
+    "morpheme": "-ивать",
+    "kind": "suffix",
+    "meaningZh": "反复体（动词）",
+    "meaningEn": "iterative aspect",
+    "origin": "原始斯拉夫语 *-ivati",
+    "examples": [
+      "рассказывать",
+      "опаздывать",
+      "придумывать"
+    ]
+  },
+  {
+    "morpheme": "-ие",
+    "kind": "suffix",
+    "meaningZh": "抽象名词后缀",
+    "meaningEn": "abstract noun",
+    "origin": "原始斯拉夫语 *-ьje",
+    "examples": [
+      "бедствие",
+      "самодержавие"
+    ]
+  },
+  {
+    "morpheme": "-изм",
+    "kind": "suffix",
+    "meaningZh": "主义、学说",
+    "meaningEn": "-ism",
+    "origin": "古希腊语 -ισμός",
+    "examples": [
+      "капитализм",
+      "реализм",
+      "организм"
+    ]
+  },
+  {
+    "morpheme": "-ик",
+    "kind": "suffix",
+    "meaningZh": "指小、从事者",
+    "meaningEn": "diminutive, -er",
+    "origin": "原始斯拉夫语 *-ikъ",
+    "examples": [
+      "столик",
+      "домик",
+      "историк",
+      "физик"
+    ]
+  },
+  {
+    "morpheme": "-ина",
+    "kind": "suffix",
+    "meaningZh": "名词后缀（单体、肉）",
+    "meaningEn": "single item, meat",
+    "origin": "原始斯拉夫语 *-ina",
+    "examples": [
+      "свинина",
+      "виноградина"
+    ]
+  },
+  {
+    "morpheme": "-инка",
+    "kind": "suffix",
+    "meaningZh": "指小后缀",
+    "meaningEn": "diminutive",
+    "origin": "原始斯拉夫语 *-inka",
+    "examples": [
+      "пылинка",
+      "ворсинка"
+    ]
+  },
+  {
+    "morpheme": "-ист",
+    "kind": "suffix",
+    "meaningZh": "…者、…主义者",
+    "meaningEn": "-ist",
+    "origin": "古希腊语 -ιστής",
+    "examples": [
+      "артист",
+      "журналист",
+      "специалист"
+    ]
+  },
+  {
+    "morpheme": "-истый",
+    "kind": "suffix",
+    "meaningZh": "充满…的",
+    "meaningEn": "full of, -y",
+    "origin": "原始斯拉夫语 *-istъ",
+    "examples": [
+      "каменистый",
+      "золотистый",
+      "водянистый"
+    ]
+  },
+  {
+    "morpheme": "-ить",
+    "kind": "suffix",
+    "meaningZh": "动词不定式（第二变位）",
+    "meaningEn": "infinitive ending (2nd conj.)",
+    "origin": "原始斯拉夫语 *-iti",
+    "examples": [
+      "говорить",
+      "учить",
+      "любить",
+      "строить"
+    ]
+  },
+  {
+    "morpheme": "-ица",
+    "kind": "suffix",
+    "meaningZh": "阴性人称、事物",
+    "meaningEn": "feminine agent or thing",
+    "origin": "原始斯拉夫语 *-ica",
+    "examples": [
+      "учительница",
+      "певица",
+      "водица",
+      "страница"
+    ]
+  },
+  {
+    "morpheme": "-ище",
+    "kind": "suffix",
+    "meaningZh": "增大、场所",
+    "meaningEn": "augmentative, place",
+    "origin": "原始斯拉夫语 *-išče",
+    "examples": [
+      "авиаучилище",
+      "училище",
+      "жилище",
+      "сборище"
+    ]
+  },
+  {
+    "morpheme": "-ия",
+    "kind": "suffix",
+    "meaningZh": "抽象名词后缀",
+    "meaningEn": "abstract noun (-ia)",
+    "origin": "拉丁语 -ia",
+    "examples": [
+      "астрономия",
+      "философия"
+    ]
+  },
+  {
+    "morpheme": "-ка",
+    "kind": "suffix",
+    "meaningZh": "指小、动作、器物",
+    "meaningEn": "diminutive, action, instrument",
+    "origin": "原始斯拉夫语 *-ъka",
+    "examples": [
+      "книжка",
+      "ручка",
+      "стирка",
+      "зарядка"
+    ]
+  },
+  {
+    "morpheme": "-кать",
+    "kind": "suffix",
+    "meaningZh": "动词后缀",
+    "meaningEn": "verbal",
+    "origin": "原始斯拉夫语 *-kati",
+    "examples": [
+      "тыкать",
+      "мяукать"
+    ]
+  },
+  {
+    "morpheme": "-кий",
+    "kind": "suffix",
+    "meaningZh": "形容词后缀",
+    "meaningEn": "adjectival",
+    "origin": "原始斯拉夫语 *-ъkъ",
+    "examples": [
+      "громкий",
+      "тонкий"
+    ]
+  },
+  {
+    "morpheme": "-ко",
+    "kind": "suffix",
+    "meaningZh": "指小后缀",
+    "meaningEn": "diminutive",
+    "origin": "原始斯拉夫语 *-ъko",
+    "examples": [
+      "ведёрко",
+      "яблочко"
+    ]
+  },
+  {
+    "morpheme": "-ливый",
+    "kind": "suffix",
+    "meaningZh": "倾向…的",
+    "meaningEn": "prone to, -ful",
+    "origin": "原始斯拉夫语 *-livъ",
+    "examples": [
+      "счастливый",
+      "заботливый",
+      "талантливый"
+    ]
+  },
+  {
+    "morpheme": "-лище",
+    "kind": "suffix",
+    "meaningZh": "场所",
+    "meaningEn": "place of",
+    "origin": "原始斯拉夫语 *-lišče",
+    "examples": [
+      "училище",
+      "хранилище",
+      "вместилище"
+    ]
+  },
+  {
+    "morpheme": "-лка",
+    "kind": "suffix",
+    "meaningZh": "名词后缀（工具、场所）",
+    "meaningEn": "instrument, place",
+    "origin": "原始斯拉夫语 *-ьlъka",
+    "examples": [
+      "скалка",
+      "зажигалка"
+    ]
+  },
+  {
+    "morpheme": "-лый",
+    "kind": "suffix",
+    "meaningZh": "形容词后缀（状态）",
+    "meaningEn": "adjectival (state)",
+    "origin": "原始斯拉夫语 *-lъ",
+    "examples": [
+      "умелый",
+      "замшелый"
+    ]
+  },
+  {
+    "morpheme": "-льня",
+    "kind": "suffix",
+    "meaningZh": "名词后缀（场所）",
+    "meaningEn": "place noun",
+    "origin": "原始斯拉夫语 *-ьlnja",
+    "examples": [
+      "спальня",
+      "читальня"
+    ]
+  },
+  {
+    "morpheme": "-льщик",
+    "kind": "suffix",
+    "meaningZh": "施事后缀",
+    "meaningEn": "agent noun",
+    "origin": "原始斯拉夫语 *-ьlьščikъ",
+    "examples": [
+      "носильщик",
+      "курильщик"
+    ]
+  },
+  {
+    "morpheme": "-ние",
+    "kind": "suffix",
+    "meaningZh": "动作、结果",
+    "meaningEn": "-ing, -tion",
+    "origin": "原始斯拉夫语 *-nьje",
+    "examples": [
+      "знание",
+      "пение",
+      "здание"
+    ]
+  },
+  {
+    "morpheme": "-ний",
+    "kind": "suffix",
+    "meaningZh": "形容词后缀",
+    "meaningEn": "adjectival",
+    "origin": "原始斯拉夫语 *-ьnъ",
+    "examples": [
+      "задний",
+      "верхний",
+      "ранний"
+    ]
+  },
+  {
+    "morpheme": "-ник",
+    "kind": "suffix",
+    "meaningZh": "从事者、容器、集合",
+    "meaningEn": "-er, container, collection",
+    "origin": "原始斯拉夫语 *-ьnikъ",
+    "examples": [
+      "работник",
+      "ученик",
+      "чайник",
+      "лесник"
+    ]
+  },
+  {
+    "morpheme": "-ница",
+    "kind": "suffix",
+    "meaningZh": "名词后缀（女性、场所）",
+    "meaningEn": "female agent, place",
+    "origin": "原始斯拉夫语 *-ьnica",
+    "examples": [
+      "пятница",
+      "племянница"
+    ]
+  },
+  {
+    "morpheme": "-ничать",
+    "kind": "suffix",
+    "meaningZh": "动词后缀（惯常行为）",
+    "meaningEn": "verbal (habitual)",
+    "origin": "原始斯拉夫语 *-ьničati",
+    "examples": [
+      "кокетничать",
+      "садовничать"
+    ]
+  },
+  {
+    "morpheme": "-ной",
+    "kind": "suffix",
+    "meaningZh": "形容词（具有…性质的，重音变体）",
+    "meaningEn": "adj. (stressed variant of -nyj)",
+    "origin": "原始斯拉夫语 *-ьnъ 的重音变体（库内已有 -ный；本地词源 chain 记 больной = [\"боль\",\"-ной\"]）",
+    "examples": [
+      "больной",
+      "внеземной",
+      "головной",
+      "заводной",
+      "выходной"
+    ]
+  },
+  {
+    "morpheme": "-ность",
+    "kind": "suffix",
+    "meaningZh": "抽象名词后缀（…性）",
+    "meaningEn": "abstract noun (-ness)",
+    "origin": "原始斯拉夫语 *-ьnostь",
+    "examples": [
+      "поверхность",
+      "точность"
+    ]
+  },
+  {
+    "morpheme": "-нуть",
+    "kind": "suffix",
+    "meaningZh": "一次性动作",
+    "meaningEn": "semelfactive (single act)",
+    "origin": "原始斯拉夫语 *-nǫti",
+    "examples": [
+      "крикнуть",
+      "толкнуть",
+      "прыгнуть"
+    ]
+  },
+  {
+    "morpheme": "-ный",
+    "kind": "suffix",
+    "meaningZh": "形容词（具有…性质的）",
+    "meaningEn": "-ous, -al (adjective)",
+    "origin": "原始斯拉夫语 *-ьnъ",
+    "examples": [
+      "водный",
+      "трудный",
+      "холодный",
+      "важный"
+    ]
+  },
+  {
+    "morpheme": "-ня",
+    "kind": "suffix",
+    "meaningZh": "名词后缀（场所）",
+    "meaningEn": "place noun",
+    "origin": "原始斯拉夫语 *-ьnja",
+    "examples": [
+      "лесопильня",
+      "кофейня"
+    ]
+  },
+  {
+    "morpheme": "-о",
+    "kind": "suffix",
+    "meaningZh": "副词（由形容词构成）",
+    "meaningEn": "-ly (adverb)",
+    "origin": "原始斯拉夫语 *-o",
+    "examples": [
+      "быстро",
+      "хорошо",
+      "тихо",
+      "легко"
+    ]
+  },
+  {
+    "morpheme": "-образный",
+    "kind": "suffix",
+    "meaningZh": "有…形状的",
+    "meaningEn": "shaped like, -form",
+    "origin": "俄语复合 образ + -ный",
+    "examples": [
+      "сердцеобразный",
+      "волнообразный"
+    ]
+  },
+  {
+    "morpheme": "-овать",
+    "kind": "suffix",
+    "meaningZh": "从事、进行",
+    "meaningEn": "-ize, to do (verb)",
+    "origin": "原始斯拉夫语 *-ovati",
+    "examples": [
+      "рисовать",
+      "работать",
+      "танцевать"
+    ]
+  },
+  {
+    "morpheme": "-ович",
+    "kind": "suffix",
+    "meaningZh": "父称后缀",
+    "meaningEn": "patronymic",
+    "origin": "原始斯拉夫语 *-oviťь",
+    "examples": [
+      "попович",
+      "Иванович"
+    ]
+  },
+  {
+    "morpheme": "-овой",
+    "kind": "suffix",
+    "meaningZh": "形容词（关系）",
+    "meaningEn": "relational adjective",
+    "origin": "原始斯拉夫语 *-ovъ",
+    "examples": [
+      "мировой",
+      "передовой",
+      "деловой"
+    ]
+  },
+  {
+    "morpheme": "-овский",
+    "kind": "suffix",
+    "meaningZh": "形容词后缀（…的）",
+    "meaningEn": "-ovian, possessive",
+    "origin": "原始斯拉夫语 *-ovъ",
+    "examples": [
+      "мартовский",
+      "отцовский"
+    ]
+  },
+  {
+    "morpheme": "-овый",
+    "kind": "suffix",
+    "meaningZh": "形容词（由…构成的）",
+    "meaningEn": "-ous (made of)",
+    "origin": "原始斯拉夫语 *-ovъ",
+    "examples": [
+      "столовый",
+      "абиетиновый",
+      "берёзовый"
+    ]
+  },
+  {
+    "morpheme": "-ок",
+    "kind": "suffix",
+    "meaningZh": "指小",
+    "meaningEn": "diminutive",
+    "origin": "原始斯拉夫语 *-ъkъ",
+    "examples": [
+      "городок",
+      "молоток",
+      "потолок",
+      "кусок"
+    ]
+  },
+  {
+    "morpheme": "-ость",
+    "kind": "suffix",
+    "meaningZh": "抽象名词（性质、状态）",
+    "meaningEn": "-ness, -ity (abstract noun)",
+    "origin": "原始斯拉夫语 *-ostь",
+    "examples": [
+      "радость",
+      "молодость",
+      "скорость",
+      "новость"
+    ]
+  },
+  {
+    "morpheme": "-очка",
+    "kind": "suffix",
+    "meaningZh": "指小后缀",
+    "meaningEn": "diminutive",
+    "origin": "原始斯拉夫语 *-ъčka",
+    "examples": [
+      "девочка",
+      "буквочка"
+    ]
+  },
+  {
+    "morpheme": "-очный",
+    "kind": "suffix",
+    "meaningZh": "形容词后缀",
+    "meaningEn": "adjectival",
+    "origin": "原始斯拉夫语 *-ъčьnъ",
+    "examples": [
+      "сборочный",
+      "молочный"
+    ]
+  },
+  {
+    "morpheme": "-провод",
+    "kind": "suffix",
+    "meaningZh": "导管、输送",
+    "meaningEn": "conduit, -duct",
+    "origin": "俄语复合 проводить（输送）",
+    "examples": [
+      "газопровод",
+      "водопровод"
+    ]
+  },
+  {
+    "morpheme": "-ская",
+    "kind": "suffix",
+    "meaningZh": "形容词（关系、所属）",
+    "meaningEn": "-ic, -ian (relational adjective)",
+    "origin": "原始斯拉夫语 *-ьskъ",
+    "examples": [
+      "русский",
+      "Зеленская",
+      "детская"
+    ]
+  },
+  {
+    "morpheme": "-ски",
+    "kind": "suffix",
+    "meaningZh": "副词（…式地）",
+    "meaningEn": "-ly, in a ... manner",
+    "origin": "原始斯拉夫语 *-ьsky",
+    "examples": [
+      "азинокраски",
+      "английски",
+      "политически"
+    ]
+  },
+  {
+    "morpheme": "-ский",
+    "kind": "suffix",
+    "meaningZh": "形容词（…的、…式的）",
+    "meaningEn": "-ian, -ic",
+    "origin": "原始斯拉夫语 *-ьskъ",
+    "examples": [
+      "русский",
+      "детский",
+      "морской"
+    ]
+  },
+  {
+    "morpheme": "-ство",
+    "kind": "suffix",
+    "meaningZh": "状态、身份、集合",
+    "meaningEn": "-ship, -hood, -dom",
+    "origin": "原始斯拉夫语 *-ьstvo",
+    "examples": [
+      "студенчество",
+      "государство",
+      "учительство"
+    ]
+  },
+  {
+    "morpheme": "-ствовать",
+    "kind": "suffix",
+    "meaningZh": "从事、处于…状态",
+    "meaningEn": "to be engaged in",
+    "origin": "原始斯拉夫语 *-ьstvovati",
+    "examples": [
+      "участвовать",
+      "путешествовать",
+      "чувствовать"
+    ]
+  },
+  {
+    "morpheme": "-строение",
+    "kind": "suffix",
+    "meaningZh": "…制造、构造",
+    "meaningEn": "structure, manufacturing",
+    "origin": "俄语复合 строить（建造）",
+    "examples": [
+      "самолётостроение",
+      "машиностроение"
+    ]
+  },
+  {
+    "morpheme": "-ся",
+    "kind": "suffix",
+    "meaningZh": "反身、被动",
+    "meaningEn": "reflexive, passive",
+    "origin": "原始斯拉夫语 *sę",
+    "examples": [
+      "учиться",
+      "мыться",
+      "строиться"
+    ]
+  },
+  {
+    "morpheme": "-тель",
+    "kind": "suffix",
+    "meaningZh": "施动者、器具",
+    "meaningEn": "-er, -or (agent, instrument)",
+    "origin": "原始斯拉夫语 *-teljь",
+    "examples": [
+      "учитель",
+      "писатель",
+      "двигатель",
+      "выключатель"
+    ]
+  },
+  {
+    "morpheme": "-тельный",
+    "kind": "suffix",
+    "meaningZh": "形容词后缀（能…的）",
+    "meaningEn": "capable of (adjective)",
+    "origin": "原始斯拉夫语 *-telьnъ",
+    "examples": [
+      "утомительный",
+      "примирительный"
+    ]
+  },
+  {
+    "morpheme": "-тельство",
+    "kind": "suffix",
+    "meaningZh": "抽象名词后缀",
+    "meaningEn": "abstract noun",
+    "origin": "原始斯拉夫语 *-ьstvo",
+    "examples": [
+      "обстоятельство",
+      "правительство"
+    ]
+  },
+  {
+    "morpheme": "-тие",
+    "kind": "suffix",
+    "meaningZh": "动作（-ть 词干）",
+    "meaningEn": "-tion (after stems in -ть)",
+    "origin": "原始斯拉夫语 *-tьje",
+    "examples": [
+      "развитие",
+      "занятие",
+      "открытие",
+      "понятие"
+    ]
+  },
+  {
+    "morpheme": "-ун",
+    "kind": "suffix",
+    "meaningZh": "施事后缀",
+    "meaningEn": "agent noun",
+    "origin": "原始斯拉夫语 *-unъ",
+    "examples": [
+      "болтун",
+      "бегун"
+    ]
+  },
+  {
+    "morpheme": "-ушка",
+    "kind": "suffix",
+    "meaningZh": "指小后缀",
+    "meaningEn": "diminutive",
+    "origin": "原始斯拉夫语 *-ušьka",
+    "examples": [
+      "девушка",
+      "избушка"
+    ]
+  },
+  {
+    "morpheme": "-це",
+    "kind": "suffix",
+    "meaningZh": "指小后缀",
+    "meaningEn": "diminutive",
+    "origin": "原始斯拉夫语 *-ьce",
+    "examples": [
+      "деревце",
+      "оконце"
+    ]
+  },
+  {
+    "morpheme": "-цкий",
+    "kind": "suffix",
+    "meaningZh": "形容词后缀",
+    "meaningEn": "-ian",
+    "origin": "原始斯拉夫语 *-ьskъ",
+    "examples": [
+      "ненецкий",
+      "немецкий"
+    ]
+  },
+  {
+    "morpheme": "-чатый",
+    "kind": "suffix",
+    "meaningZh": "形容词后缀（有…的）",
+    "meaningEn": "having, -ed",
+    "origin": "原始斯拉夫语 *-ъčatъ",
+    "examples": [
+      "ступенчатый",
+      "бревенчатый"
+    ]
+  },
+  {
+    "morpheme": "-ческий",
+    "kind": "suffix",
+    "meaningZh": "形容词后缀（…学的）",
+    "meaningEn": "-ic, -ical",
+    "origin": "古希腊语 -ικός",
+    "examples": [
+      "исторический",
+      "химический"
+    ]
+  },
+  {
+    "morpheme": "-чивый",
+    "kind": "suffix",
+    "meaningZh": "倾向…的",
+    "meaningEn": "inclined to",
+    "origin": "原始斯拉夫语 *-čivъ",
+    "examples": [
+      "задумчивый",
+      "устойчивый",
+      "доверчивый"
+    ]
+  },
+  {
+    "morpheme": "-чик",
+    "kind": "suffix",
+    "meaningZh": "职业者、小称",
+    "meaningEn": "-er (agent), diminutive",
+    "origin": "原始斯拉夫语 *-čikъ",
+    "examples": [
+      "лётчик",
+      "переводчик",
+      "мальчик",
+      "стаканчик"
+    ]
+  },
+  {
+    "morpheme": "-ша",
+    "kind": "suffix",
+    "meaningZh": "女性名词后缀",
+    "meaningEn": "female agent",
+    "origin": "原始斯拉夫语 *-ьša",
+    "examples": [
+      "секретарша",
+      "бухгалтерша"
+    ]
+  },
+  {
+    "morpheme": "-щик",
+    "kind": "suffix",
+    "meaningZh": "职业者",
+    "meaningEn": "-er (occupation)",
+    "origin": "原始斯拉夫语 *-ščikъ",
+    "examples": [
+      "каменщик",
+      "часовщик",
+      "наборщик"
+    ]
+  },
+  {
+    "morpheme": "-щина",
+    "kind": "suffix",
+    "meaningZh": "抽象名词后缀（常含贬义）",
+    "meaningEn": "abstract (often pejorative)",
+    "origin": "原始斯拉夫语 *-ьščina",
+    "examples": [
+      "ежовщина",
+      "деревенщина"
+    ]
+  },
+  {
+    "morpheme": "-ывать",
+    "kind": "suffix",
+    "meaningZh": "反复体动词后缀",
+    "meaningEn": "repeated-action verb",
+    "origin": "原始斯拉夫语 *-ovati",
+    "examples": [
+      "рассказывать",
+      "обманывать",
+      "обдумывать"
+    ]
+  },
+  {
+    "morpheme": "-ье",
+    "kind": "suffix",
+    "meaningZh": "集合、场所名词后缀",
+    "meaningEn": "collective noun",
+    "origin": "原始斯拉夫语 *-ьje",
+    "examples": [
+      "платье",
+      "плоскогорье"
+    ]
+  },
+  {
+    "morpheme": "-ьё",
+    "kind": "suffix",
+    "meaningZh": "集合名词后缀",
+    "meaningEn": "collective noun",
+    "origin": "原始斯拉夫语 *-ьje",
+    "examples": [
+      "враньё",
+      "битьё"
+    ]
+  },
+  {
+    "morpheme": "-янин",
+    "kind": "suffix",
+    "meaningZh": "居民后缀",
+    "meaningEn": "inhabitant",
+    "origin": "原始斯拉夫语 *-janinъ",
+    "examples": [
+      "россиянин",
+      "землянин",
+      "киевлянин"
+    ]
+  },
+  {
+    "morpheme": "-ять",
+    "kind": "suffix",
+    "meaningZh": "动词不定式（软辅音后）",
+    "meaningEn": "infinitive ending (soft)",
+    "origin": "原始斯拉夫语 *-jati",
+    "examples": [
+      "гулять",
+      "стоять",
+      "менять"
+    ]
+  },
+  {
+    "morpheme": "-ёк",
+    "kind": "suffix",
+    "meaningZh": "指小后缀",
+    "meaningEn": "diminutive",
+    "origin": "原始斯拉夫语 *-ъkъ",
+    "examples": [
+      "королёк",
+      "мотылёк"
+    ]
+  },
+  {
+    "morpheme": "-ёнок",
+    "kind": "suffix",
+    "meaningZh": "幼小后缀",
+    "meaningEn": "young animal",
+    "origin": "原始斯拉夫语 *-ę",
+    "examples": [
+      "ягнёнок",
+      "гусёнок"
+    ]
+  },
+  {
+    "morpheme": "-ёный",
+    "kind": "suffix",
+    "meaningZh": "形容词后缀（…过的）",
+    "meaningEn": "adjectival (participle)",
+    "origin": "原始斯拉夫语 *-enъ",
+    "examples": [
+      "варёный",
+      "копчёный"
+    ]
+  },
+  {
+    "morpheme": "-ёр",
+    "kind": "suffix",
+    "meaningZh": "施事后缀",
+    "meaningEn": "agent noun (-er)",
+    "origin": "法语 -eur",
+    "examples": [
+      "дирижёр",
+      "массажёр"
+    ]
+  },
+  {
+    "morpheme": "авиа-",
+    "kind": "prefix",
+    "meaningZh": "航空、飞机",
+    "meaningEn": "aviation, aircraft",
+    "origin": "拉丁语 avis（鸟）",
+    "examples": [
+      "авианосец",
+      "авиабаза",
+      "авиабилет",
+      "авиадивизия"
+    ]
+  },
+  {
+    "morpheme": "авто-",
+    "kind": "prefix",
+    "meaningZh": "自己、自动",
+    "meaningEn": "auto-, self-",
+    "origin": "古希腊语 αὐτός",
+    "examples": [
+      "автомобиль",
+      "автобиография",
+      "автоматический"
+    ]
+  },
+  {
+    "morpheme": "агро-",
+    "kind": "prefix",
+    "meaningZh": "农业",
+    "meaningEn": "agro-, agriculture",
+    "origin": "古希腊语 ἀγρός（田地）",
+    "examples": [
+      "агроном",
+      "агрокомплекс",
+      "агротехника"
+    ]
+  },
+  {
+    "morpheme": "альфа-",
+    "kind": "prefix",
+    "meaningZh": "阿尔法、首个",
+    "meaningEn": "alpha-",
+    "origin": "希腊字母 α",
+    "examples": [
+      "альфа-лучи",
+      "альфа-частица"
+    ]
+  },
+  {
+    "morpheme": "анти-",
+    "kind": "prefix",
+    "meaningZh": "反、抗",
+    "meaningEn": "anti-",
+    "origin": "古希腊语 ἀντί",
+    "examples": [
+      "антибиотик",
+      "антипатия",
+      "античный"
+    ]
+  },
+  {
+    "morpheme": "астро-",
+    "kind": "prefix",
+    "meaningZh": "星、天体",
+    "meaningEn": "astro-, star",
+    "origin": "古希腊语 ἄστρον（星）",
+    "examples": [
+      "астрономия",
+      "астронавт",
+      "астрофизика"
+    ]
+  },
+  {
+    "morpheme": "аэро-",
+    "kind": "prefix",
+    "meaningZh": "空气、航空",
+    "meaningEn": "aero-, air",
+    "origin": "古希腊语 ἀήρ（空气）",
+    "examples": [
+      "аэроплан",
+      "аэродром",
+      "аэрофлот",
+      "аэрозоль"
+    ]
+  },
+  {
+    "morpheme": "баро-",
+    "kind": "prefix",
+    "meaningZh": "气压、重量",
+    "meaningEn": "baro-, pressure",
+    "origin": "古希腊语 βάρος（重量）",
+    "examples": [
+      "барометр",
+      "баротерапия"
+    ]
+  },
+  {
+    "morpheme": "бег-",
+    "kind": "root",
+    "meaningZh": "跑",
+    "meaningEn": "run",
+    "origin": "原始斯拉夫语 *běgati",
+    "examples": [
+      "бегать",
+      "бег",
+      "бегун"
+    ]
+  },
+  {
+    "morpheme": "бедн-",
+    "kind": "root",
+    "meaningZh": "穷、贫",
+    "meaningEn": "poor",
+    "origin": "原始斯拉夫语 *bědьnъ",
+    "examples": [
+      "бедность",
+      "беднота"
+    ]
+  },
+  {
+    "morpheme": "без-",
+    "kind": "prefix",
+    "meaningZh": "无、缺乏",
+    "meaningEn": "without, lacking",
+    "origin": "原始斯拉夫语 *bez",
+    "examples": [
+      "бездомный",
+      "безопасный",
+      "беспомощный",
+      "бессмертный"
+    ]
+  },
+  {
+    "morpheme": "бело-",
+    "kind": "prefix",
+    "meaningZh": "白",
+    "meaningEn": "white-",
+    "origin": "原始斯拉夫语 *bělъ",
+    "examples": [
+      "белогвардеец",
+      "белоснежный"
+    ]
+  },
+  {
+    "morpheme": "бес-",
+    "kind": "prefix",
+    "meaningZh": "无、缺乏（清辅音前变体）",
+    "meaningEn": "without (before voiceless consonants)",
+    "origin": "原始斯拉夫语 *bez",
+    "examples": [
+      "бесплатный",
+      "бесконечный",
+      "бесстрашный"
+    ]
+  },
+  {
+    "morpheme": "би-",
+    "kind": "prefix",
+    "meaningZh": "二、双",
+    "meaningEn": "bi-, two",
+    "origin": "拉丁语 bis（两次）",
+    "examples": [
+      "бинарный",
+      "биполярный",
+      "бицепс"
+    ]
+  },
+  {
+    "morpheme": "био-",
+    "kind": "prefix",
+    "meaningZh": "生命",
+    "meaningEn": "bio-, life",
+    "origin": "古希腊语 βίος",
+    "examples": [
+      "биология",
+      "биография",
+      "биосфера"
+    ]
+  },
+  {
+    "morpheme": "благо-",
+    "kind": "prefix",
+    "meaningZh": "善、好",
+    "meaningEn": "good-, well-",
+    "origin": "原始斯拉夫语 *bolgъ（好的）",
+    "examples": [
+      "благодарность",
+      "благополучие"
+    ]
+  },
+  {
+    "morpheme": "богат-",
+    "kind": "root",
+    "meaningZh": "富",
+    "meaningEn": "rich",
+    "origin": "原始斯拉夫语 *bogatъ",
+    "examples": [
+      "богатство",
+      "богатырь"
+    ]
+  },
+  {
+    "morpheme": "болезн-",
+    "kind": "root",
+    "meaningZh": "疾病",
+    "meaningEn": "illness",
+    "origin": "原始斯拉夫语 *bolěznь",
+    "examples": [
+      "болезненный",
+      "болезнетворный"
+    ]
+  },
+  {
+    "morpheme": "боль-",
+    "kind": "root",
+    "meaningZh": "疼痛、大",
+    "meaningEn": "pain, big",
+    "origin": "原始斯拉夫语 *bolь",
+    "examples": [
+      "боль",
+      "больной",
+      "болеть",
+      "большой"
+    ]
+  },
+  {
+    "morpheme": "брат-",
+    "kind": "root",
+    "meaningZh": "兄弟",
+    "meaningEn": "brother",
+    "origin": "原始斯拉夫语 *bratrъ",
+    "examples": [
+      "брат",
+      "братство",
+      "братский",
+      "собрат",
+      "побратим"
+    ]
+  },
+  {
+    "morpheme": "бром-",
+    "kind": "prefix",
+    "meaningZh": "溴",
+    "meaningEn": "bromo-",
+    "origin": "古希腊语 βρῶμος（恶臭）",
+    "examples": [
+      "бромный",
+      "бромбензол"
+    ]
+  },
+  {
+    "morpheme": "быстро-",
+    "kind": "prefix",
+    "meaningZh": "快",
+    "meaningEn": "fast, quick",
+    "origin": "原始斯拉夫语 *bystrъ",
+    "examples": [
+      "быстрорастворимый",
+      "быстроходный"
+    ]
+  },
+  {
+    "morpheme": "в-",
+    "kind": "prefix",
+    "meaningZh": "进入、向内",
+    "meaningEn": "into, inwards",
+    "origin": "原始斯拉夫语 *vъ(n)",
+    "examples": [
+      "входить",
+      "внести",
+      "вбежать"
+    ]
+  },
+  {
+    "morpheme": "важн-",
+    "kind": "root",
+    "meaningZh": "重要",
+    "meaningEn": "important",
+    "origin": "波兰语 waga（重量）",
+    "examples": [
+      "важный",
+      "важно",
+      "важность"
+    ]
+  },
+  {
+    "morpheme": "вер-",
+    "kind": "root",
+    "meaningZh": "相信、忠诚",
+    "meaningEn": "believe, faith",
+    "origin": "原始斯拉夫语 *věra",
+    "examples": [
+      "верить",
+      "верный",
+      "доверие"
+    ]
+  },
+  {
+    "morpheme": "весел-",
+    "kind": "root",
+    "meaningZh": "快乐",
+    "meaningEn": "merry",
+    "origin": "原始斯拉夫语 *veselъ",
+    "examples": [
+      "весёлый",
+      "веселье",
+      "веселиться"
+    ]
+  },
+  {
+    "morpheme": "ветро-",
+    "kind": "prefix",
+    "meaningZh": "风",
+    "meaningEn": "wind-",
+    "origin": "原始斯拉夫语 *větrъ",
+    "examples": [
+      "ветроэнергетика",
+      "ветрозащита"
+    ]
+  },
+  {
+    "morpheme": "взаимо-",
+    "kind": "prefix",
+    "meaningZh": "相互",
+    "meaningEn": "mutual, inter-",
+    "origin": "古俄语 възаимь（借贷）",
+    "examples": [
+      "взаимодействие",
+      "взаимопомощь",
+      "взаимосвязь"
+    ]
+  },
+  {
+    "morpheme": "вибро-",
+    "kind": "prefix",
+    "meaningZh": "振动",
+    "meaningEn": "vibro-",
+    "origin": "拉丁语 vibrare（振动）",
+    "examples": [
+      "виброфон",
+      "виброизоляция"
+    ]
+  },
+  {
+    "morpheme": "вид-",
+    "kind": "root",
+    "meaningZh": "看、见",
+    "meaningEn": "see, look",
+    "origin": "原始斯拉夫语 *viděti",
+    "examples": [
+      "видеть",
+      "вид",
+      "предвидеть",
+      "очевидец"
+    ]
+  },
+  {
+    "morpheme": "видео-",
+    "kind": "prefix",
+    "meaningZh": "影像、视频",
+    "meaningEn": "video-, image",
+    "origin": "拉丁语 videre（看）",
+    "examples": [
+      "видеодисплей",
+      "видеозапись",
+      "видеокамера",
+      "видеофильм"
+    ]
+  },
+  {
+    "morpheme": "вице-",
+    "kind": "prefix",
+    "meaningZh": "副、次",
+    "meaningEn": "vice-",
+    "origin": "拉丁语 vice（代替）",
+    "examples": [
+      "вице-президент",
+      "вице-губернатор"
+    ]
+  },
+  {
+    "morpheme": "вне-",
+    "kind": "prefix",
+    "meaningZh": "外部",
+    "meaningEn": "extra-, outside",
+    "origin": "原始斯拉夫语 *vъně",
+    "examples": [
+      "внебрачный",
+      "внеклассный"
+    ]
+  },
+  {
+    "morpheme": "внутри-",
+    "kind": "prefix",
+    "meaningZh": "内部",
+    "meaningEn": "intra-, inside",
+    "origin": "古俄语 вънутрь",
+    "examples": [
+      "внутриатомный",
+      "внутривенный"
+    ]
+  },
+  {
+    "morpheme": "вод-",
+    "kind": "root",
+    "meaningZh": "水",
+    "meaningEn": "water",
+    "origin": "原始斯拉夫语 *voda",
+    "examples": [
+      "вода",
+      "водный",
+      "подводный",
+      "водопад"
+    ]
+  },
+  {
+    "morpheme": "водо-",
+    "kind": "prefix",
+    "meaningZh": "水",
+    "meaningEn": "water-",
+    "origin": "原始斯拉夫语 *voda",
+    "examples": [
+      "водопровод",
+      "водород",
+      "водопад"
+    ]
+  },
+  {
+    "morpheme": "вожд-",
+    "kind": "root",
+    "meaningZh": "引导、带领",
+    "meaningEn": "lead, drive",
+    "origin": "原始斯拉夫语 *voditi",
+    "examples": [
+      "водить",
+      "провод",
+      "переводить",
+      "вождение"
+    ]
+  },
+  {
+    "morpheme": "воздухо-",
+    "kind": "prefix",
+    "meaningZh": "空气",
+    "meaningEn": "air-",
+    "origin": "古俄语 въздухъ",
+    "examples": [
+      "воздухоплавание",
+      "воздухоочиститель"
+    ]
+  },
+  {
+    "morpheme": "возможн-",
+    "kind": "root",
+    "meaningZh": "可能",
+    "meaningEn": "possible",
+    "origin": "俄语 мочь（能够）",
+    "examples": [
+      "возможный",
+      "возможность",
+      "невозможный"
+    ]
+  },
+  {
+    "morpheme": "войн-",
+    "kind": "root",
+    "meaningZh": "战争",
+    "meaningEn": "war",
+    "origin": "原始斯拉夫语 *vojna",
+    "examples": [
+      "военный",
+      "воинственный"
+    ]
+  },
+  {
+    "morpheme": "восьми-",
+    "kind": "prefix",
+    "meaningZh": "八",
+    "meaningEn": "eight-, octa-",
+    "origin": "原始斯拉夫语 *osmь",
+    "examples": [
+      "восьмигранный",
+      "восьмилетний"
+    ]
+  },
+  {
+    "morpheme": "врем-",
+    "kind": "root",
+    "meaningZh": "时间",
+    "meaningEn": "time",
+    "origin": "原始斯拉夫语 *vermę",
+    "examples": [
+      "время",
+      "временный",
+      "современный",
+      "временно"
+    ]
+  },
+  {
+    "morpheme": "вы-",
+    "kind": "prefix",
+    "meaningZh": "向外、出来",
+    "meaningEn": "out, out of",
+    "origin": "原始斯拉夫语 *vy",
+    "examples": [
+      "выходить",
+      "выучить",
+      "выбрать"
+    ]
+  },
+  {
+    "morpheme": "высок-",
+    "kind": "root",
+    "meaningZh": "高",
+    "meaningEn": "high",
+    "origin": "原始斯拉夫语 *vysokъ",
+    "examples": [
+      "высокий",
+      "высоко",
+      "повысить"
+    ]
+  },
+  {
+    "morpheme": "высоко-",
+    "kind": "prefix",
+    "meaningZh": "高",
+    "meaningEn": "high-, highly",
+    "origin": "原始斯拉夫语 *vysokъ",
+    "examples": [
+      "высококачественный",
+      "высокооплачиваемый"
+    ]
+  },
+  {
+    "morpheme": "газо-",
+    "kind": "prefix",
+    "meaningZh": "气体",
+    "meaningEn": "gas-",
+    "origin": "希腊语 χάος（混沌）",
+    "examples": [
+      "газопровод",
+      "газообразный"
+    ]
+  },
+  {
+    "morpheme": "гелио-",
+    "kind": "prefix",
+    "meaningZh": "太阳",
+    "meaningEn": "helio-, sun",
+    "origin": "古希腊语 ἥλιος（太阳）",
+    "examples": [
+      "гелиоцентризм",
+      "гелиотерапия"
+    ]
+  },
+  {
+    "morpheme": "гео-",
+    "kind": "prefix",
+    "meaningZh": "地球、地",
+    "meaningEn": "geo-, earth",
+    "origin": "古希腊语 γῆ",
+    "examples": [
+      "география",
+      "геология",
+      "геометрия"
+    ]
+  },
+  {
+    "morpheme": "гетеро-",
+    "kind": "prefix",
+    "meaningZh": "相异",
+    "meaningEn": "hetero-, different",
+    "origin": "古希腊语 ἕτερος（不同）",
+    "examples": [
+      "гетерогенный",
+      "гетеротрофный"
+    ]
+  },
+  {
+    "morpheme": "гидро-",
+    "kind": "prefix",
+    "meaningZh": "水",
+    "meaningEn": "hydro-, water",
+    "origin": "古希腊语 ὕδωρ",
+    "examples": [
+      "гидростанция",
+      "гидрология"
+    ]
+  },
+  {
+    "morpheme": "гипер-",
+    "kind": "prefix",
+    "meaningZh": "过度、超",
+    "meaningEn": "hyper-, over",
+    "origin": "古希腊语 ὑπέρ（超过）",
+    "examples": [
+      "гипертония",
+      "гипермаркет",
+      "гиперссылка"
+    ]
+  },
+  {
+    "morpheme": "гипо-",
+    "kind": "prefix",
+    "meaningZh": "下、次",
+    "meaningEn": "hypo-, under",
+    "origin": "古希腊语 ὑπό（下面）",
+    "examples": [
+      "гипотеза",
+      "гиподинамия",
+      "гипоксия"
+    ]
+  },
+  {
+    "morpheme": "главн-",
+    "kind": "root",
+    "meaningZh": "主要、首脑",
+    "meaningEn": "main, head",
+    "origin": "原始斯拉夫语 *glava（头）",
+    "examples": [
+      "главный",
+      "главное",
+      "возглавить"
+    ]
+  },
+  {
+    "morpheme": "глаз-",
+    "kind": "root",
+    "meaningZh": "眼",
+    "meaningEn": "eye",
+    "origin": "原始斯拉夫语 *glazъ",
+    "examples": [
+      "глаз",
+      "глазной",
+      "сглазить"
+    ]
+  },
+  {
+    "morpheme": "глубок-",
+    "kind": "root",
+    "meaningZh": "深",
+    "meaningEn": "deep",
+    "origin": "原始斯拉夫语 *glubokъ",
+    "examples": [
+      "глубокий",
+      "глубоко",
+      "углубить"
+    ]
+  },
+  {
+    "morpheme": "глубоко-",
+    "kind": "prefix",
+    "meaningZh": "深",
+    "meaningEn": "deep-",
+    "origin": "原始斯拉夫语 *glubokъ",
+    "examples": [
+      "глубоководный",
+      "глубокоуважаемый"
+    ]
+  },
+  {
+    "morpheme": "говор-",
+    "kind": "root",
+    "meaningZh": "说、谈",
+    "meaningEn": "speak, talk",
+    "origin": "原始斯拉夫语 *govoriti",
+    "examples": [
+      "говорить",
+      "разговор",
+      "приговор",
+      "договор"
+    ]
+  },
+  {
+    "morpheme": "год-",
+    "kind": "root",
+    "meaningZh": "年",
+    "meaningEn": "year",
+    "origin": "原始斯拉夫语 *godъ",
+    "examples": [
+      "год",
+      "годовой",
+      "ежегодный",
+      "полугодие"
+    ]
+  },
+  {
+    "morpheme": "голов-",
+    "kind": "root",
+    "meaningZh": "头、首",
+    "meaningEn": "head",
+    "origin": "原始斯拉夫语 *golva",
+    "examples": [
+      "голова",
+      "головной",
+      "заголовок",
+      "глава"
+    ]
+  },
+  {
+    "morpheme": "гомо-",
+    "kind": "prefix",
+    "meaningZh": "相同",
+    "meaningEn": "homo-, same",
+    "origin": "古希腊语 ὁμός（相同）",
+    "examples": [
+      "гомогенный",
+      "гомосексуальный"
+    ]
+  },
+  {
+    "morpheme": "город-",
+    "kind": "root",
+    "meaningZh": "城市",
+    "meaningEn": "city, town",
+    "origin": "原始斯拉夫语 *gordъ",
+    "examples": [
+      "город",
+      "городской",
+      "загородный",
+      "горожанин"
+    ]
+  },
+  {
+    "morpheme": "государ-",
+    "kind": "root",
+    "meaningZh": "国家、主君",
+    "meaningEn": "state, sovereign",
+    "origin": "古俄语 государь",
+    "examples": [
+      "государство",
+      "государственный"
+    ]
+  },
+  {
+    "morpheme": "град-",
+    "kind": "root",
+    "meaningZh": "城市（古/构词变体）",
+    "meaningEn": "city (variant of город)",
+    "origin": "原始斯拉夫语 *gordъ",
+    "examples": [
+      "Ленинград",
+      "Сталинград",
+      "град"
+    ]
+  },
+  {
+    "morpheme": "граф-",
+    "kind": "root",
+    "meaningZh": "写、记录",
+    "meaningEn": "write, record",
+    "origin": "古希腊语 γράφω",
+    "examples": [
+      "телеграф",
+      "графика",
+      "биография",
+      "фотография"
+    ]
+  },
+  {
+    "morpheme": "греб-",
+    "kind": "root",
+    "meaningZh": "划桨、耙",
+    "meaningEn": "row, rake",
+    "origin": "原始斯拉夫语 *grebti",
+    "examples": [
+      "гребец",
+      "гребной",
+      "гребень"
+    ]
+  },
+  {
+    "morpheme": "груст-",
+    "kind": "root",
+    "meaningZh": "悲伤",
+    "meaningEn": "sadness",
+    "origin": "原始斯拉夫语 *grustь",
+    "examples": [
+      "грустить",
+      "грустный",
+      "грусть"
+    ]
+  },
+  {
+    "morpheme": "да-",
+    "kind": "root",
+    "meaningZh": "给、授予",
+    "meaningEn": "give",
+    "origin": "原始斯拉夫语 *dati",
+    "examples": [
+      "дать",
+      "подарить",
+      "передать",
+      "издать"
+    ]
+  },
+  {
+    "morpheme": "дву-",
+    "kind": "prefix",
+    "meaningZh": "二、双",
+    "meaningEn": "two-, bi-",
+    "origin": "原始斯拉夫语 *dъva",
+    "examples": [
+      "двусторонний",
+      "двуполый",
+      "двувидовой"
+    ]
+  },
+  {
+    "morpheme": "двух-",
+    "kind": "prefix",
+    "meaningZh": "二（接元音）",
+    "meaningEn": "two-, bi-",
+    "origin": "原始斯拉夫语 *dъva",
+    "examples": [
+      "двухпалатный",
+      "двухэтажный"
+    ]
+  },
+  {
+    "morpheme": "де-",
+    "kind": "prefix",
+    "meaningZh": "去除、相反",
+    "meaningEn": "de-, removal",
+    "origin": "拉丁语 de（脱离）",
+    "examples": [
+      "дезинфекция",
+      "деградация",
+      "демобилизация",
+      "деформация"
+    ]
+  },
+  {
+    "morpheme": "девяти-",
+    "kind": "prefix",
+    "meaningZh": "九",
+    "meaningEn": "nine-, nona-",
+    "origin": "原始斯拉夫语 *devętь",
+    "examples": [
+      "девятиэтажный",
+      "девятикратный"
+    ]
+  },
+  {
+    "morpheme": "дел-",
+    "kind": "root",
+    "meaningZh": "做、事情",
+    "meaningEn": "do, deed",
+    "origin": "原始斯拉夫语 *dělo",
+    "examples": [
+      "делать",
+      "дело",
+      "сделать",
+      "отделить"
+    ]
+  },
+  {
+    "morpheme": "деньг-",
+    "kind": "root",
+    "meaningZh": "钱",
+    "meaningEn": "money",
+    "origin": "突厥语借词（古俄语 деньга）",
+    "examples": [
+      "денежный",
+      "деньжата"
+    ]
+  },
+  {
+    "morpheme": "дерев-",
+    "kind": "root",
+    "meaningZh": "木",
+    "meaningEn": "wood, tree",
+    "origin": "原始斯拉夫语 *dervo",
+    "examples": [
+      "деревянный",
+      "деревообработка"
+    ]
+  },
+  {
+    "morpheme": "деревн-",
+    "kind": "root",
+    "meaningZh": "乡村",
+    "meaningEn": "village",
+    "origin": "原始斯拉夫语 *dervьnja",
+    "examples": [
+      "деревенский",
+      "деревенщина"
+    ]
+  },
+  {
+    "morpheme": "держ-",
+    "kind": "root",
+    "meaningZh": "持、握、维持",
+    "meaningEn": "hold",
+    "origin": "原始斯拉夫语 *dьržati",
+    "examples": [
+      "держать",
+      "держава",
+      "содержание"
+    ]
+  },
+  {
+    "morpheme": "десяти-",
+    "kind": "prefix",
+    "meaningZh": "十",
+    "meaningEn": "ten-, deca-",
+    "origin": "原始斯拉夫语 *desętь",
+    "examples": [
+      "десятилетие",
+      "десятикратный"
+    ]
+  },
+  {
+    "morpheme": "див-",
+    "kind": "root",
+    "meaningZh": "惊奇",
+    "meaningEn": "wonder",
+    "origin": "原始斯拉夫语 *divъ",
+    "examples": [
+      "диво",
+      "удивительный",
+      "удивляться"
+    ]
+  },
+  {
+    "morpheme": "дн-",
+    "kind": "root",
+    "meaningZh": "日、昼",
+    "meaningEn": "day",
+    "origin": "原始斯拉夫语 *dьnь",
+    "examples": [
+      "день",
+      "дня",
+      "дни",
+      "дневной",
+      "ежедневный"
+    ]
+  },
+  {
+    "morpheme": "до-",
+    "kind": "prefix",
+    "meaningZh": "到达、在…之前",
+    "meaningEn": "up to, before",
+    "origin": "原始斯拉夫语 *do",
+    "examples": [
+      "доехать",
+      "дописать",
+      "дошкольный"
+    ]
+  },
+  {
+    "morpheme": "добро-",
+    "kind": "prefix",
+    "meaningZh": "善、好",
+    "meaningEn": "good-",
+    "origin": "原始斯拉夫语 *dobrъ",
+    "examples": [
+      "доброжелательный",
+      "добросовестный"
+    ]
+  },
+  {
+    "morpheme": "долг-",
+    "kind": "root",
+    "meaningZh": "长、久",
+    "meaningEn": "long",
+    "origin": "原始斯拉夫语 *dьlgъ",
+    "examples": [
+      "долгий",
+      "долго",
+      "продолжить"
+    ]
+  },
+  {
+    "morpheme": "долго-",
+    "kind": "prefix",
+    "meaningZh": "长（时间）",
+    "meaningEn": "long (time)",
+    "origin": "原始斯拉夫语 *dьlgъ",
+    "examples": [
+      "долговременный",
+      "долгожданный"
+    ]
+  },
+  {
+    "morpheme": "дом-",
+    "kind": "root",
+    "meaningZh": "家、房屋",
+    "meaningEn": "house, home",
+    "origin": "原始斯拉夫语 *domъ",
+    "examples": [
+      "дом",
+      "домашний",
+      "бездомный",
+      "домовой"
+    ]
+  },
+  {
+    "morpheme": "домин-",
+    "kind": "root",
+    "meaningZh": "支配、统治",
+    "meaningEn": "dominate",
+    "origin": "拉丁语 dominari（经德语 dominieren）；来源 https://ru.wiktionary.org/w/index.php?oldid=13281907 {{морфо-ru|домин|-ир-|-ова|+ть|и=т}}",
+    "examples": [
+      "доминировать",
+      "доминирование",
+      "доминанта"
+    ]
+  },
+  {
+    "morpheme": "дорог-",
+    "kind": "root",
+    "meaningZh": "道路、贵",
+    "meaningEn": "road, dear",
+    "origin": "原始斯拉夫语 *dorga",
+    "examples": [
+      "дороговизна",
+      "дорогостоящий"
+    ]
+  },
+  {
+    "morpheme": "друг-",
+    "kind": "root",
+    "meaningZh": "朋友、另一个",
+    "meaningEn": "friend, other",
+    "origin": "原始斯拉夫语 *drugъ",
+    "examples": [
+      "друг",
+      "дружба",
+      "другой",
+      "подруга"
+    ]
+  },
+  {
+    "morpheme": "дум-",
+    "kind": "root",
+    "meaningZh": "思考",
+    "meaningEn": "think",
+    "origin": "原始斯拉夫语 *duma",
+    "examples": [
+      "думать",
+      "дума",
+      "раздумье"
+    ]
+  },
+  {
+    "morpheme": "душ-",
+    "kind": "root",
+    "meaningZh": "灵魂、精神",
+    "meaningEn": "soul, spirit",
+    "origin": "原始斯拉夫语 *duxъ",
+    "examples": [
+      "душевный",
+      "душегуб"
+    ]
+  },
+  {
+    "morpheme": "едино-",
+    "kind": "prefix",
+    "meaningZh": "单一、统一",
+    "meaningEn": "single, uniform",
+    "origin": "原始斯拉夫语 *edinъ（一）",
+    "examples": [
+      "единогласный",
+      "единомышленник"
+    ]
+  },
+  {
+    "morpheme": "езд-",
+    "kind": "root",
+    "meaningZh": "行驶、乘车",
+    "meaningEn": "ride, travel (by vehicle)",
+    "origin": "原始斯拉夫语 *ězditi",
+    "examples": [
+      "ездить",
+      "поезд",
+      "въезд",
+      "переезд"
+    ]
+  },
+  {
+    "morpheme": "железо-",
+    "kind": "prefix",
+    "meaningZh": "铁",
+    "meaningEn": "iron-",
+    "origin": "原始斯拉夫语 *želězo",
+    "examples": [
+      "железобетон",
+      "железнодорожный"
+    ]
+  },
+  {
+    "morpheme": "желто-",
+    "kind": "prefix",
+    "meaningZh": "黄",
+    "meaningEn": "yellow-",
+    "origin": "原始斯拉夫语 *žьltъ",
+    "examples": [
+      "желтолицый",
+      "желтокожий"
+    ]
+  },
+  {
+    "morpheme": "жизн-",
+    "kind": "root",
+    "meaningZh": "生命",
+    "meaningEn": "life",
+    "origin": "原始斯拉夫语 *žiznь",
+    "examples": [
+      "жизненный",
+      "жизнеописание"
+    ]
+  },
+  {
+    "morpheme": "жир-",
+    "kind": "root",
+    "meaningZh": "脂肪",
+    "meaningEn": "fat",
+    "origin": "原始斯拉夫语 *žirъ",
+    "examples": [
+      "жирный",
+      "жир",
+      "жировать"
+    ]
+  },
+  {
+    "morpheme": "за-",
+    "kind": "prefix",
+    "meaningZh": "开始、在…之后、超出",
+    "meaningEn": "begin, behind, beyond",
+    "origin": "原始斯拉夫语 *za",
+    "examples": [
+      "запеть",
+      "закрыть",
+      "заграница"
+    ]
+  },
+  {
+    "morpheme": "звезд-",
+    "kind": "root",
+    "meaningZh": "星",
+    "meaningEn": "star",
+    "origin": "原始斯拉夫语 *gvězda",
+    "examples": [
+      "звёздный",
+      "звездолёт"
+    ]
+  },
+  {
+    "morpheme": "звуко-",
+    "kind": "prefix",
+    "meaningZh": "声",
+    "meaningEn": "sound-",
+    "origin": "原始斯拉夫语 *zvękъ",
+    "examples": [
+      "звукозапись",
+      "звукоизоляция"
+    ]
+  },
+  {
+    "morpheme": "здоров-",
+    "kind": "root",
+    "meaningZh": "健康",
+    "meaningEn": "health",
+    "origin": "原始斯拉夫语 *sъdorvъ",
+    "examples": [
+      "здоровье",
+      "здоровенный"
+    ]
+  },
+  {
+    "morpheme": "зелено-",
+    "kind": "prefix",
+    "meaningZh": "绿",
+    "meaningEn": "green-",
+    "origin": "原始斯拉夫语 *zelenъ",
+    "examples": [
+      "зеленоглазый",
+      "зеленодольский"
+    ]
+  },
+  {
+    "morpheme": "зем-",
+    "kind": "root",
+    "meaningZh": "土地、地",
+    "meaningEn": "earth, land",
+    "origin": "原始斯拉夫语 *zemja",
+    "examples": [
+      "земля",
+      "земной",
+      "землетрясение",
+      "приземлиться"
+    ]
+  },
+  {
+    "morpheme": "земле-",
+    "kind": "prefix",
+    "meaningZh": "土地",
+    "meaningEn": "land-, earth-",
+    "origin": "原始斯拉夫语 *zemja",
+    "examples": [
+      "земледелие",
+      "землетрясение"
+    ]
+  },
+  {
+    "morpheme": "зло-",
+    "kind": "prefix",
+    "meaningZh": "恶、坏",
+    "meaningEn": "evil-, ill-",
+    "origin": "原始斯拉夫语 *zъlъ",
+    "examples": [
+      "злодеяние",
+      "злоупотребление"
+    ]
+  },
+  {
+    "morpheme": "зна-",
+    "kind": "root",
+    "meaningZh": "知道、认识",
+    "meaningEn": "know",
+    "origin": "原始斯拉夫语 *znati",
+    "examples": [
+      "знать",
+      "знание",
+      "знакомый",
+      "узнать"
+    ]
+  },
+  {
+    "morpheme": "золото-",
+    "kind": "prefix",
+    "meaningZh": "金",
+    "meaningEn": "gold-",
+    "origin": "原始斯拉夫语 *zolto",
+    "examples": [
+      "золотодобыча",
+      "золотоволосый"
+    ]
+  },
+  {
+    "morpheme": "зоо-",
+    "kind": "prefix",
+    "meaningZh": "动物",
+    "meaningEn": "zoo-, animal",
+    "origin": "古希腊语 ζῷον（动物）",
+    "examples": [
+      "зоология",
+      "зоопарк",
+      "зоомагазин"
+    ]
+  },
+  {
+    "morpheme": "игр-",
+    "kind": "root",
+    "meaningZh": "游戏、演奏",
+    "meaningEn": "play, game",
+    "origin": "原始斯拉夫语 *jьgra",
+    "examples": [
+      "игра",
+      "играть",
+      "игрушка",
+      "выиграть"
+    ]
+  },
+  {
+    "morpheme": "из-",
+    "kind": "prefix",
+    "meaningZh": "从…出来",
+    "meaningEn": "out of, from",
+    "origin": "原始斯拉夫语 *jьz",
+    "examples": [
+      "извлечь",
+      "изучать",
+      "избрать"
+    ]
+  },
+  {
+    "morpheme": "извест-",
+    "kind": "root",
+    "meaningZh": "知晓、著名",
+    "meaningEn": "known",
+    "origin": "原始斯拉夫语 *izvěstъ",
+    "examples": [
+      "известный",
+      "известие",
+      "неизвестный"
+    ]
+  },
+  {
+    "morpheme": "изо-",
+    "kind": "prefix",
+    "meaningZh": "相等、同",
+    "meaningEn": "iso-, equal",
+    "origin": "古希腊语 ἴσος（相等）",
+    "examples": [
+      "изотоп",
+      "изометрия",
+      "изоморфный"
+    ]
+  },
+  {
+    "morpheme": "интер-",
+    "kind": "prefix",
+    "meaningZh": "之间、国际",
+    "meaningEn": "inter-",
+    "origin": "拉丁语 inter",
+    "examples": [
+      "интернациональный",
+      "интернет",
+      "интервал"
+    ]
+  },
+  {
+    "morpheme": "интерес-",
+    "kind": "root",
+    "meaningZh": "兴趣",
+    "meaningEn": "interest",
+    "origin": "拉丁语 interest（有关系）",
+    "examples": [
+      "интересный",
+      "интерес",
+      "интересоваться"
+    ]
+  },
+  {
+    "morpheme": "инфра-",
+    "kind": "prefix",
+    "meaningZh": "下、亚",
+    "meaningEn": "infra-, below",
+    "origin": "拉丁语 infra（下面）",
+    "examples": [
+      "инфраструктура",
+      "инфразвук",
+      "инфракрасный"
+    ]
+  },
+  {
+    "morpheme": "ис-",
+    "kind": "prefix",
+    "meaningZh": "从…出来（清辅音前变体）",
+    "meaningEn": "out of (before voiceless consonants)",
+    "origin": "原始斯拉夫语 *jьz",
+    "examples": [
+      "использовать",
+      "исходить",
+      "исписать"
+    ]
+  },
+  {
+    "morpheme": "каз-",
+    "kind": "root",
+    "meaningZh": "说、指示、显现",
+    "meaningEn": "to say, to show",
+    "origin": "原始斯拉夫语 *kаzаti",
+    "examples": [
+      "показать",
+      "указать",
+      "доказать",
+      "наказание",
+      "отказать"
+    ]
+  },
+  {
+    "morpheme": "казус-",
+    "kind": "root",
+    "meaningZh": "案例（整词兜底）",
+    "meaningEn": "case (whole-word guard)",
+    "origin": "⚠ 兜底条目·非语义切分：抑制 казус→каз- 假词根。казус 借自拉丁 cāsus，为单词素 https://ru.wiktionary.org/wiki/казус {{морфо-ru|казус|и=т}}",
+    "examples": [
+      "казус",
+      "казусный"
+    ]
+  },
+  {
+    "morpheme": "камен-",
+    "kind": "root",
+    "meaningZh": "石",
+    "meaningEn": "stone",
+    "origin": "原始斯拉夫语 *kamy",
+    "examples": [
+      "каменный",
+      "каменщик"
+    ]
+  },
+  {
+    "morpheme": "квадро-",
+    "kind": "prefix",
+    "meaningZh": "四",
+    "meaningEn": "quadro-, four",
+    "origin": "拉丁语 quattuor（四）",
+    "examples": [
+      "квадроцикл",
+      "квадрофония"
+    ]
+  },
+  {
+    "morpheme": "квази-",
+    "kind": "prefix",
+    "meaningZh": "准、类似",
+    "meaningEn": "quasi-, almost",
+    "origin": "拉丁语 quasi（好像）",
+    "examples": [
+      "квазинаучный",
+      "квазистационарный"
+    ]
+  },
+  {
+    "morpheme": "кибер-",
+    "kind": "prefix",
+    "meaningZh": "控制、网络",
+    "meaningEn": "cyber-",
+    "origin": "古希腊语 κυβερνητικός（舵手）",
+    "examples": [
+      "кибернетика",
+      "кибербезопасность"
+    ]
+  },
+  {
+    "morpheme": "кило-",
+    "kind": "prefix",
+    "meaningZh": "千",
+    "meaningEn": "kilo-, thousand",
+    "origin": "古希腊语 χίλιοι（千）",
+    "examples": [
+      "килограмм",
+      "километр",
+      "киловатт"
+    ]
+  },
+  {
+    "morpheme": "кино-",
+    "kind": "prefix",
+    "meaningZh": "电影",
+    "meaningEn": "cinema-, film",
+    "origin": "古希腊语 κίνημα（运动）",
+    "examples": [
+      "кинотеатр",
+      "кинофильм",
+      "киножурнал",
+      "киностудия"
+    ]
+  },
+  {
+    "morpheme": "книг-",
+    "kind": "root",
+    "meaningZh": "书",
+    "meaningEn": "book",
+    "origin": "原始斯拉夫语 *kъňiga",
+    "examples": [
+      "книга",
+      "книжный",
+      "книжка"
+    ]
+  },
+  {
+    "morpheme": "книж-",
+    "kind": "root",
+    "meaningZh": "书",
+    "meaningEn": "book",
+    "origin": "原始斯拉夫语 *kъniga",
+    "examples": [
+      "книжный",
+      "книжник"
+    ]
+  },
+  {
+    "morpheme": "контр-",
+    "kind": "prefix",
+    "meaningZh": "反、对",
+    "meaningEn": "contra-, counter-",
+    "origin": "拉丁语 contra",
+    "examples": [
+      "контроль",
+      "контратака",
+      "контрудар"
+    ]
+  },
+  {
+    "morpheme": "корен-",
+    "kind": "root",
+    "meaningZh": "根",
+    "meaningEn": "root",
+    "origin": "原始斯拉夫语 *korenь",
+    "examples": [
+      "коренной",
+      "корнеплод"
+    ]
+  },
+  {
+    "morpheme": "коротк-",
+    "kind": "root",
+    "meaningZh": "短",
+    "meaningEn": "short",
+    "origin": "原始斯拉夫语 *kortъkъ",
+    "examples": [
+      "короткий",
+      "коротко",
+      "укоротить"
+    ]
+  },
+  {
+    "morpheme": "космо-",
+    "kind": "prefix",
+    "meaningZh": "宇宙",
+    "meaningEn": "cosmo-, universe",
+    "origin": "古希腊语 κόσμος（宇宙）",
+    "examples": [
+      "космонавт",
+      "космодром",
+      "космополит"
+    ]
+  },
+  {
+    "morpheme": "крас-",
+    "kind": "root",
+    "meaningZh": "红、美",
+    "meaningEn": "red, beautiful",
+    "origin": "原始斯拉夫语 *krasьnъ",
+    "examples": [
+      "красный",
+      "красота",
+      "прекрасный",
+      "красить"
+    ]
+  },
+  {
+    "morpheme": "красн-",
+    "kind": "root",
+    "meaningZh": "美、红",
+    "meaningEn": "beauty, red",
+    "origin": "原始斯拉夫语 *krasьnъ",
+    "examples": [
+      "красный",
+      "красота",
+      "прекрасный"
+    ]
+  },
+  {
+    "morpheme": "красно-",
+    "kind": "prefix",
+    "meaningZh": "红",
+    "meaningEn": "red-",
+    "origin": "原始斯拉夫语 *krasьnъ",
+    "examples": [
+      "краснознамённый",
+      "красноречие"
+    ]
+  },
+  {
+    "morpheme": "крио-",
+    "kind": "prefix",
+    "meaningZh": "低温",
+    "meaningEn": "cryo-, cold",
+    "origin": "古希腊语 κρύος（寒冷）",
+    "examples": [
+      "криотерапия",
+      "криобиология"
+    ]
+  },
+  {
+    "morpheme": "крич-",
+    "kind": "root",
+    "meaningZh": "喊叫",
+    "meaningEn": "shout",
+    "origin": "原始斯拉夫语 *kričati",
+    "examples": [
+      "кричать",
+      "крик",
+      "крикливый"
+    ]
+  },
+  {
+    "morpheme": "крупно-",
+    "kind": "prefix",
+    "meaningZh": "大、粗",
+    "meaningEn": "large-, coarse-",
+    "origin": "古俄语 крупъ（粗粒）",
+    "examples": [
+      "крупномасштабный",
+      "крупнокалиберный"
+    ]
+  },
+  {
+    "morpheme": "кулак-",
+    "kind": "root",
+    "meaningZh": "拳头",
+    "meaningEn": "fist",
+    "origin": "原始斯拉夫语 *kulakъ",
+    "examples": [
+      "кулачный",
+      "кулак",
+      "кулачок"
+    ]
+  },
+  {
+    "morpheme": "легк-",
+    "kind": "root",
+    "meaningZh": "轻、容易",
+    "meaningEn": "light, easy",
+    "origin": "原始斯拉夫语 *lьgъkъ",
+    "examples": [
+      "лёгкий",
+      "легко",
+      "облегчить"
+    ]
+  },
+  {
+    "morpheme": "легко-",
+    "kind": "prefix",
+    "meaningZh": "轻、易",
+    "meaningEn": "light, easy",
+    "origin": "原始斯拉夫语 *lьgъkъ",
+    "examples": [
+      "легкоатлет",
+      "легковоспламеняющийся"
+    ]
+  },
+  {
+    "morpheme": "леж-",
+    "kind": "root",
+    "meaningZh": "躺、卧",
+    "meaningEn": "lie",
+    "origin": "原始斯拉夫语 *ležati",
+    "examples": [
+      "лежать",
+      "лежак",
+      "лежание"
+    ]
+  },
+  {
+    "morpheme": "лес-",
+    "kind": "root",
+    "meaningZh": "森林",
+    "meaningEn": "forest",
+    "origin": "原始斯拉夫语 *lěsъ",
+    "examples": [
+      "лесник",
+      "лесной",
+      "лесовод"
+    ]
+  },
+  {
+    "morpheme": "лет-",
+    "kind": "root",
+    "meaningZh": "飞",
+    "meaningEn": "fly",
+    "origin": "原始斯拉夫语 *letěti",
+    "examples": [
+      "лететь",
+      "самолёт",
+      "полёт",
+      "лётчик"
+    ]
+  },
+  {
+    "morpheme": "лже-",
+    "kind": "prefix",
+    "meaningZh": "伪、假",
+    "meaningEn": "false-, pseudo-",
+    "origin": "古俄语 лъжа（谎言）",
+    "examples": [
+      "лженаука",
+      "лжепророк"
+    ]
+  },
+  {
+    "morpheme": "лист-",
+    "kind": "root",
+    "meaningZh": "叶、纸页",
+    "meaningEn": "leaf, sheet",
+    "origin": "原始斯拉夫语 *listъ",
+    "examples": [
+      "листовой",
+      "листопад"
+    ]
+  },
+  {
+    "morpheme": "лог-",
+    "kind": "root",
+    "meaningZh": "词、学说、学科",
+    "meaningEn": "word, study of",
+    "origin": "古希腊语 λόγος",
+    "examples": [
+      "биология",
+      "геология",
+      "логика",
+      "диалог"
+    ]
+  },
+  {
+    "morpheme": "люб-",
+    "kind": "root",
+    "meaningZh": "爱、喜好",
+    "meaningEn": "love",
+    "origin": "原始斯拉夫语 *ljubiti",
+    "examples": [
+      "любить",
+      "любовь",
+      "любимый",
+      "влюбиться"
+    ]
+  },
+  {
+    "morpheme": "магнито-",
+    "kind": "prefix",
+    "meaningZh": "磁",
+    "meaningEn": "magneto-",
+    "origin": "古希腊语 μαγνῆτις（磁石）",
+    "examples": [
+      "магнитофон",
+      "магнитола"
+    ]
+  },
+  {
+    "morpheme": "макро-",
+    "kind": "prefix",
+    "meaningZh": "宏观、大",
+    "meaningEn": "macro-, large",
+    "origin": "古希腊语 μακρός（长）",
+    "examples": [
+      "макромир",
+      "макроэкономика",
+      "макроструктура"
+    ]
+  },
+  {
+    "morpheme": "мал-",
+    "kind": "root",
+    "meaningZh": "小、少",
+    "meaningEn": "small, little",
+    "origin": "原始斯拉夫语 *malъ",
+    "examples": [
+      "маленький",
+      "мало",
+      "умалить"
+    ]
+  },
+  {
+    "morpheme": "мало-",
+    "kind": "prefix",
+    "meaningZh": "少、小",
+    "meaningEn": "little, few",
+    "origin": "原始斯拉夫语 *malъ",
+    "examples": [
+      "малоизвестный",
+      "малолетний"
+    ]
+  },
+  {
+    "morpheme": "меж-",
+    "kind": "prefix",
+    "meaningZh": "之间、际",
+    "meaningEn": "inter-, between",
+    "origin": "原始斯拉夫语 *meďu",
+    "examples": [
+      "межрегиональный",
+      "межконтинентальный"
+    ]
+  },
+  {
+    "morpheme": "между-",
+    "kind": "prefix",
+    "meaningZh": "之间、际",
+    "meaningEn": "between, inter-",
+    "origin": "между（之间）",
+    "examples": [
+      "международный",
+      "междугородный"
+    ]
+  },
+  {
+    "morpheme": "мелко-",
+    "kind": "prefix",
+    "meaningZh": "小、细",
+    "meaningEn": "small-, fine-",
+    "origin": "原始斯拉夫语 *mělъkъ",
+    "examples": [
+      "мелкомасштабный",
+      "мелкозернистый"
+    ]
+  },
+  {
+    "morpheme": "мест-",
+    "kind": "root",
+    "meaningZh": "地方",
+    "meaningEn": "place",
+    "origin": "原始斯拉夫语 *město",
+    "examples": [
+      "местный",
+      "месторождение"
+    ]
+  },
+  {
+    "morpheme": "мета-",
+    "kind": "prefix",
+    "meaningZh": "超越、变化",
+    "meaningEn": "meta-",
+    "origin": "古希腊语 μετά（之后）",
+    "examples": [
+      "метафизика",
+      "метафора",
+      "метаболизм"
+    ]
+  },
+  {
+    "morpheme": "метео-",
+    "kind": "prefix",
+    "meaningZh": "气象",
+    "meaningEn": "weather-",
+    "origin": "古希腊语 μετέωρος（高空）",
+    "examples": [
+      "метеослужба",
+      "метеостанция",
+      "метеосводка"
+    ]
+  },
+  {
+    "morpheme": "метил-",
+    "kind": "prefix",
+    "meaningZh": "甲基",
+    "meaningEn": "methyl-",
+    "origin": "希腊语 μέθυ（酒）+ ὕλη（木材）",
+    "examples": [
+      "метиловый",
+      "метилбензол"
+    ]
+  },
+  {
+    "morpheme": "метр-",
+    "kind": "root",
+    "meaningZh": "测量、米",
+    "meaningEn": "measure, meter",
+    "origin": "古希腊语 μέτρον",
+    "examples": [
+      "метр",
+      "термометр",
+      "геометрия",
+      "километр"
+    ]
+  },
+  {
+    "morpheme": "мечт-",
+    "kind": "root",
+    "meaningZh": "梦想",
+    "meaningEn": "dream",
+    "origin": "原始斯拉夫语 *mьčta",
+    "examples": [
+      "мечтать",
+      "мечта",
+      "мечтатель"
+    ]
+  },
+  {
+    "morpheme": "микро-",
+    "kind": "prefix",
+    "meaningZh": "微小",
+    "meaningEn": "micro-, small",
+    "origin": "古希腊语 μικρός",
+    "examples": [
+      "микрофон",
+      "микроскоп",
+      "микроб"
+    ]
+  },
+  {
+    "morpheme": "милли-",
+    "kind": "prefix",
+    "meaningZh": "千分之一、毫",
+    "meaningEn": "milli-, thousandth",
+    "origin": "拉丁语 mille（千）",
+    "examples": [
+      "миллиметр",
+      "миллиграмм",
+      "миллисекунда"
+    ]
+  },
+  {
+    "morpheme": "мир-",
+    "kind": "root",
+    "meaningZh": "世界、和平",
+    "meaningEn": "world, peace",
+    "origin": "原始斯拉夫语 *mirъ",
+    "examples": [
+      "мир",
+      "мирный",
+      "мировой",
+      "примирение"
+    ]
+  },
+  {
+    "morpheme": "много-",
+    "kind": "prefix",
+    "meaningZh": "多",
+    "meaningEn": "many, multi-",
+    "origin": "много（多）",
+    "examples": [
+      "многочисленный",
+      "многозначный",
+      "многоугольник"
+    ]
+  },
+  {
+    "morpheme": "молод-",
+    "kind": "root",
+    "meaningZh": "年轻",
+    "meaningEn": "young",
+    "origin": "原始斯拉夫语 *moldъ",
+    "examples": [
+      "молодость",
+      "молодожён"
+    ]
+  },
+  {
+    "morpheme": "молч-",
+    "kind": "root",
+    "meaningZh": "沉默",
+    "meaningEn": "be silent",
+    "origin": "原始斯拉夫语 *mьlčati",
+    "examples": [
+      "молчать",
+      "молчание",
+      "молчаливый"
+    ]
+  },
+  {
+    "morpheme": "моно-",
+    "kind": "prefix",
+    "meaningZh": "单一",
+    "meaningEn": "mono-, single",
+    "origin": "古希腊语 μόνος（单独）",
+    "examples": [
+      "монополия",
+      "монолог",
+      "монотонный"
+    ]
+  },
+  {
+    "morpheme": "море-",
+    "kind": "prefix",
+    "meaningZh": "海",
+    "meaningEn": "sea-",
+    "origin": "原始斯拉夫语 *morje",
+    "examples": [
+      "мореплавание",
+      "морепродукты"
+    ]
+  },
+  {
+    "morpheme": "мудр-",
+    "kind": "root",
+    "meaningZh": "智慧、明智",
+    "meaningEn": "wise",
+    "origin": "原始斯拉夫语 *mǫdrъ",
+    "examples": [
+      "мудрость",
+      "мудрец"
+    ]
+  },
+  {
+    "morpheme": "мульти-",
+    "kind": "prefix",
+    "meaningZh": "多、复合",
+    "meaningEn": "multi-, many",
+    "origin": "拉丁语 multus（多）",
+    "examples": [
+      "мультимедиа",
+      "мультинациональный",
+      "мультипликация"
+    ]
+  },
+  {
+    "morpheme": "мысл-",
+    "kind": "root",
+    "meaningZh": "想、思想",
+    "meaningEn": "think, thought",
+    "origin": "原始斯拉夫语 *myslь",
+    "examples": [
+      "мысль",
+      "мыслить",
+      "замысел",
+      "промысел"
+    ]
+  },
+  {
+    "morpheme": "на-",
+    "kind": "prefix",
+    "meaningZh": "在…上、积累",
+    "meaningEn": "on, onto, accumulate",
+    "origin": "原始斯拉夫语 *na",
+    "examples": [
+      "написать",
+      "настенный",
+      "набрать"
+    ]
+  },
+  {
+    "morpheme": "над-",
+    "kind": "prefix",
+    "meaningZh": "在…之上",
+    "meaningEn": "above, over",
+    "origin": "原始斯拉夫语 *nadъ",
+    "examples": [
+      "надав",
+      "надстроить",
+      "надзирать"
+    ]
+  },
+  {
+    "morpheme": "надежд-",
+    "kind": "root",
+    "meaningZh": "希望",
+    "meaningEn": "hope",
+    "origin": "原始斯拉夫语 *nadeďa",
+    "examples": [
+      "надежда",
+      "надеяться",
+      "безнадёжный"
+    ]
+  },
+  {
+    "morpheme": "наи-",
+    "kind": "prefix",
+    "meaningZh": "最（最高级前缀）",
+    "meaningEn": "most (superlative)",
+    "origin": "原始斯拉夫语 *najь",
+    "examples": [
+      "наилучший",
+      "наибольший",
+      "наименьший"
+    ]
+  },
+  {
+    "morpheme": "нано-",
+    "kind": "prefix",
+    "meaningZh": "纳米、极小",
+    "meaningEn": "nano-",
+    "origin": "古希腊语 νᾶνος（侏儒）",
+    "examples": [
+      "нанотехнология",
+      "нанометр"
+    ]
+  },
+  {
+    "morpheme": "народ-",
+    "kind": "root",
+    "meaningZh": "人民、民族",
+    "meaningEn": "people, nation",
+    "origin": "原始斯拉夫语 *narodъ",
+    "examples": [
+      "народ",
+      "народный",
+      "международный"
+    ]
+  },
+  {
+    "morpheme": "не-",
+    "kind": "prefix",
+    "meaningZh": "否定、非",
+    "meaningEn": "not, non-",
+    "origin": "原始斯拉夫语 *ne",
+    "examples": [
+      "нельзя",
+      "некрасивый",
+      "неправда"
+    ]
+  },
+  {
+    "morpheme": "недо-",
+    "kind": "prefix",
+    "meaningZh": "不足、欠缺",
+    "meaningEn": "insufficiently, under-",
+    "origin": "не + до",
+    "examples": [
+      "недостаток",
+      "недооценить",
+      "недобиток"
+    ]
+  },
+  {
+    "morpheme": "нейро-",
+    "kind": "prefix",
+    "meaningZh": "神经",
+    "meaningEn": "neuro-",
+    "origin": "古希腊语 νεῦρον（神经）",
+    "examples": [
+      "нейрохирург",
+      "нейробиология"
+    ]
+  },
+  {
+    "morpheme": "нео-",
+    "kind": "prefix",
+    "meaningZh": "新",
+    "meaningEn": "neo-, new",
+    "origin": "古希腊语 νέος（新）",
+    "examples": [
+      "неолиберализм",
+      "неонацизм"
+    ]
+  },
+  {
+    "morpheme": "нес-",
+    "kind": "root",
+    "meaningZh": "携带、运送",
+    "meaningEn": "carry",
+    "origin": "原始斯拉夫语 *nesti",
+    "examples": [
+      "нести",
+      "принести",
+      "перенести",
+      "носить"
+    ]
+  },
+  {
+    "morpheme": "нефте-",
+    "kind": "prefix",
+    "meaningZh": "石油",
+    "meaningEn": "oil-, petro-",
+    "origin": "古希腊语 νάφθα（石油）",
+    "examples": [
+      "нефтепровод",
+      "нефтепереработка"
+    ]
+  },
+  {
+    "morpheme": "низ-",
+    "kind": "prefix",
+    "meaningZh": "向下",
+    "meaningEn": "down",
+    "origin": "原始斯拉夫语 *nizъ",
+    "examples": [
+      "низать",
+      "ниспадать"
+    ]
+  },
+  {
+    "morpheme": "низко-",
+    "kind": "prefix",
+    "meaningZh": "低",
+    "meaningEn": "low-, lowly",
+    "origin": "原始斯拉夫语 *nizkъ",
+    "examples": [
+      "низкокалорийный",
+      "низкорослый"
+    ]
+  },
+  {
+    "morpheme": "нов-",
+    "kind": "root",
+    "meaningZh": "新",
+    "meaningEn": "new",
+    "origin": "原始斯拉夫语 *novъ",
+    "examples": [
+      "новый",
+      "новость",
+      "обновить",
+      "новатор"
+    ]
+  },
+  {
+    "morpheme": "ноч-",
+    "kind": "root",
+    "meaningZh": "夜",
+    "meaningEn": "night",
+    "origin": "原始斯拉夫语 *noťь",
+    "examples": [
+      "ночной",
+      "ночлег",
+      "ночевать"
+    ]
+  },
+  {
+    "morpheme": "нужн-",
+    "kind": "root",
+    "meaningZh": "需要",
+    "meaningEn": "need",
+    "origin": "原始斯拉夫语 *nuďa",
+    "examples": [
+      "нужный",
+      "нужда",
+      "нуждаться"
+    ]
+  },
+  {
+    "morpheme": "о-",
+    "kind": "prefix",
+    "meaningZh": "环绕、使成为",
+    "meaningEn": "around, make",
+    "origin": "原始斯拉夫语 *o(b)",
+    "examples": [
+      "окружить",
+      "осмотреть",
+      "описать"
+    ]
+  },
+  {
+    "morpheme": "об-",
+    "kind": "prefix",
+    "meaningZh": "环绕、遍及",
+    "meaningEn": "around, about",
+    "origin": "原始斯拉夫语 *ob",
+    "examples": [
+      "обойти",
+      "объяснить",
+      "обучить"
+    ]
+  },
+  {
+    "morpheme": "обер-",
+    "kind": "prefix",
+    "meaningZh": "上级、总",
+    "meaningEn": "chief-, head",
+    "origin": "德语 ober（上面）",
+    "examples": [
+      "обер-офицер",
+      "обер-прокурор"
+    ]
+  },
+  {
+    "morpheme": "обще-",
+    "kind": "prefix",
+    "meaningZh": "公共、共同",
+    "meaningEn": "common, social",
+    "origin": "古俄语 обьщь（共同）",
+    "examples": [
+      "общество",
+      "общежитие",
+      "общедоступный"
+    ]
+  },
+  {
+    "morpheme": "обществ-",
+    "kind": "root",
+    "meaningZh": "社会",
+    "meaningEn": "society",
+    "origin": "古俄语 обьщьство",
+    "examples": [
+      "общественный",
+      "обществоведение"
+    ]
+  },
+  {
+    "morpheme": "обычн-",
+    "kind": "root",
+    "meaningZh": "平常、习惯",
+    "meaningEn": "usual, custom",
+    "origin": "原始斯拉夫语 *obyčajь",
+    "examples": [
+      "обычный",
+      "обычно",
+      "необычный"
+    ]
+  },
+  {
+    "morpheme": "огне-",
+    "kind": "prefix",
+    "meaningZh": "火",
+    "meaningEn": "fire-",
+    "origin": "原始斯拉夫语 *ognь",
+    "examples": [
+      "огнестрельный",
+      "огнеупорный"
+    ]
+  },
+  {
+    "morpheme": "один-",
+    "kind": "root",
+    "meaningZh": "一、独自",
+    "meaningEn": "one, alone",
+    "origin": "原始斯拉夫语 *edinъ",
+    "examples": [
+      "один",
+      "одинокий",
+      "одиночество",
+      "одинаковый"
+    ]
+  },
+  {
+    "morpheme": "однако-",
+    "kind": "root",
+    "meaningZh": "然而（整词兜底）",
+    "meaningEn": "however (whole-word guard)",
+    "origin": "⚠ 兜底条目·非语义切分：抑制 однако→дн- 假词根。однако 为单词素 https://ru.wiktionary.org/wiki/однако {{морфо-ru|однако|и=т}}",
+    "examples": [
+      "однако"
+    ]
+  },
+  {
+    "morpheme": "одно-",
+    "kind": "prefix",
+    "meaningZh": "同、单",
+    "meaningEn": "one-, same",
+    "origin": "原始斯拉夫语 *edinъ",
+    "examples": [
+      "одновременный",
+      "одноклассник",
+      "однообразный"
+    ]
+  },
+  {
+    "morpheme": "около-",
+    "kind": "prefix",
+    "meaningZh": "附近、近似",
+    "meaningEn": "near-, about",
+    "origin": "古俄语 около（附近）",
+    "examples": [
+      "околоземный",
+      "околоцветник"
+    ]
+  },
+  {
+    "morpheme": "орто-",
+    "kind": "prefix",
+    "meaningZh": "正、直",
+    "meaningEn": "ortho-, straight",
+    "origin": "古希腊语 ὀρθός（直的）",
+    "examples": [
+      "ортодоксальный",
+      "ортопедия"
+    ]
+  },
+  {
+    "morpheme": "от-",
+    "kind": "prefix",
+    "meaningZh": "离开、分离",
+    "meaningEn": "away, off",
+    "origin": "原始斯拉夫语 *otъ",
+    "examples": [
+      "отойти",
+      "открыть",
+      "отдать"
+    ]
+  },
+  {
+    "morpheme": "пад-",
+    "kind": "root",
+    "meaningZh": "落、坠",
+    "meaningEn": "fall",
+    "origin": "原始斯拉夫语 *pasti；来源 https://ru.wiktionary.org/wiki/водопад {{морфо-ru|вод|-о-|пад|и=т}}（падать = {{морфо-ru|пад|-а|+ть|и=т}}）",
+    "examples": [
+      "водопад",
+      "звездопад",
+      "падение",
+      "листопадный",
+      "нападать"
+    ]
+  },
+  {
+    "morpheme": "памят-",
+    "kind": "root",
+    "meaningZh": "记忆",
+    "meaningEn": "memory",
+    "origin": "原始斯拉夫语 *pamętь",
+    "examples": [
+      "память",
+      "памятный",
+      "памятник"
+    ]
+  },
+  {
+    "morpheme": "пара-",
+    "kind": "prefix",
+    "meaningZh": "旁、类",
+    "meaningEn": "para-, beside",
+    "origin": "古希腊语 παρά（旁边）",
+    "examples": [
+      "парадокс",
+      "парапсихология"
+    ]
+  },
+  {
+    "morpheme": "паро-",
+    "kind": "prefix",
+    "meaningZh": "蒸汽",
+    "meaningEn": "steam-",
+    "origin": "原始斯拉夫语 *para（蒸汽）",
+    "examples": [
+      "паровоз",
+      "пароход"
+    ]
+  },
+  {
+    "morpheme": "перво-",
+    "kind": "prefix",
+    "meaningZh": "第一、最初",
+    "meaningEn": "first-, proto-",
+    "origin": "原始斯拉夫语 *pьrvъ",
+    "examples": [
+      "первоисточник",
+      "первоклассник"
+    ]
+  },
+  {
+    "morpheme": "пере-",
+    "kind": "prefix",
+    "meaningZh": "越过、重新",
+    "meaningEn": "across, re-",
+    "origin": "原始斯拉夫语 *per",
+    "examples": [
+      "перевести",
+      "переписать",
+      "переход"
+    ]
+  },
+  {
+    "morpheme": "печал-",
+    "kind": "root",
+    "meaningZh": "悲哀",
+    "meaningEn": "sorrow",
+    "origin": "原始斯拉夫语 *pečalь",
+    "examples": [
+      "печальный",
+      "печаль",
+      "опечалить"
+    ]
+  },
+  {
+    "morpheme": "пис-",
+    "kind": "root",
+    "meaningZh": "写",
+    "meaningEn": "write",
+    "origin": "原始斯拉夫语 *pьsati",
+    "examples": [
+      "писать",
+      "писатель",
+      "записать",
+      "подпись"
+    ]
+  },
+  {
+    "morpheme": "письм-",
+    "kind": "root",
+    "meaningZh": "书写、信件",
+    "meaningEn": "writing, letter",
+    "origin": "原始斯拉夫语 *pisьmo",
+    "examples": [
+      "письменность",
+      "письмоносец"
+    ]
+  },
+  {
+    "morpheme": "плак-",
+    "kind": "root",
+    "meaningZh": "哭泣",
+    "meaningEn": "cry",
+    "origin": "原始斯拉夫语 *plakati",
+    "examples": [
+      "плакать",
+      "плакса",
+      "заплакать"
+    ]
+  },
+  {
+    "morpheme": "плох-",
+    "kind": "root",
+    "meaningZh": "坏",
+    "meaningEn": "bad",
+    "origin": "原始斯拉夫语 *ploxъ",
+    "examples": [
+      "плохой",
+      "плохо",
+      "ухудшить"
+    ]
+  },
+  {
+    "morpheme": "по-",
+    "kind": "prefix",
+    "meaningZh": "稍微、开始、沿着",
+    "meaningEn": "a bit, start, along",
+    "origin": "原始斯拉夫语 *po",
+    "examples": [
+      "пойти",
+      "почитать",
+      "подарить"
+    ]
+  },
+  {
+    "morpheme": "под-",
+    "kind": "prefix",
+    "meaningZh": "在…之下",
+    "meaningEn": "under, beneath",
+    "origin": "原始斯拉夫语 *podъ",
+    "examples": [
+      "подводный",
+      "подписать",
+      "подойти"
+    ]
+  },
+  {
+    "morpheme": "пол-",
+    "kind": "root",
+    "meaningZh": "田地；地板；一半",
+    "meaningEn": "field; floor; half",
+    "origin": "原始斯拉夫语 *polje / *polъ",
+    "examples": [
+      "поле",
+      "полевой",
+      "пол",
+      "половина",
+      "наполовину"
+    ]
+  },
+  {
+    "morpheme": "поли-",
+    "kind": "prefix",
+    "meaningZh": "多",
+    "meaningEn": "poly-, many",
+    "origin": "古希腊语 πολύς（多）",
+    "examples": [
+      "поликлиника",
+      "полимер",
+      "полифония"
+    ]
+  },
+  {
+    "morpheme": "полно-",
+    "kind": "prefix",
+    "meaningZh": "完全、充分",
+    "meaningEn": "full-, fully",
+    "origin": "原始斯拉夫语 *pьlnъ",
+    "examples": [
+      "полноценный",
+      "полнометражный"
+    ]
+  },
+  {
+    "morpheme": "полу-",
+    "kind": "prefix",
+    "meaningZh": "半",
+    "meaningEn": "half, semi-",
+    "origin": "пол（半）",
+    "examples": [
+      "полуостров",
+      "полугодие",
+      "полумесяц"
+    ]
+  },
+  {
+    "morpheme": "порт-",
+    "kind": "root",
+    "meaningZh": "搬运、港口",
+    "meaningEn": "carry, port",
+    "origin": "拉丁语 portare",
+    "examples": [
+      "транспорт",
+      "порт",
+      "экспорт",
+      "импорт"
+    ]
+  },
+  {
+    "morpheme": "после-",
+    "kind": "prefix",
+    "meaningZh": "之后",
+    "meaningEn": "post-, after",
+    "origin": "原始斯拉夫语 *poslě",
+    "examples": [
+      "послесловие",
+      "послеоперационный"
+    ]
+  },
+  {
+    "morpheme": "пост-",
+    "kind": "prefix",
+    "meaningZh": "后、之后",
+    "meaningEn": "post-",
+    "origin": "拉丁语 post",
+    "originNote": "",
+    "examples": [
+      "постав",
+      "постсоветский"
+    ]
+  },
+  {
+    "morpheme": "пра-",
+    "kind": "prefix",
+    "meaningZh": "原始、曾祖",
+    "meaningEn": "proto-, great-",
+    "origin": "原始斯拉夫语 *pra",
+    "examples": [
+      "прадед",
+      "праязык",
+      "праславянский"
+    ]
+  },
+  {
+    "morpheme": "прав-",
+    "kind": "root",
+    "meaningZh": "正确、权利",
+    "meaningEn": "right, correct",
+    "origin": "原始斯拉夫语 *pravъ",
+    "examples": [
+      "право",
+      "правильный",
+      "правда",
+      "управлять"
+    ]
+  },
+  {
+    "morpheme": "пре-",
+    "kind": "prefix",
+    "meaningZh": "非常、转变",
+    "meaningEn": "very, trans-",
+    "origin": "古教会斯拉夫语 прѣ",
+    "examples": [
+      "прекрасный",
+      "превратить",
+      "преувеличить"
+    ]
+  },
+  {
+    "morpheme": "пред-",
+    "kind": "prefix",
+    "meaningZh": "在…之前",
+    "meaningEn": "before, fore-",
+    "origin": "原始斯拉夫语 *perdъ",
+    "examples": [
+      "предвидеть",
+      "предававшийся",
+      "предгорье"
+    ]
+  },
+  {
+    "morpheme": "при-",
+    "kind": "prefix",
+    "meaningZh": "靠近、附加",
+    "meaningEn": "approach, attach",
+    "origin": "原始斯拉夫语 *pri",
+    "examples": [
+      "прийти",
+      "приписать",
+      "приморский"
+    ]
+  },
+  {
+    "morpheme": "про-",
+    "kind": "prefix",
+    "meaningZh": "穿过、经过",
+    "meaningEn": "through, past",
+    "origin": "原始斯拉夫语 *pro",
+    "examples": [
+      "пройти",
+      "прочитать",
+      "провести"
+    ]
+  },
+  {
+    "morpheme": "прост-",
+    "kind": "root",
+    "meaningZh": "简单、朴素",
+    "meaningEn": "simple",
+    "origin": "原始斯拉夫语 *prostъ",
+    "examples": [
+      "простой",
+      "простота",
+      "упростить"
+    ]
+  },
+  {
+    "morpheme": "против-",
+    "kind": "prefix",
+    "meaningZh": "反对、抗",
+    "meaningEn": "against, anti-",
+    "origin": "原始斯拉夫语 *protivъ",
+    "examples": [
+      "противоядие",
+      "противодействие"
+    ]
+  },
+  {
+    "morpheme": "противо-",
+    "kind": "prefix",
+    "meaningZh": "反对、抗",
+    "meaningEn": "against, anti-",
+    "origin": "против（反对）",
+    "examples": [
+      "противоречие",
+      "противогаз",
+      "противодействие"
+    ]
+  },
+  {
+    "morpheme": "прото-",
+    "kind": "prefix",
+    "meaningZh": "最初、原型",
+    "meaningEn": "proto-, first",
+    "origin": "古希腊语 πρῶτος（第一）",
+    "examples": [
+      "прототип",
+      "протоплазма"
+    ]
+  },
+  {
+    "morpheme": "псевдо-",
+    "kind": "prefix",
+    "meaningZh": "伪、假",
+    "meaningEn": "pseudo-, false",
+    "origin": "古希腊语 ψευδής（虚假）",
+    "examples": [
+      "псевдонаука",
+      "псевдоним"
+    ]
+  },
+  {
+    "morpheme": "психо-",
+    "kind": "prefix",
+    "meaningZh": "心理、精神",
+    "meaningEn": "psycho-",
+    "origin": "古希腊语 ψυχή（灵魂）",
+    "examples": [
+      "психология",
+      "психотерапия",
+      "психоанализ"
+    ]
+  },
+  {
+    "morpheme": "птиц-",
+    "kind": "root",
+    "meaningZh": "鸟",
+    "meaningEn": "bird",
+    "origin": "原始斯拉夫语 *pъtica",
+    "examples": [
+      "птицеводство",
+      "птицелов"
+    ]
+  },
+  {
+    "morpheme": "пусто-",
+    "kind": "prefix",
+    "meaningZh": "空",
+    "meaningEn": "empty-",
+    "origin": "原始斯拉夫语 *pustъ",
+    "examples": [
+      "пустоцвет",
+      "пустозвон"
+    ]
+  },
+  {
+    "morpheme": "путешеств-",
+    "kind": "root",
+    "meaningZh": "旅行（путь 道路 + шествие 行走）",
+    "meaningEn": "travel, journey",
+    "origin": "путь + -шеств-",
+    "examples": [
+      "путешествие",
+      "путешественник",
+      "путешествовать"
+    ]
+  },
+  {
+    "morpheme": "пяти-",
+    "kind": "prefix",
+    "meaningZh": "五",
+    "meaningEn": "five-, penta-",
+    "origin": "原始斯拉夫语 *pętь",
+    "examples": [
+      "пятилетка",
+      "пятиугольник"
+    ]
+  },
+  {
+    "morpheme": "работ-",
+    "kind": "root",
+    "meaningZh": "工作、劳动",
+    "meaningEn": "work, labor",
+    "origin": "原始斯拉夫语 *orbota",
+    "examples": [
+      "работа",
+      "работать",
+      "работник",
+      "заработок"
+    ]
+  },
+  {
+    "morpheme": "равно-",
+    "kind": "prefix",
+    "meaningZh": "相等、平等",
+    "meaningEn": "equal, equi-",
+    "origin": "原始斯拉夫语 *orvьnъ",
+    "examples": [
+      "равноправие",
+      "равновесие"
+    ]
+  },
+  {
+    "morpheme": "радио-",
+    "kind": "prefix",
+    "meaningZh": "无线电、射线",
+    "meaningEn": "radio-, radiation",
+    "origin": "拉丁语 radius（射线）",
+    "examples": [
+      "радиоузел",
+      "радиоволна",
+      "радиопередача",
+      "радиостанция"
+    ]
+  },
+  {
+    "morpheme": "радост-",
+    "kind": "root",
+    "meaningZh": "喜悦",
+    "meaningEn": "joy",
+    "origin": "原始斯拉夫语 *radostь",
+    "examples": [
+      "радостный",
+      "радость",
+      "порадовать"
+    ]
+  },
+  {
+    "morpheme": "раз-",
+    "kind": "prefix",
+    "meaningZh": "分散、展开",
+    "meaningEn": "apart, un-",
+    "origin": "原始斯拉夫语 *orz",
+    "examples": [
+      "разбить",
+      "раздать",
+      "разговор"
+    ]
+  },
+  {
+    "morpheme": "разно-",
+    "kind": "prefix",
+    "meaningZh": "多样、不同",
+    "meaningEn": "various, diverse",
+    "origin": "原始斯拉夫语 *raznъ",
+    "examples": [
+      "разнообразие",
+      "разносторонний"
+    ]
+  },
+  {
+    "morpheme": "рас-",
+    "kind": "prefix",
+    "meaningZh": "分散、展开（清辅音前变体）",
+    "meaningEn": "apart (before voiceless consonants)",
+    "origin": "原始斯拉夫语 *orz",
+    "examples": [
+      "рассказать",
+      "расписать",
+      "раскрыть"
+    ]
+  },
+  {
+    "morpheme": "ре-",
+    "kind": "prefix",
+    "meaningZh": "再、重新",
+    "meaningEn": "re-, again",
+    "origin": "拉丁语 re（再）",
+    "examples": [
+      "реконструкция",
+      "реформа",
+      "реорганизация",
+      "реставрация"
+    ]
+  },
+  {
+    "morpheme": "рук-",
+    "kind": "root",
+    "meaningZh": "手",
+    "meaningEn": "hand, arm",
+    "origin": "原始斯拉夫语 *rǫka",
+    "examples": [
+      "рука",
+      "ручной",
+      "ручка",
+      "поручить"
+    ]
+  },
+  {
+    "morpheme": "русс-",
+    "kind": "root",
+    "meaningZh": "俄罗斯的、罗斯",
+    "meaningEn": "Russian, Rus",
+    "origin": "古东斯拉夫语 Русь",
+    "examples": [
+      "русский",
+      "Белоруссия",
+      "по-русски"
+    ]
+  },
+  {
+    "morpheme": "рыб-",
+    "kind": "root",
+    "meaningZh": "鱼",
+    "meaningEn": "fish",
+    "origin": "原始斯拉夫语 *ryba",
+    "examples": [
+      "рыбак",
+      "рыбоводство"
+    ]
+  },
+  {
+    "morpheme": "с-",
+    "kind": "prefix",
+    "meaningZh": "一起、向下",
+    "meaningEn": "together, down",
+    "origin": "原始斯拉夫语 *sъ(n)",
+    "examples": [
+      "сделать",
+      "сойти",
+      "собрать"
+    ]
+  },
+  {
+    "morpheme": "сад-",
+    "kind": "root",
+    "meaningZh": "园子、种植",
+    "meaningEn": "garden, to plant",
+    "origin": "原始斯拉夫语 *sadъ",
+    "examples": [
+      "сад",
+      "садовник",
+      "сажать",
+      "посадить",
+      "рассада"
+    ]
+  },
+  {
+    "morpheme": "само-",
+    "kind": "prefix",
+    "meaningZh": "自我、自动",
+    "meaningEn": "self-",
+    "origin": "сам（自己）",
+    "examples": [
+      "самолёт",
+      "самостоятельный",
+      "самообразование"
+    ]
+  },
+  {
+    "morpheme": "сверх-",
+    "kind": "prefix",
+    "meaningZh": "超过、超",
+    "meaningEn": "super-, over-",
+    "origin": "сверх（之上）",
+    "examples": [
+      "сверхактивный",
+      "сверхчеловек"
+    ]
+  },
+  {
+    "morpheme": "свет-",
+    "kind": "root",
+    "meaningZh": "光、世界",
+    "meaningEn": "light, world",
+    "origin": "原始斯拉夫语 *světъ",
+    "examples": [
+      "свет",
+      "светлый",
+      "просвет",
+      "светить"
+    ]
+  },
+  {
+    "morpheme": "свето-",
+    "kind": "prefix",
+    "meaningZh": "光",
+    "meaningEn": "light-",
+    "origin": "原始斯拉夫语 *světъ",
+    "examples": [
+      "светофор",
+      "светочувствительный"
+    ]
+  },
+  {
+    "morpheme": "сейсмо-",
+    "kind": "prefix",
+    "meaningZh": "地震",
+    "meaningEn": "seismo-, earthquake",
+    "origin": "古希腊语 σεισμός（震动）",
+    "examples": [
+      "сейсмология",
+      "сейсмостанция"
+    ]
+  },
+  {
+    "morpheme": "семи-",
+    "kind": "prefix",
+    "meaningZh": "七",
+    "meaningEn": "seven-, hepta-",
+    "origin": "原始斯拉夫语 *sedmь",
+    "examples": [
+      "семилетний",
+      "семицветный"
+    ]
+  },
+  {
+    "morpheme": "сердц-",
+    "kind": "root",
+    "meaningZh": "心",
+    "meaningEn": "heart",
+    "origin": "原始斯拉夫语 *sьrdьce",
+    "examples": [
+      "сердце",
+      "сердечный",
+      "сердиться"
+    ]
+  },
+  {
+    "morpheme": "серебр-",
+    "kind": "root",
+    "meaningZh": "银",
+    "meaningEn": "silver",
+    "origin": "原始斯拉夫语 *sьrebro",
+    "examples": [
+      "серебряный",
+      "серебристый"
+    ]
+  },
+  {
+    "morpheme": "серо-",
+    "kind": "prefix",
+    "meaningZh": "灰",
+    "meaningEn": "grey-",
+    "origin": "原始斯拉夫语 *sěrъ",
+    "examples": [
+      "сероглазый",
+      "серобородый"
+    ]
+  },
+  {
+    "morpheme": "сид-",
+    "kind": "root",
+    "meaningZh": "坐",
+    "meaningEn": "sit",
+    "origin": "原始斯拉夫语 *sěděti",
+    "examples": [
+      "сидеть",
+      "сидение",
+      "сиделка"
+    ]
+  },
+  {
+    "morpheme": "сил-",
+    "kind": "root",
+    "meaningZh": "力量",
+    "meaningEn": "strength, force",
+    "origin": "原始斯拉夫语 *sila",
+    "examples": [
+      "сила",
+      "сильный",
+      "усилие",
+      "насилие"
+    ]
+  },
+  {
+    "morpheme": "силь-",
+    "kind": "root",
+    "meaningZh": "力量",
+    "meaningEn": "strength",
+    "origin": "原始斯拉夫语 *sila",
+    "examples": [
+      "сила",
+      "сильный",
+      "усилить"
+    ]
+  },
+  {
+    "morpheme": "сильн-",
+    "kind": "root",
+    "meaningZh": "强",
+    "meaningEn": "strong",
+    "origin": "原始斯拉夫语 *silьnъ",
+    "examples": [
+      "сильный",
+      "сильнодействующий"
+    ]
+  },
+  {
+    "morpheme": "сине-",
+    "kind": "prefix",
+    "meaningZh": "蓝",
+    "meaningEn": "blue-",
+    "origin": "原始斯拉夫语 *sinь",
+    "examples": [
+      "синеглазый",
+      "синеватый"
+    ]
+  },
+  {
+    "morpheme": "сказ-",
+    "kind": "root",
+    "meaningZh": "说、讲述",
+    "meaningEn": "to say, to tell",
+    "origin": "原始斯拉夫语 *kаzаti",
+    "examples": [
+      "сказка",
+      "сказать",
+      "рассказать",
+      "сказочный",
+      "подсказка"
+    ]
+  },
+  {
+    "morpheme": "скоп-",
+    "kind": "root",
+    "meaningZh": "观察、镜",
+    "meaningEn": "observe, -scope",
+    "origin": "古希腊语 σκοπέω",
+    "examples": [
+      "телескоп",
+      "микроскоп",
+      "перископ"
+    ]
+  },
+  {
+    "morpheme": "скоро-",
+    "kind": "prefix",
+    "meaningZh": "快、速",
+    "meaningEn": "speed-, quick",
+    "origin": "原始斯拉夫语 *skorъ",
+    "examples": [
+      "скороход",
+      "скоропортящийся"
+    ]
+  },
+  {
+    "morpheme": "скуч-",
+    "kind": "root",
+    "meaningZh": "无聊、思念",
+    "meaningEn": "boredom, miss",
+    "origin": "原始斯拉夫语 *skučati",
+    "examples": [
+      "скучать",
+      "скучный",
+      "скука"
+    ]
+  },
+  {
+    "morpheme": "слаб-",
+    "kind": "root",
+    "meaningZh": "弱",
+    "meaningEn": "weak",
+    "origin": "原始斯拉夫语 *slabъ",
+    "examples": [
+      "слабость",
+      "ослабеть"
+    ]
+  },
+  {
+    "morpheme": "слабо-",
+    "kind": "prefix",
+    "meaningZh": "弱、微",
+    "meaningEn": "weak-, slightly",
+    "origin": "原始斯拉夫语 *slabъ",
+    "examples": [
+      "слаборазвитый",
+      "слабовидящий"
+    ]
+  },
+  {
+    "morpheme": "слав-",
+    "kind": "root",
+    "meaningZh": "光荣、斯拉夫",
+    "meaningEn": "glory, Slav",
+    "origin": "原始斯拉夫语 *slava",
+    "examples": [
+      "слава",
+      "славный",
+      "прославить"
+    ]
+  },
+  {
+    "morpheme": "слов-",
+    "kind": "root",
+    "meaningZh": "词、话语",
+    "meaningEn": "word",
+    "origin": "原始斯拉夫语 *slovo",
+    "examples": [
+      "слово",
+      "словарь",
+      "словесный",
+      "пословица"
+    ]
+  },
+  {
+    "morpheme": "сложн-",
+    "kind": "root",
+    "meaningZh": "复杂、复合",
+    "meaningEn": "complex, compound",
+    "origin": "俄语 сложить（组合）",
+    "examples": [
+      "сложный",
+      "сложность",
+      "усложнить"
+    ]
+  },
+  {
+    "morpheme": "слыш-",
+    "kind": "root",
+    "meaningZh": "听见",
+    "meaningEn": "hear",
+    "origin": "原始斯拉夫语 *slyšati",
+    "examples": [
+      "слышать",
+      "услышать",
+      "слышимый"
+    ]
+  },
+  {
+    "morpheme": "смерт-",
+    "kind": "root",
+    "meaningZh": "死亡",
+    "meaningEn": "death",
+    "origin": "原始斯拉夫语 *sъmьrtь",
+    "examples": [
+      "смертный",
+      "смертоносный"
+    ]
+  },
+  {
+    "morpheme": "смеш-",
+    "kind": "root",
+    "meaningZh": "可笑",
+    "meaningEn": "funny",
+    "origin": "原始斯拉夫语 *směxъ",
+    "examples": [
+      "смешной",
+      "насмешка",
+      "смешно"
+    ]
+  },
+  {
+    "morpheme": "смотр-",
+    "kind": "root",
+    "meaningZh": "观看、检视",
+    "meaningEn": "look, inspect",
+    "origin": "原始斯拉夫语 *motriti",
+    "examples": [
+      "смотреть",
+      "осмотр",
+      "смотритель"
+    ]
+  },
+  {
+    "morpheme": "снег-",
+    "kind": "root",
+    "meaningZh": "雪",
+    "meaningEn": "snow",
+    "origin": "原始斯拉夫语 *sněgъ",
+    "examples": [
+      "снеговик",
+      "снегурочка"
+    ]
+  },
+  {
+    "morpheme": "снего-",
+    "kind": "prefix",
+    "meaningZh": "雪",
+    "meaningEn": "snow-",
+    "origin": "原始斯拉夫语 *sněgъ",
+    "examples": [
+      "снегоход",
+      "снегопад"
+    ]
+  },
+  {
+    "morpheme": "со-",
+    "kind": "prefix",
+    "meaningZh": "共同、一起",
+    "meaningEn": "co-, together",
+    "origin": "原始斯拉夫语 *sъ(n)",
+    "examples": [
+      "сотрудник",
+      "соединить",
+      "сочувствие"
+    ]
+  },
+  {
+    "morpheme": "солнц-",
+    "kind": "root",
+    "meaningZh": "太阳",
+    "meaningEn": "sun",
+    "origin": "原始斯拉夫语 *sъlnьce",
+    "examples": [
+      "солнечный",
+      "солнцестояние"
+    ]
+  },
+  {
+    "morpheme": "социо-",
+    "kind": "prefix",
+    "meaningZh": "社会",
+    "meaningEn": "socio-",
+    "origin": "拉丁语 socius（同伴）",
+    "examples": [
+      "социология",
+      "социокультурный"
+    ]
+  },
+  {
+    "morpheme": "спектро-",
+    "kind": "prefix",
+    "meaningZh": "光谱",
+    "meaningEn": "spectro-",
+    "origin": "拉丁语 spectrum（影像）",
+    "examples": [
+      "спектроскоп",
+      "спектрометр"
+    ]
+  },
+  {
+    "morpheme": "средне-",
+    "kind": "prefix",
+    "meaningZh": "中、中等",
+    "meaningEn": "middle, medium",
+    "origin": "原始斯拉夫语 *serdьnъ",
+    "examples": [
+      "средневековье",
+      "среднеазиатский"
+    ]
+  },
+  {
+    "morpheme": "став-",
+    "kind": "root",
+    "meaningZh": "放置、设置",
+    "meaningEn": "put, place",
+    "origin": "原始斯拉夫语 *staviti",
+    "examples": [
+      "ставить",
+      "поставить",
+      "авиавыставка",
+      "устав"
+    ]
+  },
+  {
+    "morpheme": "стар-",
+    "kind": "root",
+    "meaningZh": "老、旧",
+    "meaningEn": "old",
+    "origin": "原始斯拉夫语 *starъ",
+    "examples": [
+      "старый",
+      "старость",
+      "устареть",
+      "старик"
+    ]
+  },
+  {
+    "morpheme": "стерео-",
+    "kind": "prefix",
+    "meaningZh": "立体",
+    "meaningEn": "stereo-",
+    "origin": "古希腊语 στερεός（立体）",
+    "examples": [
+      "стереоскоп",
+      "стереозвук",
+      "стереофония"
+    ]
+  },
+  {
+    "morpheme": "стой-",
+    "kind": "root",
+    "meaningZh": "站立、持久",
+    "meaningEn": "stand, endure",
+    "origin": "原始斯拉夫语 *stojati",
+    "examples": [
+      "стоять",
+      "стойкий",
+      "стойкость"
+    ]
+  },
+  {
+    "morpheme": "стол-",
+    "kind": "root",
+    "meaningZh": "桌子、案台；王座",
+    "meaningEn": "table, throne",
+    "origin": "原始斯拉夫语 *stolъ",
+    "examples": [
+      "стол",
+      "столик",
+      "столовая",
+      "столешница",
+      "престол"
+    ]
+  },
+  {
+    "morpheme": "столп-",
+    "kind": "root",
+    "meaningZh": "柱（整词兜底）",
+    "meaningEn": "pillar (whole-word guard)",
+    "origin": "⚠ 兜底条目·非语义切分：抑制 столп→стол- 假词根。столп 为单词素 https://ru.wiktionary.org/wiki/столп {{морфо-ru|столп|и=т}}；本条目仅用于阻断假词族，不代表构词分析",
+    "examples": [
+      "столп",
+      "столпиться",
+      "столпотворение"
+    ]
+  },
+  {
+    "morpheme": "стран-",
+    "kind": "root",
+    "meaningZh": "国家、地方",
+    "meaningEn": "country, land",
+    "origin": "原始斯拉夫语 *strana",
+    "examples": [
+      "страна",
+      "странный",
+      "иностранец",
+      "путешествие"
+    ]
+  },
+  {
+    "morpheme": "страх-",
+    "kind": "root",
+    "meaningZh": "恐惧",
+    "meaningEn": "fear",
+    "origin": "原始斯拉夫语 *straxъ",
+    "examples": [
+      "страшный",
+      "страх",
+      "устрашить"
+    ]
+  },
+  {
+    "morpheme": "страш-",
+    "kind": "root",
+    "meaningZh": "可怕的、恐惧",
+    "meaningEn": "fearful, terrible",
+    "origin": "原始斯拉夫语 *strašьnъ",
+    "examples": [
+      "страшный",
+      "страшно",
+      "устрашающий"
+    ]
+  },
+  {
+    "morpheme": "суб-",
+    "kind": "prefix",
+    "meaningZh": "次、下、亚",
+    "meaningEn": "sub-, under",
+    "origin": "拉丁语 sub（下面）",
+    "examples": [
+      "субтропики",
+      "субкультура",
+      "субординация"
+    ]
+  },
+  {
+    "morpheme": "суд-",
+    "kind": "root",
+    "meaningZh": "审判、判断",
+    "meaningEn": "judge, court",
+    "origin": "原始斯拉夫语 *sǫdъ；来源 https://ru.wiktionary.org/wiki/самосуд {{морфо-ru|сам|-о-|суд|и=т}}",
+    "examples": [
+      "суд",
+      "судить",
+      "самосуд",
+      "осудить",
+      "правосудие"
+    ]
+  },
+  {
+    "morpheme": "судо-",
+    "kind": "prefix",
+    "meaningZh": "船",
+    "meaningEn": "ship-",
+    "origin": "原始斯拉夫语 *sǫdъ",
+    "examples": [
+      "судостроение",
+      "судоходство"
+    ]
+  },
+  {
+    "morpheme": "супер-",
+    "kind": "prefix",
+    "meaningZh": "超级、超",
+    "meaningEn": "super-",
+    "origin": "拉丁语 super",
+    "examples": [
+      "супермаркет",
+      "супермен",
+      "супер-цемент"
+    ]
+  },
+  {
+    "morpheme": "суч-",
+    "kind": "root",
+    "meaningZh": "节、枝节",
+    "meaningEn": "knot, branch",
+    "origin": "原始斯拉夫语 *sǫkъ（сук 的软腭交替形 суч-）；来源 https://ru.wiktionary.org/w/index.php?oldid=13801399 {{морфо-ru|суч|-ок|+∅|и=т}}",
+    "examples": [
+      "сучок",
+      "сучковатый",
+      "сучковый",
+      "сучить",
+      "сучкорезка",
+      "сучение"
+    ]
+  },
+  {
+    "morpheme": "счаст-",
+    "kind": "root",
+    "meaningZh": "幸福",
+    "meaningEn": "happiness",
+    "origin": "原始斯拉夫语 *sъčęstьje",
+    "examples": [
+      "счастливый",
+      "счастье",
+      "несчастный"
+    ]
+  },
+  {
+    "morpheme": "твор-",
+    "kind": "root",
+    "meaningZh": "创造",
+    "meaningEn": "create",
+    "origin": "原始斯拉夫语 *tvoriti",
+    "examples": [
+      "творить",
+      "творчество",
+      "творение"
+    ]
+  },
+  {
+    "morpheme": "тел-",
+    "kind": "root",
+    "meaningZh": "身体、体",
+    "meaningEn": "body",
+    "origin": "原始斯拉夫语 *tělo",
+    "examples": [
+      "тело",
+      "телесный",
+      "телефон"
+    ]
+  },
+  {
+    "morpheme": "теле-",
+    "kind": "prefix",
+    "meaningZh": "远",
+    "meaningEn": "tele-, far",
+    "origin": "古希腊语 τῆλε",
+    "examples": [
+      "телефон",
+      "телевизор",
+      "телеграф",
+      "телескоп"
+    ]
+  },
+  {
+    "morpheme": "темн-",
+    "kind": "root",
+    "meaningZh": "暗",
+    "meaningEn": "dark",
+    "origin": "原始斯拉夫语 *tьmьnъ",
+    "examples": [
+      "темнота",
+      "темнеть"
+    ]
+  },
+  {
+    "morpheme": "тепл-",
+    "kind": "root",
+    "meaningZh": "暖",
+    "meaningEn": "warm",
+    "origin": "原始斯拉夫语 *teplъ",
+    "examples": [
+      "тёплый",
+      "теплица"
+    ]
+  },
+  {
+    "morpheme": "тепло-",
+    "kind": "prefix",
+    "meaningZh": "热",
+    "meaningEn": "heat-",
+    "origin": "原始斯拉夫语 *teplъ",
+    "examples": [
+      "теплоход",
+      "теплоснабжение"
+    ]
+  },
+  {
+    "morpheme": "термо-",
+    "kind": "prefix",
+    "meaningZh": "热",
+    "meaningEn": "thermo-, heat",
+    "origin": "古希腊语 θερμός",
+    "examples": [
+      "термометр",
+      "термос",
+      "термоядерный"
+    ]
+  },
+  {
+    "morpheme": "техно-",
+    "kind": "prefix",
+    "meaningZh": "技术",
+    "meaningEn": "techno-",
+    "origin": "古希腊语 τέχνη（技艺）",
+    "examples": [
+      "технология",
+      "технократия",
+      "технопарк"
+    ]
+  },
+  {
+    "morpheme": "толст-",
+    "kind": "root",
+    "meaningZh": "厚、胖",
+    "meaningEn": "thick, fat",
+    "origin": "原始斯拉夫语 *tъlstъ",
+    "examples": [
+      "толстый",
+      "толстяк",
+      "утолстить"
+    ]
+  },
+  {
+    "morpheme": "тонк-",
+    "kind": "root",
+    "meaningZh": "薄、细",
+    "meaningEn": "thin, fine",
+    "origin": "原始斯拉夫语 *tъnъkъ",
+    "examples": [
+      "тонкий",
+      "тонко",
+      "утончённый"
+    ]
+  },
+  {
+    "morpheme": "тоск-",
+    "kind": "root",
+    "meaningZh": "忧愁、苦闷",
+    "meaningEn": "melancholy, longing",
+    "origin": "原始斯拉夫语 *tъska",
+    "examples": [
+      "тосковать",
+      "тоскливый",
+      "тоска"
+    ]
+  },
+  {
+    "morpheme": "трав-",
+    "kind": "root",
+    "meaningZh": "草",
+    "meaningEn": "grass",
+    "origin": "原始斯拉夫语 *trava",
+    "examples": [
+      "травяной",
+      "травоядный"
+    ]
+  },
+  {
+    "morpheme": "транс-",
+    "kind": "prefix",
+    "meaningZh": "跨越、横穿",
+    "meaningEn": "trans-",
+    "origin": "拉丁语 trans",
+    "examples": [
+      "транспорт",
+      "трансатлантический",
+      "трансляция"
+    ]
+  },
+  {
+    "morpheme": "три-",
+    "kind": "prefix",
+    "meaningZh": "三",
+    "meaningEn": "tri-, three",
+    "origin": "希腊语 τρεῖς（三）",
+    "examples": [
+      "трилогия",
+      "триумвират",
+      "тригонометрия"
+    ]
+  },
+  {
+    "morpheme": "труд-",
+    "kind": "root",
+    "meaningZh": "劳动、工作",
+    "meaningEn": "labour, work",
+    "origin": "原始斯拉夫语 *trudъ",
+    "examples": [
+      "трудовой",
+      "трудоустройство"
+    ]
+  },
+  {
+    "morpheme": "трудн-",
+    "kind": "root",
+    "meaningZh": "困难",
+    "meaningEn": "difficult",
+    "origin": "原始斯拉夫语 *trudьnъ",
+    "examples": [
+      "трудный",
+      "трудно",
+      "затруднение"
+    ]
+  },
+  {
+    "morpheme": "тряс-",
+    "kind": "root",
+    "meaningZh": "抖、震",
+    "meaningEn": "shake, quake",
+    "origin": "原始斯拉夫语 *tręsti；来源 https://ru.wiktionary.org/w/index.php?oldid=13948603 {{морфо-ru|земл|-е-|тряс|-ениj|+е|и=т}}（трясти = {{морфо-ru|тряс|+ти|и=т}}）",
+    "examples": [
+      "землетрясение",
+      "трясти",
+      "потрясать",
+      "сотрясать",
+      "натрясать"
+    ]
+  },
+  {
+    "morpheme": "трёх-",
+    "kind": "prefix",
+    "meaningZh": "三",
+    "meaningEn": "three-, tri-",
+    "origin": "原始斯拉夫语 *trije",
+    "examples": [
+      "трёхэтажный",
+      "трёхсторонний"
+    ]
+  },
+  {
+    "morpheme": "турбо-",
+    "kind": "prefix",
+    "meaningZh": "涡轮",
+    "meaningEn": "turbo-",
+    "origin": "拉丁语 turbo（旋风）",
+    "examples": [
+      "турбореактивный",
+      "турбогенератор"
+    ]
+  },
+  {
+    "morpheme": "тяжел-",
+    "kind": "root",
+    "meaningZh": "重、沉重",
+    "meaningEn": "heavy",
+    "origin": "原始斯拉夫语 *tęžьkъ",
+    "examples": [
+      "тяжёлый",
+      "тяжело",
+      "тяжесть"
+    ]
+  },
+  {
+    "morpheme": "у-",
+    "kind": "prefix",
+    "meaningZh": "离开、减少",
+    "meaningEn": "away, reduce",
+    "origin": "原始斯拉夫语 *u",
+    "examples": [
+      "уйти",
+      "уменьшить",
+      "убрать"
+    ]
+  },
+  {
+    "morpheme": "угле-",
+    "kind": "prefix",
+    "meaningZh": "碳、煤",
+    "meaningEn": "coal-, carbon-",
+    "origin": "原始斯拉夫语 *ǫglь",
+    "examples": [
+      "углеводород",
+      "углекислый"
+    ]
+  },
+  {
+    "morpheme": "узко-",
+    "kind": "prefix",
+    "meaningZh": "窄、狭隘",
+    "meaningEn": "narrow-",
+    "origin": "原始斯拉夫语 *ǫzъkъ",
+    "examples": [
+      "узкоколейный",
+      "узколобый"
+    ]
+  },
+  {
+    "morpheme": "ультра-",
+    "kind": "prefix",
+    "meaningZh": "超、极",
+    "meaningEn": "ultra-, beyond",
+    "origin": "拉丁语 ultra（超过）",
+    "examples": [
+      "ультрафиолет",
+      "ультразвук",
+      "ультрамодный"
+    ]
+  },
+  {
+    "morpheme": "уч-",
+    "kind": "root",
+    "meaningZh": "学、教",
+    "meaningEn": "learn, teach",
+    "origin": "原始斯拉夫语 *učiti",
+    "examples": [
+      "учить",
+      "учитель",
+      "ученик",
+      "учебник"
+    ]
+  },
+  {
+    "morpheme": "ферро-",
+    "kind": "prefix",
+    "meaningZh": "铁",
+    "meaningEn": "ferro-, iron",
+    "origin": "拉丁语 ferrum（铁）",
+    "examples": [
+      "ферросплав",
+      "ферромагнитный"
+    ]
+  },
+  {
+    "morpheme": "фито-",
+    "kind": "prefix",
+    "meaningZh": "植物",
+    "meaningEn": "phyto-, plant",
+    "origin": "古希腊语 φυτόν（植物）",
+    "examples": [
+      "фитотерапия",
+      "фитопланктон"
+    ]
+  },
+  {
+    "morpheme": "фон-",
+    "kind": "root",
+    "meaningZh": "声音",
+    "meaningEn": "sound, voice",
+    "origin": "古希腊语 φωνή",
+    "examples": [
+      "телефон",
+      "микрофон",
+      "фонетика",
+      "Блумфонтейн"
+    ]
+  },
+  {
+    "morpheme": "форм-",
+    "kind": "root",
+    "meaningZh": "形状、形式",
+    "meaningEn": "form, shape",
+    "origin": "拉丁语 forma",
+    "examples": [
+      "форма",
+      "формировать",
+      "информация",
+      "реформа"
+    ]
+  },
+  {
+    "morpheme": "фото-",
+    "kind": "prefix",
+    "meaningZh": "光、摄影",
+    "meaningEn": "photo-, light",
+    "origin": "古希腊语 φῶς",
+    "examples": [
+      "фотография",
+      "фотоаппарат",
+      "фотосинтез"
+    ]
+  },
+  {
+    "morpheme": "хлад-",
+    "kind": "root",
+    "meaningZh": "寒冷（诗歌/古语）",
+    "meaningEn": "cold (poetic)",
+    "origin": "原始斯拉夫语 *xoldъ",
+    "examples": [
+      "хладнокровный",
+      "хладобойня",
+      "прохлада"
+    ]
+  },
+  {
+    "morpheme": "хлеб-",
+    "kind": "root",
+    "meaningZh": "面包、粮食",
+    "meaningEn": "bread, grain",
+    "origin": "原始斯拉夫语 *xlěbъ",
+    "examples": [
+      "хлебозавод",
+      "хлебороб"
+    ]
+  },
+  {
+    "morpheme": "ход-",
+    "kind": "root",
+    "meaningZh": "走、行走",
+    "meaningEn": "go, walk",
+    "origin": "原始斯拉夫语 *xoditi",
+    "examples": [
+      "ходить",
+      "поход",
+      "выход",
+      "переход"
+    ]
+  },
+  {
+    "morpheme": "холод-",
+    "kind": "root",
+    "meaningZh": "冷",
+    "meaningEn": "cold",
+    "origin": "原始斯拉夫语 *xoldъ",
+    "examples": [
+      "холодный",
+      "холодок"
+    ]
+  },
+  {
+    "morpheme": "холодо-",
+    "kind": "prefix",
+    "meaningZh": "冷",
+    "meaningEn": "cold-",
+    "origin": "原始斯拉夫语 *xoldъ",
+    "examples": [
+      "холодостойкий",
+      "холоднокровный"
+    ]
+  },
+  {
+    "morpheme": "хорош-",
+    "kind": "root",
+    "meaningZh": "好",
+    "meaningEn": "good",
+    "origin": "原始斯拉夫语 *xorošь",
+    "examples": [
+      "хороший",
+      "хорошо",
+      "улучшить"
+    ]
+  },
+  {
+    "morpheme": "хромо-",
+    "kind": "prefix",
+    "meaningZh": "颜色、铬",
+    "meaningEn": "chromo-, colour",
+    "origin": "古希腊语 χρῶμα（颜色）",
+    "examples": [
+      "хромосома",
+      "хромолитография"
+    ]
+  },
+  {
+    "morpheme": "цар-",
+    "kind": "root",
+    "meaningZh": "沙皇、统治",
+    "meaningEn": "tsar, rule",
+    "origin": "古俄语 цьсарь（凯撒）",
+    "examples": [
+      "царский",
+      "царствование"
+    ]
+  },
+  {
+    "morpheme": "цвет-",
+    "kind": "root",
+    "meaningZh": "颜色、花",
+    "meaningEn": "color, flower",
+    "origin": "原始斯拉夫语 *květъ",
+    "examples": [
+      "цвет",
+      "цветок",
+      "цветной",
+      "расцвет"
+    ]
+  },
+  {
+    "morpheme": "цвето-",
+    "kind": "prefix",
+    "meaningZh": "色、花",
+    "meaningEn": "colour-, flower-",
+    "origin": "原始斯拉夫语 *květъ",
+    "examples": [
+      "цветоводство",
+      "цветомузыка"
+    ]
+  },
+  {
+    "morpheme": "цен-",
+    "kind": "root",
+    "meaningZh": "价、价值",
+    "meaningEn": "price, value",
+    "origin": "原始斯拉夫语 *cěna",
+    "examples": [
+      "ценный",
+      "ценообразование"
+    ]
+  },
+  {
+    "morpheme": "цито-",
+    "kind": "prefix",
+    "meaningZh": "细胞",
+    "meaningEn": "cyto-, cell",
+    "origin": "古希腊语 κύτος（容器）",
+    "examples": [
+      "цитология",
+      "цитоплазма"
+    ]
+  },
+  {
+    "morpheme": "человек-",
+    "kind": "root",
+    "meaningZh": "人",
+    "meaningEn": "human, person",
+    "origin": "原始斯拉夫语 *čelověkъ",
+    "examples": [
+      "человек",
+      "человеческий",
+      "человечество"
+    ]
+  },
+  {
+    "morpheme": "черно-",
+    "kind": "prefix",
+    "meaningZh": "黑",
+    "meaningEn": "black-",
+    "origin": "原始斯拉夫语 *čьrnъ",
+    "examples": [
+      "черноволосый",
+      "чернозём"
+    ]
+  },
+  {
+    "morpheme": "четырёх-",
+    "kind": "prefix",
+    "meaningZh": "四",
+    "meaningEn": "four-, quadri-",
+    "origin": "原始斯拉夫语 *četyre",
+    "examples": [
+      "четырёхугольник",
+      "четырёхлетний"
+    ]
+  },
+  {
+    "morpheme": "числ-",
+    "kind": "root",
+    "meaningZh": "数",
+    "meaningEn": "number",
+    "origin": "原始斯拉夫语 *čislo",
+    "examples": [
+      "числовой",
+      "числитель"
+    ]
+  },
+  {
+    "morpheme": "чисто-",
+    "kind": "prefix",
+    "meaningZh": "纯、净",
+    "meaningEn": "pure-, clean-",
+    "origin": "原始斯拉夫语 *čistъ",
+    "examples": [
+      "чистокровный",
+      "чистосердечный"
+    ]
+  },
+  {
+    "morpheme": "чит-",
+    "kind": "root",
+    "meaningZh": "读",
+    "meaningEn": "read",
+    "origin": "原始斯拉夫语 *čitati",
+    "examples": [
+      "читать",
+      "читатель",
+      "прочитать",
+      "чтение"
+    ]
+  },
+  {
+    "morpheme": "чувств-",
+    "kind": "root",
+    "meaningZh": "感觉、情感",
+    "meaningEn": "feeling",
+    "origin": "原始斯拉夫语 *čuvьstvo",
+    "examples": [
+      "чувство",
+      "чувствовать",
+      "бесчувственный"
+    ]
+  },
+  {
+    "morpheme": "шеств-",
+    "kind": "root",
+    "meaningZh": "行走、行进",
+    "meaningEn": "to walk, procession",
+    "origin": "原始斯拉夫语 *šьstvьje",
+    "examples": [
+      "шествие",
+      "шествовать",
+      "путешествие",
+      "прошествие"
+    ]
+  },
+  {
+    "morpheme": "шести-",
+    "kind": "prefix",
+    "meaningZh": "六",
+    "meaningEn": "six-, hexa-",
+    "origin": "原始斯拉夫语 *šestь",
+    "examples": [
+      "шестикрылый",
+      "шестиугольник"
+    ]
+  },
+  {
+    "morpheme": "широк-",
+    "kind": "root",
+    "meaningZh": "宽、广",
+    "meaningEn": "wide, broad",
+    "origin": "原始斯拉夫语 *širokъ",
+    "examples": [
+      "широкий",
+      "широко",
+      "расширить"
+    ]
+  },
+  {
+    "morpheme": "широко-",
+    "kind": "prefix",
+    "meaningZh": "宽、广",
+    "meaningEn": "wide-, broad-",
+    "origin": "原始斯拉夫语 *širokъ",
+    "examples": [
+      "широкоэкранный",
+      "широкомасштабный"
+    ]
+  },
+  {
+    "morpheme": "школ-",
+    "kind": "root",
+    "meaningZh": "学校",
+    "meaningEn": "school",
+    "origin": "拉丁语 schola",
+    "examples": [
+      "школьный",
+      "школьник"
+    ]
+  },
+  {
+    "morpheme": "эко-",
+    "kind": "prefix",
+    "meaningZh": "生态、环境",
+    "meaningEn": "eco-",
+    "origin": "古希腊语 οἶκος（家）",
+    "examples": [
+      "экология",
+      "экосистема",
+      "экотуризм"
+    ]
+  },
+  {
+    "morpheme": "экс-",
+    "kind": "prefix",
+    "meaningZh": "前、前…",
+    "meaningEn": "ex-",
+    "origin": "拉丁语 ex",
+    "examples": [
+      "эксгаустер",
+      "экспорт",
+      "экскурсия"
+    ]
+  },
+  {
+    "morpheme": "экстра-",
+    "kind": "prefix",
+    "meaningZh": "额外、超",
+    "meaningEn": "extra-, outside",
+    "origin": "拉丁语 extra（之外）",
+    "examples": [
+      "экстракт",
+      "экстраординарный",
+      "экстрасенс"
+    ]
+  },
+  {
+    "morpheme": "электро-",
+    "kind": "prefix",
+    "meaningZh": "电",
+    "meaningEn": "electro-",
+    "origin": "古希腊语 ἤλεκτρον（琥珀）",
+    "examples": [
+      "электростанция",
+      "электроприбор",
+      "электронный"
+    ]
+  },
+  {
+    "morpheme": "этил-",
+    "kind": "prefix",
+    "meaningZh": "乙基",
+    "meaningEn": "ethyl-",
+    "origin": "希腊语 αἰθήρ（以太）",
+    "examples": [
+      "этиловый",
+      "этилбензол"
+    ]
+  },
+  {
+    "morpheme": "язык-",
+    "kind": "root",
+    "meaningZh": "语言、舌",
+    "meaningEn": "language, tongue",
+    "origin": "原始斯拉夫语 *językъ",
+    "examples": [
+      "язык",
+      "языковой",
+      "языкознание"
+    ]
+  }
 ]

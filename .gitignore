@@ -26,6 +26,12 @@ apps/sync-server/dist/
 data/db/*.bak*
 packages/data-pipeline/_ru_etym_stats.json
 data/db/*_backup*.json
+# ---- 落库备份（结构性防误提交）----
+# 背景：v0.9.0 落库由 scripts/apply_v9_morphemes{,2}.mjs 执行，脚本会写
+#   roots_ru.json.bak-<ISO 时间戳> / roots_ru.json.bak2-*
+# 属一次性回滚快照，**不入 git**（原始内容由 git 历史保证）。
+packages/data-pipeline/*.json.bak*
+packages/data-pipeline/*.json.bak2*
 
 _serve_static.mjs
 

@@ -120,10 +120,20 @@ ok('tele 关联词含 telephone', enTele?.words.includes('telephone'), `实得 $
 ok('tele 关联词含 television', enTele?.words.includes('television'));
 
 const stats = lexiconStats(db);
-ok('统计：俄语词根 154', stats.roots.ru?.count === 154, JSON.stringify(stats.roots.ru));
-ok('统计：英语词根 322', stats.roots.en?.count === 322, JSON.stringify(stats.roots.en));
-ok('统计：俄语前缀 185', stats.affixes['ru:prefix']?.count === 185);
-ok('统计：俄语后缀 92', stats.affixes['ru:suffix']?.count === 92);
+// ★ v0.9.0 重标（主管 T29）：本组为**冻结统计快照**，随词素库/倒排表重建而变，须在每次落库迭代后同步。
+//   口径：roots/affixes 由 packages/data-pipeline/build_roots_tables.mjs 生成，该脚本 `DROP TABLE` 后重建，
+//   且只收「经 breakdownWord 拆出且有真实关联词」的词素 ⇒ 计数天然 ≤ morphemes 表。
+//   v0.9.0 落库 9 条（суч- суд- домин- -ной столп- казус- однако- пад- тряс-）并重建后实测：
+//     stats.roots.ru   154 → 171（+17：新 root 7 条 + 其余来自拆解变化）
+//     stats.roots.en   322 → 321（−1 = `ment`：库中作为 root 存在，但无任何英语拆解用到它）
+//     ru:prefix        185 → 184（−1 = `о-`：无真实关联词 ⇒ 不入表）
+//     ru:suffix         92 →  94（+2：新 `-ной` + 拆解变化使原 0 关联词后缀获词）
+//   ⚠ 与 morphemes 表的系统差额（设计使然，非缺陷）：ru suffix 有 3 条 0 关联词（-еский / -ьё / -ёк）、
+//     ru prefix 1 条（о-）、en root 1 条（ment）。此项即 v0.8.0 遗留项 **C3**（「倒排表差 10 条」）的同一成因。
+ok('统计：俄语词根 171', stats.roots.ru?.count === 171, JSON.stringify(stats.roots.ru));
+ok('统计：英语词根 321', stats.roots.en?.count === 321, JSON.stringify(stats.roots.en));
+ok('统计：俄语前缀 184', stats.affixes['ru:prefix']?.count === 184, JSON.stringify(stats.affixes['ru:prefix']));
+ok('统计：俄语后缀 94', stats.affixes['ru:suffix']?.count === 94, JSON.stringify(stats.affixes['ru:suffix']));
 
 console.log('\n=== G. 语言隔离（词根表不得串语言）===');
 ok('俄语词根表不含英语词素', !ruRoots.items.some((i) => i.morpheme === 'tele'));

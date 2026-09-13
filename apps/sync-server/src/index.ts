@@ -106,7 +106,7 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
       ok: true,
       words: countWords(dictDb),
       sync: 'zidiankaifa-sync-server',
-      version: '0.8.0',
+      version: '0.9.0',
     });
   }
 

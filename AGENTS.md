@@ -16,9 +16,10 @@
 | 同步服务 | `apps/sync-server/src/index.ts` | Node http，端口 4570 |
 | 词库 | `data/db/dict.db` | ~494MB，**不入 git**（.gitignore） |
 
-**测试**：`pnpm --filter @zidiankaifa/core test` → 跑 `test/regress.mjs`(99) + `test/lexicon.mjs`(67) + `test/related.mjs`(38) + `test/ru_morph.mjs`(60) + `test/ru_morph_d1fix.mjs`(194) + `test/ru_morph_d1guard.mjs`(26)（需本地 `data/db/dict.db`）→ **core 484 / 0**；`apps/desktop/test/dbmigrate.test.mjs`(22) ⇒ **门禁 506 通过 / 0 失败**（v0.8.0 + V9-3 后）。
+**测试**：`pnpm --filter @zidiankaifa/core test` → 跑 `test/regress.mjs`(99) + `test/lexicon.mjs`(67) + `test/related.mjs`(38) + `test/ru_morph.mjs`(60) + `test/ru_morph_d1fix.mjs`(194) + `test/ru_morph_d1guard.mjs`(26)（需本地 `data/db/dict.db`）→ **core 484 / 0**；`apps/desktop/test/dbmigrate.test.mjs`(22) ⇒ **门禁 506 通过 / 0 失败**（v0.9.0 后）。
 ⚠ **断言计数陷阱**：`ru_morph.mjs` 打印「回归护栏（…）：60 通过 / 0 失败」，**无「结果：」前缀**，用 `Select-String '结果：'` 会漏掉这 60 条。
-`ru_morph_defects.mjs`（缺陷台账，**留红即待办**；现 23 通过 / 33 失败 exit 1 = D2 3 + D4 6 + V9-2 24）与 `ru_morph_goals.mjs`（迭代目标，0/2 exit 2）**不接入** `pnpm test`，手动跑。
+`ru_morph_defects.mjs`（缺陷台账，**留红即待办**；v0.9.0 后 **55 通过 / 1 失败** exit 1，唯一余红 = `термостат`）、`ru_morph_goals.mjs`（迭代目标，0/2 exit 2）、`ru_morph_semantic.mjs`（语义判别集，v0.9.0 后 **44 通过 / 1 失败，回归项 0**）**均不接入** `pnpm test`，手动跑。
+⚠ `lexicon.mjs:122-141` 的 4 条统计断言是**冻结快照**，随倒排表重建而变，须在每次落库迭代后同步（口径注释已写在断言上方）。
 
 ---
 
@@ -99,24 +100,18 @@ $env:ZIDIANKAIFA_DB='D:\lzk17\Documents\zidiankaifa\data\db\dict.db'; node apps/
 ```
 `pnpm --filter @zidiankaifa/web dev` 在受限沙箱下会 `spawn EPERM`；用上面的静态方案替代。
 
-**⚠ 受限沙箱下 `pnpm --filter @zidiankaifa/web build` 无法完成（v0.8.0 实测确认）**
-根因：本机沙箱**禁止带管道 stdio 的 spawn**（`spawn EPERM`），而 **esbuild 必须用管道与后端进程 IPC**
-（`esbuild/lib/main.js:1978` 的 `stdio: ["pipe","pipe","inherit"]`）。`vite build` **三个环节**都要 esbuild：
-① 配置文件打包（`bundleConfigFile`）；② `commonjs--resolver` 的 realpath 探测（vite 会 `exec("net use")`）；
-③ `vite:build-html` 转译 `index.html`。
-**判别实验已确证**：`stdio:'inherit'|'ignore'` 的 spawn **可以**成功，**只有管道 stdio 被禁**；
-esbuild 包内无 wasm 变体，且 vite 用**命名导入**（`import { exec } from 'node:child_process'`）取 `exec`，
-ESM 活绑定只读 ⇒ **无法 monkey-patch**。
-⇒ **结论：受限沙箱内无合法绕行路径**（唯一出路是提权，而本会话铁律 4 禁止）。
-**处置**：请用户**在普通（非受限）终端**执行：
-```powershell
-$env:ELECTRON_MIRROR='https://npmmirror.com/mirrors/electron/'
-$env:electron_config_cache='D:\lzk17\Documents\zidiankaifa\.electron-cache'
-$env:ELECTRON_BUILDER_CACHE='D:\lzk17\Documents\zidiankaifa\.eb-cache'
-pnpm --filter @zidiankaifa/web build
-pnpm --filter @zidiankaifa/desktop build
-```
-（`scripts/build_web_nospawn.mjs` 是为此写的内联配置绕行脚本，能过配置阶段，但**仍会**在 `vite:build-html` 处失败，故保留作诊断用。）
+**⚠ `pnpm --filter @zidiankaifa/web build` 与 `desktop build` 在受限沙箱下会被阻塞 —— 但策略放宽后可用（v0.9.0 实测修正）**
+- **受限沙箱（workspace-write）下确实无法完成**：沙箱禁止带**管道 stdio** 的 spawn（`spawn EPERM`），
+  而 **esbuild 必须用管道与后端进程 IPC**（`esbuild/lib/main.js:1978` 的 `stdio: ["pipe","pipe","inherit"]`）。
+  `vite build` **三个环节**都要 esbuild：① 配置文件打包（`bundleConfigFile`）；② `commonjs--resolver` 的 realpath 探测（会 `exec("net use")`）；③ `vite:build-html` 转译 `index.html`。
+  判别实验确证：`stdio:'inherit'|'ignore'` 的 spawn **可以**成功，**只有管道 stdio 被禁**；esbuild 包内无 wasm 变体，
+  且 vite 用**命名导入**取 `exec`（ESM 活绑定只读）⇒ **沙箱内无法 monkey-patch**。
+- **★ 修正（v0.9.0）**：文件策略放宽到 **`danger-full-access`** 后，**两条命令均一次通过**：
+  `web build` exit 0（vite 6.4.3，1.18 s）· `desktop build` exit 0（electron-builder 26.15.3 产出 NSIS 安装包 + portable + blockmap + `latest.yml`）。
+  ⇒ 该阻塞**是文件策略所致，不是命令本身的缺陷**。遇到时先确认当前 DSH 文件策略（`workspace-write` = 受阻塞；`danger-full-access` = 可跑），
+  **不要**据旧结论直接让用户代跑。
+- 打包（`desktop build`）必须给三件套环境变量（见上「打包」节）。
+（`scripts/build_web_nospawn.mjs` 是沙箱阻塞期写的内联配置绕行脚本，能过配置阶段但会卡在 `vite:build-html`，保留作诊断用。）
 
 **⚠ goal（长期目标）工具的边界（已实测，勿重复试探）**
 - `update_goal` 的 `edit` / `pause` / `resume` **只允许在人类回合（direct human turn）执行**；
@@ -167,7 +162,8 @@ pnpm --filter @zidiankaifa/desktop build
 - `word_etymology` / `morphemes` 有 `lang` 列（`'en'`/`'ru'`）；老库由 `migrateAddColumn()` 自动 `ALTER`。
 - **不要在 `SCHEMA_SQL` 里给新列写 `CREATE INDEX`**：老库表已存在会跳过建表、建索引时列不存在 → 启动崩 `Error: no such column: lang`。索引单独 `try/catch` 建。
 - SQLite `COLLATE NOCASE` **只折叠 ASCII**，对西里尔无效。查俄语专名（`Китай`/`Москва`）必须用 `caseVariants()` 做大小写宽容。
-- 词素库现状：`morphemes` 909 条（英语 468 / 俄语 441）；`roots` 476 / `affixes` 403 为全量拆解建成的倒排表。
+- 词素库现状（v0.9.0 后）：`morphemes` **918** 条（英语 468 / 俄语 **450**）；倒排表 `roots` **492**（en 321 / ru 171）、`affixes` **416**（en 138 / ru 278）。
+  ⚠ 倒排表由 `packages/data-pipeline/build_roots_tables.mjs` 生成，**只收「有真实关联词」的词素** ⇒ 条数天然少于 `morphemes`（当前缺 ru prefix 1 条 `о-`、en root 9 条，后者含 `ment`/`un-`/`auto-` 等）。**这是设计使然，非缺陷**；`lexicon.mjs:122-141` 的 4 条统计快照与之对应，重建倒排表后必须同步。
 - 已知数据上限：俄语词源覆盖 30.8%（en/zh/ru 三转储已挖到头，需第四源）；`words_i18n` 屈折形污染已清 58,195 条。
 
 ---
