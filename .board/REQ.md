@@ -97,7 +97,7 @@ pnpm --filter @zidiankaifa/desktop test   # 期望 22 通过 / 0 失败
 
 | # | 步骤 | 责任方 | 判定 |
 | --- | --- | --- | --- |
-| D1 | **修尺子 B 脚本 import 路径**（AC-3 前置），跑通并记录修复后的基线百分比 | 测试 agent | 输出 `有拆解 (38.1%)` |
+| D1 | **修尺子 B 脚本 import 路径**（AC-3 前置），跑通并记录修复后的基线百分比 | 测试 agent | ✅ **已闭环（v0.8.0）**：`'./packages/...'` → `'../../packages/...'`。本 agent 2026-09-16 复跑实测输出 **`有拆解 304 (38.0%)`**（脚本已可直跑，exit 0）；较冻结基线 38.1%（305/800）**退 1 词**，系 v0.8.0 D1 修复消除假拆解的连带结果 |
 | D2 | **建立 20 词正反例判别集**（新文件，见 §1.4），期望值来自语言学事实与词源，**不得由运行 `breakdownWord` 的结果回填** | **测试 agent（独立）** | 文件可独立运行 |
 | D3 | **把尺子 R 的下限断言从 ≥25% 提到 >45%**，提交，让 CI 变红（先写断言） | 测试 agent | `related.mjs` 变红且红的原因正是覆盖率 |
 | D4 | 跑 D2+D3 得到**全红的失败清单**，交给开发 agent | 测试 agent → 开发 agent | 失败清单落盘 |
@@ -167,6 +167,21 @@ pnpm --filter @zidiankaifa/desktop test   # 期望 22 通过 / 0 失败
 5. **不得运行根目录的 `check_requirements.py`**，也不得写根目录 `需求总结.md`/`已完成需求.md`/`任务排序.md`/`运行日志.md`（已废弃，会覆盖废弃横幅）。
 6. **不得 `git add -A`**（`data/db/` 有数百 MB 文件，历史误提交过 509MB）。
 7. **不得在 `packages/core` 改完后忘记 `pnpm --filter @zidiankaifa/core build` + 重启 sync-server**（它读 `dist`，不热更新）。
+
+### 1.8 状态修订（2026-09-16，v0.8.0 发布后）
+
+> 本节记录本需求**实际走向与口径变更**，**不改写**上面的 AC/DoD 原文（保留「先写断言再改代码」的原始意图与可追溯性）。发布事实以 `docs/release-v0.8.0.md`（**禁改**）与 `docs/需求总结.md` §21 为准。
+
+| 项 | 原定 | 实际 / 修订后 | 依据 |
+| --- | --- | --- | --- |
+| **AC-2 尺子 R > 45%** | 本迭代门槛 | **本迭代未达成，目标整体顺延 v0.9.0**；v0.8.0 实际交付的是另一个缺陷（词首 gap=1 假词根误拆，即 D1 名下的用户可见词族污染） | 判别实验：不动 `BREAKDOWN_MIN_COVERAGE = 0.55` 时**硬上限 36.54%**；跨 45% 需补 67～99 条经词源审定的词根（`.board/TASKS.md`、`docs/release-v0.8.0.md` §覆盖率目标说明） |
+| AC-1 既有测试全绿 | 226 项 | **480 项 / 0 失败**（core 458 + desktop 22，+254） | 本 agent 2026-09-16 实跑：99+67+38+**60**+**194** = 458；desktop 22 |
+| DoD D2/D3/D4（独立判别集 + 断言先红） | 本迭代执行 | **已执行且生效**：`ru_morph.mjs`（60 条恒绿）+ `ru_morph_d1fix.mjs`（194 条双向门）已接入 `pnpm test`；`ru_morph_goals.mjs` 用 **2 条留红断言**把 45% 目标固化在案（不删断言） | `.board/TASKS.md` AC-1…AC-7 |
+| DoD D5/D6/D7（改规则 / 补词素提覆盖率） | 本迭代主路径 | **未做**——本迭代判定「正确性 > 覆盖率」，改规则与补词素移入 v0.9.0（P0 V9-1…V9-5） | `.board/TASKS.md` v0.9.0 准入条件 |
+| DoD D11（sync-server build） | 本迭代 | ✅ 闭环，`/health` 返回 `version: '0.8.0'`（`apps/sync-server/dist/index.js:83`） | 本 agent 实测 |
+| DoD D12（回写 `docs/交接文档.md`） | 本迭代 | ✅ 2026-09-16 完成：§5.2 改为**三把尺子表**（R 30.09% / A 32.7% / B 38.0%）、§5.3 账本 480、§6-A2 记「不可达 + 顺延 v0.9.0」、§6-C1 标闭环、新增 §6-A7 与 §6-D | 本 agent 本次作业 |
+
+**⚠ 本台账的关键遗留**：45% 这个数字**由用户在 `docs/交接文档.md` §6-A2 原文设定**，本 agent 只能「记为目标而非门槛」并如实报告不可达；**改目标值/接受降级须经用户确认**（DEC-014、§待用户拍板 Q4）。
 
 ---
 
@@ -284,6 +299,12 @@ C1（发布卫生，随本次发布） → A2（本迭代） → A3（复用 A2 
 | `.board/_tmp/probe_counts.mjs` / `probe_langs.mjs` / `probe_zh_etym.mjs` / `probe_source.mjs` | §5.1 表行数与词源口径对账 |
 
 **注意**：这些脚本**不是验收尺**。验收尺只有两把——`packages/core/test/related.mjs` §E（主）与修复后的 `packages/data-pipeline/measure_ru_breakdown.mjs`（副）。
+
+> ⚠ **2026-09-16 状态更新**：上表 `.board/_tmp/` 下的探针脚本**已随 commit `55f8745`（`chore(board): 移除 .board/_tmp 临时探针并记录 T13 发布结果`）被删除**，不再是可运行入口——**其结论已冻结在本文档、`DECISIONS.md`、`CHANGELOG.md` 与 `docs/需求总结.md` §21 的正文里**，**不要再去 `.board/_tmp/` 找脚本**。需要**当下就能复现**的口径请用：
+> - 尺子 R：`node packages/core/test/related.mjs`（断言行输出 `俄语拆解覆盖率 30.1% ≥ 25%`）
+> - 尺子 A：`node scripts/probe_ru_coverage.mjs 800`（主管维护的三尺合一探针，只读）
+> - 尺子 B：`node packages/data-pipeline/measure_ru_breakdown.mjs`（import 已于 v0.8.0 修复，实测 `有拆解 304 (38.0%)`）
+> - D1 模式 / 空洞守卫：`packages/core/test/ru_morph_d1fix.mjs`（194 条双向门）+ `ru_morph_defects.mjs`（留红即待办）
 
 ### 5.2 45% 可达性的证据链（结论见 DEC-005）
 
