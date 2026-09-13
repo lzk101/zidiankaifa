@@ -111,7 +111,12 @@
 3. 改 `packages/core` 后必须 `pnpm --filter @zidiankaifa/core build`，且**重启 sync-server**（它读 `dist`，不热更新）。
 4. 改 `roots.json` / `roots_ru.json` 后必须重建词素表（`$env:PYTHONIOENCODING='utf-8'; python packages/data-pipeline/build_db.py morphemes`）。
 5. 改 `apps/desktop/src/main.mjs` 的 `resolveDbPath()` / `dbmigrate.mjs` 必须跑 `pnpm --filter @zidiankaifa/desktop test`（22 项）。
-6. 根目录 `需求总结.md`/`已完成需求.md`/`任务排序.md`/`运行日志.md` 是**僵尸产物**，`check_requirements.py` 已停摆且**会覆盖废弃横幅，绝不运行**。权威文档在 `docs/`。
+6. **归档区 `docs/legacy/` 永久禁用**（指代按**文件身份**，不按位置 —— 依 `DEC-008` 2026-09-16 修订块）：
+   - `docs/legacy/check_requirements.py` 已停摆，**会覆盖废弃横幅，绝不运行**；
+   - 它与 `docs/legacy/需求总结.md`/`已完成需求.md`/`任务排序.md`/`运行日志.md` 是**僵尸产物**，**禁止写入/覆盖/追加/删除**；
+   - ⚠ **同名不同物**：`docs/legacy/需求总结.md`（僵尸件，**12 行 / 920 B**，禁写）**≠** `docs/需求总结.md`（**权威编年史 23 章 / 1478 行，必读**）。引用一律写**全路径**。
+   - 归档**只改变位置、不改变禁令**：脚本的写目标由 `ROOT = os.path.dirname(os.path.abspath(__file__))` 推导 ⇒ **跟随自身位置**；若再被移动，禁令随之成立。
+   - 权威进度文档在 `docs/需求总结.md`（全路径）与 `.board/`。
 
 ## 8. 已知风险与缓解
 
