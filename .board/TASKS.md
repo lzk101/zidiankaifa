@@ -15,7 +15,7 @@
 
 ## 当前迭代 = **v0.8.0 「正确性与质量修复」**
 
-**阶段**：✅ **v0.8.0 已发布**（AC-1…AC-7 全部达成并实测；源码已 tag + Release；仅剩 T14 文档收尾）
+**阶段**：✅ **v0.8.0 已发布收口**（AC-1…AC-7 全达成、T14 文档完成）→ 🚀 **v0.9.0 已派 T17 准入实验**
 
 | # | 任务 | 负责人 | 状态 | 产出 |
 | --- | --- | --- | --- | --- |
@@ -28,7 +28,8 @@
 | T15 | 独立反核 D1 修法 8 项对照值 + 按订正后断言改写正/反例 | 功能测试 agent | ✅ **完成**（EVIDENCE.md 第 6–9 轮） | `.board/EVIDENCE.md`(84.8KB) |
 | **T16** | **拆分 2 条 A2 目标断言到 `ru_morph_goals.mjs`，`ru_morph.mjs` 归 exit 0** | 功能测试 agent | ✅ **完成**（60 条恒绿 exit 0；goals 0/2 exit 2 待 v0.9.0） | `packages/core/test/ru_morph*.mjs` |
 | T13 | bump 版本 → core/web 构建 → 打包 → commit/tag/push → `gh release v0.8.0` | 项目主管 | ✅ **已完成**（源码发布，无安装包） | commit `4c89272` · tag `v0.8.0` · [Release](https://github.com/lzk101/zidiankaifa/releases/tag/v0.8.0) |
-| T14 | 补 `docs/需求总结.md` §21 + README Roadmap + 交接文档 | 需求管理 agent | 🔄 进行中（README/`AGENTS.md`/Release Notes 已更新；§21 与交接文档待补） | `docs/` |
+| T14 | 补 `docs/需求总结.md` §21 + README Roadmap + 交接文档 | 需求管理 agent | ✅ **完成**（§21 全 8 小节；另订正 3 处账目） | `docs/` |
+| **T17** | **v0.9.0 准入条件实验**：内存注入候选词根，测「R 覆盖率 ↑ 且 全库 D1 计数不上升、全库空洞≥3 不上升」 | 开发编程 agent | 🔄 **进行中**（本轮派单 R6） | `scripts/exp_v9_admission.mjs` |
 
 ### T13 完成记录（2026-09-16）
 
