@@ -47,4 +47,10 @@ _tmp/
 # 端到端冒烟用的临时目录（含库副本与临时 userData，单次可达数百 MB）
 #   形如 .smoke_t44/ · .smoke_t44b/
 .smoke_*/
+# 主管写提交说明用的临时文件（pwsh 不支持 heredoc ⇒ 一贯写文件后 git commit -F）
+#   形如 .board/_commit_v0100.txt · .board/_commit_t54.txt
+#   背景：v0.10.0 的 T54 提交把 .board/_commit_t54.txt 一并 `git add .board` 进了索引，
+#   并已随 04deb37 推送 ⇒ 结构性堵住（下划线前缀临时文件一律不入 git）。
+_board_commit*
+_commit*.txt
 
