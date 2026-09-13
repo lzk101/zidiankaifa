@@ -19,6 +19,11 @@
  *   列表展示读取全部发生在子面板内，且**必须显式传 lang**（下方断言 ③④）。
  *   判定口径依据 AC-16 第 7 条：「UI 层的每一处列表读取都必须显式传 lang」——
  *   `App.tsx` 这一处不是列表读取，故豁免；两处子面板才是。
+ *
+ *   ★ T39 更正记档：主管曾一度把该处列为「剩余缺口」要求改为显式传 lang；
+ *   **该判定已撤回**（若此处只取单一语言，`(b.lang ?? 'en') === entryLang` 的跨语言判定会误判）。
+ *   ⇒ 本豁免**继续有效**，并由下方 `lacks` 断言反向锁定（App 不得改成带语言的读取）。
+ *   App 持有的 `bookLang` 仅用于**面板子页签语言**（并按 AC-16② 持久化），不参与该次读取。
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -129,8 +134,26 @@ has(
   /isCyrillic\(w\)\s*\?\s*'ru'\s*:\s*'en'/,
 );
 has('apps/web/src/components/BookPanel.tsx', 'AC-16④ 提供手动覆盖语言的控件', /<select[\s\S]{0,300}book-lang-select|book-lang-select/);
-has('apps/web/src/components/BookPanel.tsx', 'AC-16⑦ 列表读取显式传 lang（bookList(lang)）', /\.bookList\(\s*lang\s*\)/);
-lacks('apps/web/src/components/BookPanel.tsx', 'AC-16⑦ 无「不传 lang」的列表读取', /\.bookList\(\s*\)/);
+// ★ T39 更正（主管复核后定稿）：App 的 `bookList()`（不传 lang，全量）**是刻意的豁免**，
+//   不是缺陷 —— 它服务跨语言状态判定（`(b.lang ?? 'en') === entryLang`），见文件头豁免段。
+//   列表展示读取全部在子面板内，且**必须显式传 lang**（下方两条断言）。
+lacks('apps/web/src/App.tsx', 'AC-16⑦ App 的跨语言判定读取是全量（无 lang 过滤，见文件头豁免段）', /\.bookList\(\s*bookLang\s*\)/);
+has(
+  'apps/web/src/App.tsx',
+  'AC-16② 子页签语言由 App 持有并持久化（zidian-book-lang）',
+  /zidian-book-lang/,
+);
+has(
+  'apps/web/src/components/BookPanel.tsx',
+  'AC-16② 子页签值来自 props（lang / onLangChange）',
+  /onClick=\{\(\) => \{[\s\S]{0,80}onLangChange\(t\.key\)/,
+);
+has(
+  'apps/web/src/components/BookPanel.tsx',
+  'AC-16⑦ 面板列表读取显式传 lang（bookList(lang)）',
+  /\.bookList\(\s*lang\s*\)/,
+);
+lacks('apps/web/src/components/BookPanel.tsx', 'AC-16⑦ 面板无「不传 lang」的列表读取', /\.bookList\(\s*\)/);
 has(
   'apps/web/src/components/BookPanel.tsx',
   'AC-16⑦ 分组读取显式传 lang（bookGroups?.(lang)）',
@@ -141,7 +164,7 @@ has(
   '删除按 (word, lang) 传语言',
   /bookRemove\(item\.word,\s*item\.lang \?\? lang\)/,
 );
-has('apps/web/src/App.tsx', 'AC-16⑦ toggleBook 按 (word, lang) 判定', /\(b\.lang \?\? 'en'\) === entryLang/);
+has('apps/web/src/App.tsx', 'AC-16⑦ toggleBook 按 (word, lang) 判定（跨语言可见）', /\(b\.lang \?\? 'en'\) === entryLang/);
 has('apps/web/src/App.tsx', 'AC-16⑦ toggleBook 删除时传 entryLang', /bookRemove\(word,\s*entryLang\)/);
 has(
   'apps/web/src/components/ClipboardPopup.tsx',
@@ -173,6 +196,30 @@ has('apps/desktop/src/preload.mjs', 'preload bookGroups 透传 lang', /bookGroup
 has('apps/desktop/src/main.mjs', "IPC book:list 接收 lang", /ipcMain\.handle\('book:list',\s*\(_e,\s*lang\)/);
 has('apps/desktop/src/main.mjs', "IPC book:remove 接收 lang", /ipcMain\.handle\('book:remove',\s*\(_e,\s*word,\s*lang\)/);
 has('apps/desktop/src/main.mjs', "IPC book:groups 接收 lang", /ipcMain\.handle\('book:groups',\s*\(_e,\s*lang\)/);
+// ★ T39（裁决十九）：IPC 通道是弱类型，`book:update` 的 `item.lang` 若缺失，核心
+//   `bookUpdate` 会落到 `item.lang ?? existingLangForWord(db, w) ?? BOOK_DEFAULT_LANG` —— 按
+//   「未删除优先 + 最近更新」挑一条，**不按语言** ⇒ 同词双语言时可能改错语言条。
+//   故本层**必须**校验 `item.lang` 后放行（缺省即拒绝），下面四条把该红线锁死：
+has(
+  'apps/desktop/src/main.mjs',
+  'AC-13⑦/裁决十九 IPC book:update 取到 item 后先校验（不裸透传）',
+  /ipcMain\.handle\('book:update',\s*\(_e,\s*item\)[\s\S]{0,300}?const lang = it\.lang;/,
+);
+has(
+  'apps/desktop/src/main.mjs',
+  'AC-13⑦/裁决十九 book:update 校验 item.lang 合法（en|ru），非法即拒绝',
+  /if \(lang !== 'en' && lang !== 'ru'\)\s*\{[\s\S]{0,200}?throw new Error\(/,
+);
+has(
+  'apps/desktop/src/main.mjs',
+  'AC-13⑦/裁决十九 校验通过后才调 bookUpdate（传已校验的 it）',
+  /return bookUpdate\(db,\s*it\);/,
+);
+lacks(
+  'apps/desktop/src/main.mjs',
+  'AC-13⑦/裁决十九 已消除「无校验裸透传 item」的旧写法',
+  /ipcMain\.handle\('book:update',[^)]*\)\s*=>\s*bookUpdate\(db,\s*item\)/,
+);
 has(
   'apps/sync-server/src/index.ts',
   'sync-server /book-groups 读 lang 入参',

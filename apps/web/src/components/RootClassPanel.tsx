@@ -4,8 +4,12 @@ import { isCyrillic } from '@zidiankaifa/core';
 import { getBackend } from '../api';
 
 interface RootClassPanelProps {
-  /** App 侧的全量生词（含全部语言），用于显示各语言的词数与空态判定 */
+  /** **当前查看语言**的生词（App 用 `bookList(lang)` 显式读取后传入） */
   items: BookItem[];
+  /** 当前查看的语言（子页签值；由 App 持有 ⇒ App 的每次读取都能显式传它） */
+  lang: ClassLang;
+  /** 切换语言：通知 App 持久化并按新语言重新拉取 */
+  onLangChange: (lang: ClassLang) => void;
   /** 点击单词回查 */
   onPick: (word: string) => void;
 }
@@ -42,11 +46,11 @@ function itemLang(b: BookItem): string {
   return b.lang && b.lang !== 'auto' ? b.lang : isCyrillic(b.word) ? 'ru' : 'en';
 }
 
-export default function RootClassPanel({ items, onPick }: RootClassPanelProps) {
-  const [lang, setLang] = useState<ClassLang>('en');
+export default function RootClassPanel({ items, lang, onLangChange, onPick }: RootClassPanelProps) {
   const [groups, setGroups] = useState<MorphemeGroup[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // items 已是「当前语言」的生词（App 侧显式 bookList(lang) 读取而来）⇒ 直接计数
   const bookCount = items.filter((b) => !b.deleted && itemLang(b) === lang).length;
 
   // 显式传 lang 读取（AC-16 第 7 条同源纪律）；语言过滤在后端 bookGroups(lang) 层完成
@@ -85,7 +89,7 @@ export default function RootClassPanel({ items, onPick }: RootClassPanelProps) {
           <button
             key={t.key}
             className={`lang-tab${lang === t.key ? ' active' : ''}`}
-            onClick={() => setLang(t.key)}
+            onClick={() => onLangChange(t.key)}
           >
             {t.label}
           </button>

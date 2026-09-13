@@ -20,6 +20,8 @@ type Panel = 'lookup' | 'book' | 'lexicon' | 'rootclass' | 'settings';
 
 const LAST_WORD_KEY = 'zidian-last-word';
 const LANG_KEY = 'zidian-lang';
+/** 生词本当前查看的语言（v0.10.0：语言分离后，这个选择也要记住） */
+const BOOK_LANG_KEY = 'zidian-book-lang';
 
 /** 查询语言切换器：自动 / 英语 / 俄语 */
 function LangSwitcher({
@@ -56,6 +58,13 @@ export default function App() {
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [book, setBook] = useState<BookItem[]>([]);
+  /** 生词本**当前查看的语言**（子页签状态；由 App 持有以便每次读取都能显式传 lang） */
+  const [bookLang, setBookLang] = useState<'en' | 'ru'>(() => {
+    const saved = localStorage.getItem(BOOK_LANG_KEY);
+    if (saved === 'en' || saved === 'ru') return saved;
+    const uiLang = localStorage.getItem(LANG_KEY);
+    return uiLang === 'ru' ? 'ru' : 'en';
+  });
   const [activePanel, setActivePanel] = useState<Panel>('lookup');
   const [clipboardText, setClipboardText] = useState<string | null>(null);
   /** 从构词拆解点进来的词素：切到词根面板并直接打开它的详情 */
@@ -76,9 +85,11 @@ export default function App() {
   /**
    * 生词本**全量**（全部语言）读取。
    *
-   * ★ 这里刻意**不传 lang**：本读取不是「列表展示读取」，而是给跨语言状态判定用的
-   *   （`toggleBook` 要知道 (word, lang) 到底在不在生词本里，`items` 同时充当子面板的
-   *   「有变化就重载」信号）。**列表展示读取全部在子面板内**，且按 AC-16⑦ **显式传 lang**
+   * ★ 这里刻意**不传 lang**（T39 主管复核后确认，此豁免**不是缺陷**）：本读取不是「列表展示读取」，
+   *   而是给跨语言状态判定用的 —— `toggleBook` 要知道 `(word, lang)` 到底在不在生词本里
+   *   （`(b.lang ?? 'en') === entryLang` 这一式需要**同时**看到两种语言的条目；
+   *   若此处只取单一语言，跨语言状态判定会误判）。`items` 同时充当子面板的「有变化就重载」信号。
+   *   **列表展示读取全部在子面板内**，且按 AC-16⑦ **显式传 lang**
    *   （`BookPanel.tsx` 的 `bookList(lang)` / `RootClassPanel.tsx` 的 `bookGroups?.(lang)`）。
    *   契约脚本 `scripts/check_v10_ui_contract.mjs` 头部已记档这条豁免及其理由。
    */
@@ -87,6 +98,12 @@ export default function App() {
       .bookList()
       .then(setBook)
       .catch(() => setBook([]));
+  }, []);
+
+  /** 面板子页签语言（App 持有 ⇒ 两个面板共享同一语言选择，并按 AC-16② 记入 localStorage） */
+  const setBookLangAndPersist = useCallback((l: 'en' | 'ru') => {
+    setBookLang(l);
+    localStorage.setItem(BOOK_LANG_KEY, l);
   }, []);
 
   const lookup = useCallback(
@@ -143,6 +160,7 @@ export default function App() {
     async (word: string) => {
       // v0.10.0：按 (word, lang) 判定与操作 —— 同拼写的另一语言条目互不影响
       const entryLang = current?.i18n?.lang ?? 'en';
+      // 判定依赖 `book`（**全量，含全部语言**，见 refreshBook 注释）：正是这一式需要跨语言可见性
       const inBook = book.some(
         (b) =>
           b.word.toLowerCase() === word.toLowerCase() &&
@@ -349,7 +367,13 @@ export default function App() {
             </>
           )}
           {activePanel === 'book' && (
-            <BookPanel items={book} onChanged={refreshBook} onPick={lookup} />
+            <BookPanel
+              items={book}
+              lang={bookLang}
+              onLangChange={setBookLangAndPersist}
+              onChanged={refreshBook}
+              onPick={lookup}
+            />
           )}
           {activePanel === 'lexicon' && (
             <LexiconPanel
@@ -361,7 +385,12 @@ export default function App() {
             />
           )}
           {activePanel === 'rootclass' && (
-            <RootClassPanel items={book} onPick={lookup} />
+            <RootClassPanel
+              items={book}
+              lang={bookLang}
+              onLangChange={setBookLangAndPersist}
+              onPick={lookup}
+            />
           )}
           {activePanel === 'settings' && <SettingsPanel />}
         </div>

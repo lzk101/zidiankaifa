@@ -5,8 +5,12 @@ import { getBackend } from '../api';
 import BookGraph from './BookGraph';
 
 interface BookPanelProps {
-  /** App 侧的全量生词（含全部语言）；仅用作「有变化就重载」的信号 */
+  /** **当前查看语言**的生词（App 用 `bookList(lang)` 显式读取后传入；v0.10.0 语言分离） */
   items: BookItem[];
+  /** 当前查看的语言（子页签值；由 App 持有 ⇒ App 的每次读取都能显式传它） */
+  lang: BookLang;
+  /** 切换语言：通知 App 持久化并按新语言重新拉取（AC-16② 子页签仍在本面板内） */
+  onLangChange: (lang: BookLang) => void;
   /** 任意增删改之后通知 App 刷新列表 */
   onChanged: () => void;
   /** 点击单词回查（图谱/分组中的词） */
@@ -61,17 +65,18 @@ function fmtTime(ms: number): string {
   )}:${p(d.getMinutes())}`;
 }
 
-export default function BookPanel({ items, onChanged, onPick }: BookPanelProps) {
-  const [lang, setLang] = useState<BookLang>('en');
+export default function BookPanel({ items, lang, onLangChange, onChanged, onPick }: BookPanelProps) {
   const [filter, setFilter] = useState<BookStatus | 'all'>('all');
   const [input, setInput] = useState('');
   const [choice, setChoice] = useState<LangChoice>('auto');
   const [view, setView] = useState<'list' | 'groups'>('list');
-  /** 当前语言的生词（**显式传 lang 读取**，AC-16⑦：不得依赖 bookList 的「不过滤」缺省） */
+  /** 当前语言的生词（**本面板显式读取**：`bookList(lang)` —— AC-16⑦，不得依赖核心缺省「不过滤」） */
   const [list, setList] = useState<BookItem[]>([]);
+  /** 词根分组（**显式传 lang 读取**；语言过滤发生在后端 `bookGroups(lang)` 层，AC-17 第 6 条） */
   const [groups, setGroups] = useState<MorphemeGroup[]>([]);
 
-  // 按当前子页签语言重新读取（items 变化 = 生词本有增删改）
+  // 按当前语言读取生词。触发时机：① 切换子页签语言（lang 变化）；② 生词本有增删改
+  // （App 显式按语言重新拉取后把新的 items 传下来 ⇒ 本面板随之重载）。
   useEffect(() => {
     let cancelled = false;
     getBackend()
@@ -87,7 +92,7 @@ export default function BookPanel({ items, onChanged, onPick }: BookPanelProps) 
     };
   }, [lang, items]);
 
-  // 生词本变化时刷新词根分组（同样**显式传 lang**；语言过滤发生在后端 bookGroups(lang) 层）
+  // 生词本变化 / 切换语言时刷新词根分组（显式传 lang）
   useEffect(() => {
     let cancelled = false;
     getBackend()
@@ -150,7 +155,7 @@ export default function BookPanel({ items, onChanged, onPick }: BookPanelProps) 
     }
     setInput('');
     // 跳到该语言子页签，让用户立刻看到刚加入的词
-    setLang(target);
+    onLangChange(target);
     setFilter('all');
     onChanged();
   };
@@ -171,7 +176,7 @@ export default function BookPanel({ items, onChanged, onPick }: BookPanelProps) 
             key={t.key}
             className={`lang-tab${lang === t.key ? ' active' : ''}`}
             onClick={() => {
-              setLang(t.key);
+              onLangChange(t.key);
               setFilter('all');
             }}
           >
