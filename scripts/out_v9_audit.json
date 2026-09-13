@@ -1,0 +1,413 @@
+[
+ {
+  "stem": "кар",
+  "verdict": "部分通过",
+  "gloss": "拟声词干「кар-」（каркать 呱呱叫）",
+  "source": "https://en.wiktionary.org/wiki/каркать#Russian",
+  "evidence": "Onomatopoeic.",
+  "reason": "真:карканье；巧合:карасик/кардамонный/карт/скарн",
+  "rSolo": 5,
+  "rMarginal": 5,
+  "rExamples": [
+   "карасик",
+   "кардамонный",
+   "карканье",
+   "карт",
+   "скарн"
+  ],
+  "dbUnlock": 203
+ },
+ {
+  "stem": "пла",
+  "verdict": "否决",
+  "gloss": "（非词根）",
+  "source": "https://en.wiktionary.org/wiki/плавка#Russian",
+  "evidence": "пла́вить (plávitʹ) + -ка",
+  "reason": "真词根是 плав-/пласт-；план 系法语借词",
+  "rSolo": 5,
+  "rMarginal": 5,
+  "rExamples": [
+   "дельтаплан",
+   "плавка",
+   "план-график",
+   "планетолет",
+   "пластать"
+  ],
+  "dbUnlock": 374
+ },
+ {
+  "stem": "гор",
+  "verdict": "通过",
+  "gloss": "燃烧/山/苦 词根「гор-」",
+  "source": "https://en.wiktionary.org/wiki/гореть#Russian",
+  "evidence": "{{root|ru|ine-pro|*gʷʰer-}} {{inh+|ru|sla-pro|*gorěti}}",
+  "reason": "Related terms 直接列 горючий/горе/горестный/огорчение",
+  "rSolo": 4,
+  "rMarginal": 4,
+  "rExamples": [
+   "гор-",
+   "горестный",
+   "горючесть",
+   "огорчение"
+  ],
+  "dbUnlock": 188
+ },
+ {
+  "stem": "стр",
+  "verdict": "否决",
+  "gloss": "（非词根）",
+  "source": "https://en.wiktionary.org/wiki/острослов#Russian",
+  "evidence": "{{af|ru|о́стрый|-о-|слово}}",
+  "reason": "真词根是 стрел-/струй-/струп-",
+  "rSolo": 4,
+  "rMarginal": 4,
+  "rExamples": [
+   "газоструйная",
+   "острослов",
+   "отстрел",
+   "струпный"
+  ],
+  "dbUnlock": 498
+ },
+ {
+  "stem": "вар",
+  "verdict": "否决",
+  "gloss": "（非词根）",
+  "source": "https://en.wiktionary.org/wiki/авария#Russian",
+  "evidence": "{{bor+|ru|it|avaria}}, from {{der|ru|ar|عَوَارِيَّة}}",
+  "reason": "3 例均无 вар-：авария 意/阿源、вариация 拉丁、товар 突厥源",
+  "rSolo": 3,
+  "rMarginal": 3,
+  "rExamples": [
+   "безаварийный",
+   "варьирование",
+   "подтоварник"
+  ],
+  "dbUnlock": 152
+ },
+ {
+  "stem": "кон",
+  "verdict": "部分通过",
+  "gloss": "马 词根「кон-」（конь）",
+  "source": "https://en.wiktionary.org/wiki/конь#Russian",
+  "evidence": "Compound words: конево́д, конево́дство",
+  "reason": "真:коневодство；巧合:конголезский(专名)/конфетный(德 Konfekt)",
+  "rSolo": 3,
+  "rMarginal": 3,
+  "rExamples": [
+   "конголезский",
+   "коневодство",
+   "конфетный"
+  ],
+  "dbUnlock": 317
+ },
+ {
+  "stem": "лак",
+  "verdict": "部分通过",
+  "gloss": "漆 词根「лак-」",
+  "source": "https://en.wiktionary.org/wiki/лак#Russian",
+  "evidence": "{{bor+|ru|de|Lack}} … from {{der|ru|fa-cls|لاک}}",
+  "reason": "真:лакировка；巧合:релакционный(лат. relaxātiō)",
+  "rSolo": 3,
+  "rMarginal": 3,
+  "rExamples": [
+   "даммарлак",
+   "лакировка",
+   "релакционный"
+  ],
+  "dbUnlock": 58
+ },
+ {
+  "stem": "леп",
+  "verdict": "部分通过",
+  "gloss": "塑/粘 词根「леп-」（лепить）",
+  "source": "https://en.wiktionary.org/wiki/лепёшка#Russian",
+  "evidence": "{{af|ru|лепи́ть|-шка}}",
+  "reason": "真:лепешка；巧合:слепун(слеп-)；подлепестный 无来源",
+  "rSolo": 3,
+  "rMarginal": 3,
+  "rExamples": [
+   "лепешка",
+   "подлепестный",
+   "слепун"
+  ],
+  "dbUnlock": 77
+ },
+ {
+  "stem": "мат",
+  "verdict": "部分通过",
+  "gloss": "哑光/将死「мат」",
+  "source": "https://en.wiktionary.org/wiki/матовый#Russian",
+  "evidence": "{{af|ru|мат|t1=matte|-овый}}",
+  "reason": "真:матовый；巧合:киноавтомат(греч. αὐτόμᾰτος)；мат.=缩写",
+  "rSolo": 3,
+  "rMarginal": 3,
+  "rExamples": [
+   "киноавтомат",
+   "мат.",
+   "матовый"
+  ],
+  "dbUnlock": 183
+ },
+ {
+  "stem": "пер",
+  "verdict": "部分通过",
+  "gloss": "羽毛 词根「пер-」（перо）",
+  "source": "https://en.wiktionary.org/wiki/пёрышко#Russian",
+  "evidence": "{{af|ru|перо́|-ышко}}",
+  "reason": "真:пёрышко/перочинный；巧合:операторный(лат. operator)",
+  "rSolo": 3,
+  "rMarginal": 4,
+  "rExamples": [
+   "операторный",
+   "перочинный",
+   "пёрышко"
+  ],
+  "dbUnlock": 259
+ },
+ {
+  "stem": "мет",
+  "verdict": "否决",
+  "gloss": "（非词根）",
+  "source": "https://en.wiktionary.org/wiki/металл#Russian",
+  "evidence": "Ultimately from {{der|ru|la|metallum}}",
+  "reason": "三例真词根是 металл-/гамет-/метел-",
+  "rSolo": 3,
+  "rMarginal": 3,
+  "rExamples": [
+   "биметалл",
+   "гетерогамета",
+   "метелемер"
+  ],
+  "dbUnlock": 157
+ },
+ {
+  "stem": "нит",
+  "verdict": "否决",
+  "gloss": "（非词根）",
+  "source": "https://en.wiktionary.org/wiki/унитаз#Russian",
+  "evidence": "{{bor+|ru|la|ūnitās||unity}}",
+  "reason": "三例均无 нит-（线）：拉丁/国际词",
+  "rSolo": 3,
+  "rMarginal": 3,
+  "rExamples": [
+   "дефинитивный",
+   "мононитрат",
+   "унитаз"
+  ],
+  "dbUnlock": 106
+ },
+ {
+  "stem": "оже",
+  "verdict": "否决",
+  "gloss": "（非词根）",
+  "source": "https://ru.wiktionary.org/wiki/похожий",
+  "evidence": "Происходит от глагола походить, из по- и ходить",
+  "reason": "похоже=по-+хож-；ожеребиться=о-+жереб-",
+  "rSolo": 3,
+  "rMarginal": 3,
+  "rExamples": [
+   "ожеребиться",
+   "похоже",
+   "разложенец"
+  ],
+  "dbUnlock": 49
+ },
+ {
+  "stem": "опа",
+  "verdict": "否决",
+  "gloss": "（非词根）",
+  "source": "https://en.wiktionary.org/wiki/невпопад#Russian",
+  "evidence": "не- (ne-) + впопа́д (vpopád)",
+  "reason": "опала←палити；无 опа 词根",
+  "rSolo": 3,
+  "rMarginal": 3,
+  "rExamples": [
+   "невпопад",
+   "опальный",
+   "прозопалгия"
+  ],
+  "dbUnlock": 99
+ },
+ {
+  "stem": "ора",
+  "verdict": "否决",
+  "gloss": "（非词根）",
+  "source": "https://en.wiktionary.org/wiki/оракул#Russian",
+  "evidence": "Ultimately borrowed from Latin ōrāculum.",
+  "reason": "дезодорация 词根 одор-",
+  "rSolo": 3,
+  "rMarginal": 3,
+  "rExamples": [
+   "дезодорация",
+   "метилоранж",
+   "оракульский"
+  ],
+  "dbUnlock": 145
+ },
+ {
+  "stem": "сто",
+  "verdict": "否决",
+  "gloss": "（非词根）",
+  "source": "https://en.wiktionary.org/wiki/стопор#Russian",
+  "evidence": "Borrowed from Dutch stopper.",
+  "reason": "стопор- 荷兰语借词；пластоген 词根 пласт-",
+  "rSolo": 2,
+  "rMarginal": 3,
+  "rExamples": [
+   "застопорить",
+   "стопорный"
+  ],
+  "dbUnlock": 177
+ },
+ {
+  "stem": "тро",
+  "verdict": "否决",
+  "gloss": "（非词根）",
+  "source": "https://en.wiktionary.org/wiki/патрон#Russian",
+  "evidence": "Borrowed from German Patrone… from Latin patrōnus",
+  "reason": "трое 真词根是 тр-/*trojь",
+  "rSolo": 3,
+  "rMarginal": 3,
+  "rExamples": [
+   "втрое",
+   "замок-патрон",
+   "тростянка"
+  ],
+  "dbUnlock": 409
+ },
+ {
+  "stem": "бел",
+  "verdict": "部分通过",
+  "gloss": "白 词根「бел-/бял-」",
+  "source": "https://en.wiktionary.org/wiki/Белград#Russian",
+  "evidence": "Univerbation of бял (bjal, “white”) + град (grad)",
+  "reason": "真:Белград；巧合:рентабельный(法语 rentable)",
+  "rSolo": 2,
+  "rMarginal": 2,
+  "rExamples": [
+   "Белград",
+   "рентабельный"
+  ],
+  "dbUnlock": 69
+ },
+ {
+  "stem": "кра",
+  "verdict": "否决",
+  "gloss": "（非词根）",
+  "source": "https://en.wiktionary.org/wiki/краткий#Russian",
+  "evidence": "from Proto-Slavic *kortъkъ. Doublet of коро́ткий",
+  "reason": "真词根 крат-；Краков 是专名",
+  "rSolo": 2,
+  "rMarginal": 2,
+  "rExamples": [
+   "Краков",
+   "краткость"
+  ],
+  "dbUnlock": 156
+ },
+ {
+  "stem": "бит",
+  "verdict": "否决",
+  "gloss": "（非词根）",
+  "source": "https://ru.wiktionary.org/wiki/битум",
+  "evidence": "Корень: -битум- [Тихонов, 1996]",
+  "reason": "бить 词根 би-",
+  "rSolo": 2,
+  "rMarginal": 2,
+  "rExamples": [
+   "битумизация",
+   "сбитый"
+  ],
+  "dbUnlock": 49
+ },
+ {
+  "stem": "бог",
+  "verdict": "通过",
+  "gloss": "神 词根「бог-」（ПСл *bogъ）",
+  "source": "https://en.wiktionary.org/wiki/богиня#Russian",
+  "evidence": "By surface analysis, бог (bog) + -иня (-inja)",
+  "reason": "覆盖全部例词（богиня/Богъ）",
+  "rSolo": 2,
+  "rMarginal": 2,
+  "rExamples": [
+   "Богъ",
+   "богиня"
+  ],
+  "dbUnlock": 33
+ },
+ {
+  "stem": "бро",
+  "verdict": "否决",
+  "gloss": "（非词根）",
+  "source": "https://en.wiktionary.org/wiki/броня#Russian",
+  "evidence": "from Proto-Slavic *brъňa, from Gothic brunjō",
+  "reason": "бросить 词根 брос-",
+  "rSolo": 2,
+  "rMarginal": 2,
+  "rExamples": [
+   "бронеслой",
+   "сброситься"
+  ],
+  "dbUnlock": 118
+ },
+ {
+  "stem": "бры",
+  "verdict": "否决",
+  "gloss": "（非词根）",
+  "source": "https://en.wiktionary.org/wiki/брызгать#Russian",
+  "evidence": "Inherited from Proto-Slavic *brỳzgati. Of onomatopoeic origin.",
+  "reason": "真词根是 брызг-，бры 是截断",
+  "rSolo": 2,
+  "rMarginal": 2,
+  "rExamples": [
+   "брызгаться",
+   "набрызг"
+  ],
+  "dbUnlock": 43
+ },
+ {
+  "stem": "вин",
+  "verdict": "部分通过",
+  "gloss": "酒 词根「вин-」（лат. vīnum）",
+  "source": "https://en.wiktionary.org/wiki/вино#Russian",
+  "evidence": "from Proto-Slavic *vino, from Latin vīnum",
+  "reason": "真:винище；巧合:свинопас(свин-)",
+  "rSolo": 1,
+  "rMarginal": 2,
+  "rExamples": [
+   "винище"
+  ],
+  "dbUnlock": 153
+ },
+ {
+  "stem": "вос",
+  "verdict": "否决",
+  "gloss": "（非词根，是前缀 вос-/воз-）",
+  "source": "https://en.wiktionary.org/wiki/воспретить#Russian",
+  "evidence": "By surface analysis, вос- (vos-) + прети́ть (pretítʹ)",
+  "reason": "真词根 прет-/ста-",
+  "rSolo": 2,
+  "rMarginal": 2,
+  "rExamples": [
+   "воспрещение",
+   "восстать"
+  ],
+  "dbUnlock": 188
+ },
+ {
+  "stem": "гла",
+  "verdict": "否决",
+  "gloss": "（非词根）",
+  "source": "https://en.wiktionary.org/wiki/глава#Russian",
+  "evidence": "from Proto-Slavic *golva",
+  "reason": "гладкий 词根 глад-（*gladъkъ）",
+  "rSolo": 2,
+  "rMarginal": 2,
+  "rExamples": [
+   "главы",
+   "гладкий"
+  ],
+  "dbUnlock": 106
+ }
+]
