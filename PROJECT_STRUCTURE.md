@@ -16,15 +16,17 @@ zidiankaifa/
 │                   docs/（交接文档 · 需求总结 · release-*.md）· .board/（多 agent 台账）
 ├── 💻 代码 ─────── packages/core（数据层） · packages/data-pipeline（数据管线）
 │                   apps/web（React 前端） · apps/desktop（Electron） · apps/sync-server（同步服务）
-├── 🔧 工具 ─────── scripts/（133 个只读探针/实验台，**不是产品代码**）· _serve_static.mjs（UI 验证）
-├── 📦 数据 ─────── data/raw（源数据 3.0 GB）· data/db/dict.db（**494 MB，冻结，不入 git**）
-└── 🗑 产物/缓存 ── dist-release/（安装包 4.7 GB）· node_modules · .pnpm-store · .electron-cache · .eb-cache
+├── 🔧 工具 ─────── scripts/（158 个只读探针/实验台，**不是产品代码**）· _serve_static.mjs（UI 验证）
+├── 📦 数据 ─────── data/raw（源数据 2.93 GB）· data/db/dict.db（**494 MB，冻结，不入 git**）
+└── 🗑 产物/缓存 ── dist-release/（安装包 5.49 GB ⛔ 已越额度）· node_modules · .pnpm-store · .electron-cache · .eb-cache
 ```
 
 **三条最容易被新人踩错的**：
 1. `scripts/` 里**绝大多数是历史实验脚本**（含 3 个结论已被推翻的），**不是**要维护的产品工具 —— 新增工具请另立名字并登记到本文 §3。
 2. `data/db/dict.db` 是**冻结的权威词库**（494 MB，不入 git）。测试与探针**只读**；重建需按 `AGENTS.md` §2 铁律 2 走 `build_db.py`。
 3. 根目录 4 个 `.md` + `check_requirements.py` 是**僵尸产物**，`DEC-008` 禁止运行、禁止写入 —— 见 §6。
+
+> 🧹 **结构治理**：本项目有**第 4 个常驻 agent = 项目结构管理 agent**，**每次版本发布后**做一次结构体检与清理。额度 / 权限 / 保护清单见 **§10**。
 
 ---
 
@@ -214,7 +216,32 @@ zidiankaifa/
 
 ---
 
-## 10. 变更记录
+## 10. 🧹 结构治理（第 4 个常驻 agent，**每迭代必做**）
+
+> **用户指令（2026-09-16 原词）**：「添加一个agent，专门做定期的项目结构管理，避免项目结构臃肿，每完成一次版本发布进行一次项目结构调整」
+
+| 项 | 内容 |
+| --- | --- |
+| 角色 | **项目结构管理 agent**（第 4 个常驻角色，与需求/开发/测试并列） |
+| 委任书 | `.board/roles/structure-agent.md` |
+| 台账（其独占写） | `.board/STRUCTURE.md` + `.board/structure/**` |
+| **触发节奏** | **每次版本发布 + push 之后做快检**；每 5 个 release 或大版本（词库重建/批量落库）后做全量审计 |
+| 额度依据 | `.board/BASELINE.md` §7「结构预算冻结」 |
+| 权限一句话 | **能删产物，不能删代码；能出方案，不能改架构。** |
+
+**九项体检**（每次快检逐项实测）：① 已跟踪文件总数 ② `scripts/` 文件数 ③ `scripts/` 顶层文件数 ④ `dist-release/` 递归体量 ⑤ `data/` 体量（**只报不删**）⑥ 缓存合计 ⑦ 临时残留 ⑧ 僵尸/废弃产物 ⑨ 单文件规模（字节 + 行数）。
+
+**额度硬上限**：已跟踪 **300** · `scripts/` **165** · `scripts/` 顶层 **35** · `dist-release/` **1.5 GB** · `data/` **4.5 GB** · 缓存 **1.2 GB** · 临时残留 **0** · 单文件 **20 MB** · `.board/*.md` **3000 行**。
+
+**保护清单（任何情况下不得删改）**：`data/**` 整棵树 —— `dict.db` 是冻结词库，`data/db/dict.db.bak-v02pipe`（272,752,640 B / 2026-09-09）是**唯一的真实老结构迁移夹具**，`data/raw/` 2.93 GB 是**词库重建原料**。**不得用体积或路径名判断可删性**（`raw/` 看着像垃圾，其实是原料）。其余：全部**已跟踪文件**只报不删；**未被 gitignore 覆盖的未跟踪文件**只列清单提请核准。
+
+**与既有字节普查的分工**：字节健康（控制字符 / 行中 CR / CR+BEL 同行）由 `scripts/audit_text_health.mjs` 覆盖（§3 已登记），结构 agent **复用不重复实现**；它负责的是结构维度（文件数 / 体量 / 额度 / 分类 MECE / 引用完整性）。
+
+**§8 的一条已知越线**：`dist-release/` 实测 **5.49 GB（递归 121 文件）** vs 额度 1.5 GB。已核实自动更新走 GitHub Release 的 `latest.yml`（`apps/desktop/package.json:67-73` `publish.provider=github`），**不读本地目录** ⇒ 历史包可安全清理，清理清单由结构 agent 首轮产出后报主管核准。
+
+---
+
+## 11. 变更记录
 
 | 日期 | 变更 | 依据 |
 |---|---|---|
