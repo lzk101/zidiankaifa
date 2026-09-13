@@ -2509,3 +2509,34 @@ AC-5 用的是**全库**口径（20,214 / 18,762）。本项纯属**账目订正
 4. 未普查**其他测试文件/runtime** 是否也有同类泄漏（本轮只定位到本文件的 6 个）。
 5. 未做任何 git 写操作 ⇒ `packages/core/test/book_lang.mjs` **仍为未跟踪**（`?? `），发布前需 `git add <明确路径>`。
 6. 未改 `packages/core/package.json`、其余 6 个门禁测试文件、`packages/core/src/**`、`data/db/dict.db`（**全程未打开生产库**）。
+
+---
+
+## §47 缺陷登记：**`V11-OPENDB-LEAK`**（v0.11.0 候选）—— 主管 T60 追加裁决 A/B/C 落地（功能测试 agent · 只追加）
+
+> 依据：主管 T60 追加裁决（2026-09-14）。**正式立项由主管写 `REQ.md` / `TASKS.md`**；本节只作**登记**（测试 agent 写域 = `.board/EVIDENCE.md`）。
+
+### 47.1 登记条目（建议原文）
+| 字段 | 内容 |
+| --- | --- |
+| **条目名** | **`V11-OPENDB-LEAK`** |
+| **一句话** | 「`openDatabase()` 在 `db.exec` / `migrateBookLang` / `migrateBookCompositeKey` / `assertBookCompositeOrThrow` / `migrateAddColumn` **任一抛错路径上未 `close()` 刚创建的连接**」 |
+| **修法** | `try { … } catch (e) { db.close(); throw e; }`（或等价 `try/finally`，仅在失败路径 close） |
+| **准确位置** | 源 `packages/core/src/db/index.ts` ⇒ 产物 `packages/core/dist/db/index.js:14-34`：`:15` `const db = new DatabaseSync(path)` → `:16` `db.exec(SCHEMA_SQL)` → `:18` `migrateBookLang(db)` → `:19` `migrateBookCompositeKey(db)` → **`:30` `assertBookCompositeOrThrow(db)`（v0.10.0 新增的「响亮失败」防线）** → `:31-32` `migrateAddColumn(…)` → `:33` `return db`（**仅成功路径**） |
+| **归属（裁决 A）** | **根因不在测试文件**：不是 `book_lang.mjs` 清理路径写错，也不是「测试收尾瑕疵」；`packages/core/test/book_lang.mjs` 的 `reclaimLeakedConnections()` 仅是**当前唯一的止血手段**，**不得因「根因在 src」而删除** |
+| **影响级别（裁决 C）** | **P1，不是 P0 —— 当前无用户可见后果**。桌面端两入口均「抛错 ⇒ `dialog.showErrorBox` + `app.exit(1)`」⇒ 进程随即退出，该路径上**不可观测**；浏览器端 `apps/web/src/api.ts` 走 localStorage，**不碰 SQLite**。⇒ 潜在暴露面 = **长驻进程内反复打开失败库**（反复重试 / 未来把 core 用进常驻服务）= **未来风险**。**不得表述为「用户数据风险」** |
+| **可观测后果（当前唯一）** | 收尾 `fs.rmSync(RUN)` 报 `EPERM, Permission denied: \\?\…\scripts\_tmp\booklang_tmp\run-<随机>` ⇒ **每跑一次门禁残留一个 `run-*`**（54 文件 / 2,470,148 B）⇒ 与结构体检「临时残留 = 0」互斥 |
+
+### 47.2 裁决 A/C 在代码中的落地（`packages/core/test/book_lang.mjs`）
+- 注释块 `:717-763` 已补**归属句**：「根因 = 被测实现 `openDatabase()` 的抛错路径 … 本文件无权重写 `packages/core/src/**`；`reclaimLeakedConnections()` 只是当前唯一的止血手段，**不是根因修复，不得删除**。真正修复 = 抛错前 `db.close()`」＋ 标注 **已登记为 v0.11.0 候选 `V11-OPENDB-LEAK`**。
+- 同块已补**影响级别**：**P1（非 P0）· 当前无用户可见后果**（桌面端 `showErrorBox` + `app.exit(1)` ⇒ 进程即退；浏览器端不碰 SQLite）＋「潜在暴露面 = 长驻进程反复打开失败库 = 未来风险」。
+- `:1800+` 的 ⚠ 打印块已按裁决 B 强化为**三行**：① 漏关连接实测数 ＋ **归属句** ＋ `V11-OPENDB-LEAK`；② **被锁条目**口径与 **T60 实测基线（6 个连接 ⇒ 4 个库 × 3 = 12 个条目被锁）**；③ **影响级别 P1（非 P0）** ＋ 「当前无用户可见后果」＋ 不断言/不改退出码的声明。
+- **退出码语义未改（裁决 B）**：维持 `0`（全绿，仅 ⚠ 打印）/ `1`（任一块失败）。理由已写入注释：src 未修好前写红 ⇒ **门禁链永久红**，正是 `ru_morph_defects.mjs` 必须隔离在链外的教训。
+
+### 47.3 遗留 `run-*` 目录的实际数字（**以我实测为准，不沿用派单旧数**）
+| 时点 | 实测 |
+| --- | --- |
+| 本轮开始时 | `Test-Path scripts\_tmp` = **False**（整棵 `scripts/_tmp` **已不存在**，含 `booklang_tmp` 与我 T15–T36 的旧探针）⇒ **遗留 = 0** |
+| 复现运行 1 次后 | **1 个**（`run-1NjPeN`，54 文件 / 2,470,148 B）—— 由探针 `scripts/probe_t60_rm_forensics.mjs` **从新进程删除成功** |
+| 修复后 4 次运行 | **每次 0**（`run-*` 恒 0；`scripts\_tmp` 下条目数 = 0） |
+| ⇒ 结论 | **结构 agent 已代为清理整棵 `scripts/_tmp`，本轮未新增**（派单中「约 21 个」为**过时信息**，本轮未观察到该状态） |

@@ -1807,8 +1807,17 @@ if (allFails.length) {
   if (leaked > 0) {
     console.log(
       `  ⚠ 收尾回收：被测实现**漏关连接 ${leaked} 个**（补关成功 ${reclaimed} 个）—— ` +
-        '`openDatabase()` 在抛错路径（A30/A31/A33 的「迁移无法完成」形态）创建连接后抛错、**未关闭该连接**；' +
-        '本文件只能兜底回收（不新增断言：断言数须保持 137，退出码语义不变，判定权在主管）',
+        '**归属 = `openDatabase()` 的抛错路径**（源 `packages/core/src/db/index.ts`；**非本测试文件**，本文件只能兜底回收）；' +
+        'v0.11.0 候选 **`V11-OPENDB-LEAK`**（修法：抛错前 `db.close()`）',
+    );
+    console.log(
+      `     被锁条目 = 各漏关连接持有其库文件的 3 件套（\`db\` / \`-wal\` / \`-shm\`）；` +
+        `**T60 实测基线：${leaked} 个连接 ⇒ 4 个库 × 3 = 12 个条目被锁**（rename 探测 EBUSY；补 close 后 0 被锁 ∧ rmSync 成功）。`,
+    );
+    console.log(
+      '     ⚠ 影响级别 **P1（非 P0）**：桌面端 `openDatabase()` 抛错即 `dialog.showErrorBox` + `app.exit(1)` ⇒ 进程随即退出，' +
+        '该路径上**不可观测**；浏览器端 localStorage 路径不碰 SQLite ⇒ **当前无用户可见后果**；' +
+        '潜在暴露面 = 长驻进程内反复打开失败库（未来风险）。不新增断言：断言数须保持 137，退出码语义不变，判定权在主管',
     );
   }
 }
