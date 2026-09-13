@@ -845,10 +845,18 @@ export function breakdownWord(db: DatabaseSync, rawWord: string, lang = 'en'): B
   // achievement（chiev 起于位置 1，但后面还有 -ment，共 2 片段）不受影响。
   if (parts.length === 1 && parts[0].start === 1) return [];
 
-  // 词首间隙 ≥2 且 gap 无法被前缀解释时判为误拆：сегодня 曾被拆成 год- + -ня（"се" 被跳过，
+  // 词首间隙（≥1）且 gap 无法被前缀解释时判为误拆：сегодня 曾被拆成 год- + -ня（"се" 被跳过，
   // 靠 -ня 补足覆盖率骗过阈值），实际是 сего + дня，与 год-（年）无关。
   // 但 acknowledge = ac- + know + -ledge 的 "ac" 能由 ac- 前缀解释，必须放行。
-  if (parts.length && parts[0].start >= 2) {
+  //
+  // D1 修复（v0.8.0）：此处原为 `>= 2`，与上面第 846 行的单片段规则**恰好都放过 gap=1**，
+  // 于是 плескание→лес-、хлестаться→лес-、зверство→вер-、тлеться→лет- 这类
+  // 「词首单字符被跳过 + 词中假词根」全部漏网（假词根库只有日常基础词，最易撞上）。
+  // 改为 `>= 1` 后 gap=1 同样受「精确前缀解释」约束；修法选它而非「无条件禁止 gap=1」，
+  // 是因为 в-/о-/с-/у- 确实是俄语真前缀：удачный = у- + да- + -ный 的 gap='у' 会被本规则放行，
+  // 而无条件禁止会把它误杀。实测：全库 342 词 D1 模式中 267 词（首字符非前缀）被消除，
+  // 75 词（首字符 ∈ в/о/с/у）全部保留，零误伤，L4 空洞≥3 持平 134。
+  if (parts.length && parts[0].start >= 1) {
     const gap = mw.slice(0, parts[0].start);
     const explained = all.some((x) => x.m.kind === 'prefix' && x.stem === gap);
     if (!explained) return [];

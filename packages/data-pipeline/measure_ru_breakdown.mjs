@@ -1,9 +1,10 @@
 /**
  * 基线：俄语拆解覆盖率抽样（有词源的俄语词，作为「常见词」代理）
- * 用法: node _probe_ru_breakdown_rate.mjs [sampleSize]
+ * 用法: node packages/data-pipeline/measure_ru_breakdown.mjs [sampleSize]
+ * 注意：须从**仓库根**运行（`data/db/dict.db` 为相对仓库根的路径）。
  */
 import { DatabaseSync } from 'node:sqlite';
-import * as core from './packages/core/dist/db/index.js';
+import * as core from '../../packages/core/dist/db/index.js';
 
 const N = Number(process.argv[2] ?? 800);
 const db = new DatabaseSync('data/db/dict.db');

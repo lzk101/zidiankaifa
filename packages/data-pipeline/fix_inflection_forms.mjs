@@ -4,10 +4,11 @@
  * 这些词形的释义形如「а̀виакосми́ческий (àviakosmíčeskij) 的阴性主格单数」，
  * 主词条与语法标签都在文本里，可解析后写入 i18n_forms，使其也能反查到主词条。
  *
- * 用法: node _fix_inflection_forms.mjs [--apply]
+ * 用法: node packages/data-pipeline/fix_inflection_forms.mjs [--apply]
+ * 注意：须从**仓库根**运行（`data/db/dict.db` 为相对仓库根的路径）。
  */
 import { DatabaseSync } from 'node:sqlite';
-import { RUS_TAG_LABEL } from './packages/core/dist/lang.js';
+import { RUS_TAG_LABEL } from '../../packages/core/dist/lang.js';
 
 const APPLY = process.argv.includes('--apply');
 const db = new DatabaseSync('data/db/dict.db');

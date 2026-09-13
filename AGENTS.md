@@ -16,7 +16,8 @@
 | 同步服务 | `apps/sync-server/src/index.ts` | Node http，端口 4570 |
 | 词库 | `data/db/dict.db` | ~494MB，**不入 git**（.gitignore） |
 
-**测试**：`pnpm --filter @zidiankaifa/core test` → 跑 `test/regress.mjs` + `test/lexicon.mjs` + `test/related.mjs`（需本地 `data/db/dict.db`）。
+**测试**：`pnpm --filter @zidiankaifa/core test` → 跑 `test/regress.mjs` + `test/lexicon.mjs` + `test/related.mjs` + `test/ru_morph.mjs` + `test/ru_morph_d1fix.mjs`（需本地 `data/db/dict.db`）。
+`ru_morph_defects.mjs`（缺陷台账，**留红即待办**）与 `ru_morph_goals.mjs`（迭代目标，允许 exit 2）**不接入** `pnpm test`，手动跑。
 
 ---
 
@@ -31,6 +32,26 @@
 3. **改 `packages/core` 后必须 `pnpm --filter @zidiankaifa/core build`**，且**重启 sync-server**（它读 `dist`，不热更新）。
 4. **禁止 `sandbox_permissions` 升级**：本会话审批已禁用，请求会被自动拒绝。
 5. **桌面端词库升级**：`apps/desktop/src/main.mjs` 的 `resolveDbPath()` 调用 `dbmigrate.mjs` 的 `ensureUserDb()` —— 用内置库 `size:mtime` 指纹与 userData 旁的 `dict.db.stamp` 比对，不一致即换库，并迁移 `book` 表（**含墓碑**），旧库改名 `.bak-<ts>` 备份。**改动这段逻辑必须跑 `pnpm --filter @zidiankaifa/desktop test`**（5 场景 22 项断言）。
+6. **测试文件的词库路径必须与 cwd 无关**，且必须支持 `ZIDIANKAIFA_DB` 覆盖：
+   ```js
+   // 正确（与 ru_morph.mjs:39 一致）—— __dirname 经 fileURLToPath 得到
+   const dbPath = process.env.ZIDIANKAIFA_DB ?? path.resolve(__dirname, '..', '..', '..', 'data', 'db', 'dict.db');
+   ```
+   ⚠ **`pnpm --filter <pkg> test` 的 cwd 是包目录，不是仓库根**（实测：
+   `pnpm --filter @zidiankaifa/core exec node -e "console.log(process.cwd())"` → `...\packages\core`）。
+   写成 `new DatabaseSync('data/db/dict.db')` 会在 `pnpm test` 下崩 `Error: unable to open database file`
+   （`errcode: 14`），而**从仓库根直接 `node` 跑却完全正常** ⇒ 假绿。
+   **凡新增/改动测试文件，必须两种 cwd 各跑一次**：
+   ```powershell
+   cd D:\lzk17\Documents\zidiankaifa;               node packages/core/test/<f>.mjs
+   cd D:\lzk17\Documents\zidiankaifa\packages\core; node test/<f>.mjs
+   ```
+   两者都必须 exit 0。
+7. **测试断言口径必须写明**（本项目已因口径混淆产生多轮互指错误）：
+   - 尺子有三把，分母不同**不可互比**：**R**（`related.mjs:144`，`rowid % 97 = 0` → 791 词）、A（全库俄语 101,512）、B（有词源俄语 31,193 取样 800）；
+   - 「空洞」有两口径：**总数**（未覆盖字符总数 ≥3 = **134**，**L4 权威口径**）vs **最大单段**（≥3 = 129）；
+   - D1 规模引用**全库口径 342**（75 保留 + 267 消除）。
+   引用任何指标**必须带口径**，否则视为无效数字。
 
 ---
 
@@ -69,6 +90,25 @@ node _serve_static.mjs 5180          # 静态托管 apps/web/dist
 $env:ZIDIANKAIFA_DB='D:\lzk17\Documents\zidiankaifa\data\db\dict.db'; node apps/sync-server/dist/index.js
 ```
 `pnpm --filter @zidiankaifa/web dev` 在受限沙箱下会 `spawn EPERM`；用上面的静态方案替代。
+
+**⚠ 受限沙箱下 `pnpm --filter @zidiankaifa/web build` 无法完成（v0.8.0 实测确认）**
+根因：本机沙箱**禁止带管道 stdio 的 spawn**（`spawn EPERM`），而 **esbuild 必须用管道与后端进程 IPC**
+（`esbuild/lib/main.js:1978` 的 `stdio: ["pipe","pipe","inherit"]`）。`vite build` **三个环节**都要 esbuild：
+① 配置文件打包（`bundleConfigFile`）；② `commonjs--resolver` 的 realpath 探测（vite 会 `exec("net use")`）；
+③ `vite:build-html` 转译 `index.html`。
+**判别实验已确证**：`stdio:'inherit'|'ignore'` 的 spawn **可以**成功，**只有管道 stdio 被禁**；
+esbuild 包内无 wasm 变体，且 vite 用**命名导入**（`import { exec } from 'node:child_process'`）取 `exec`，
+ESM 活绑定只读 ⇒ **无法 monkey-patch**。
+⇒ **结论：受限沙箱内无合法绕行路径**（唯一出路是提权，而本会话铁律 4 禁止）。
+**处置**：请用户**在普通（非受限）终端**执行：
+```powershell
+$env:ELECTRON_MIRROR='https://npmmirror.com/mirrors/electron/'
+$env:electron_config_cache='D:\lzk17\Documents\zidiankaifa\.electron-cache'
+$env:ELECTRON_BUILDER_CACHE='D:\lzk17\Documents\zidiankaifa\.eb-cache'
+pnpm --filter @zidiankaifa/web build
+pnpm --filter @zidiankaifa/desktop build
+```
+（`scripts/build_web_nospawn.mjs` 是为此写的内联配置绕行脚本，能过配置阶段，但**仍会**在 `vite:build-html` 处失败，故保留作诊断用。）
 
 **Playwright / 浏览器**
 - 搜索框是 React 受控组件：`browser_fill` **必须先填空字符串再填值**，否则值被回滚。
@@ -120,11 +160,17 @@ $env:ZIDIANKAIFA_DB='D:\lzk17\Documents\zidiankaifa\data\db\dict.db'; node apps/
 ## 6. 发布流程
 
 1. 四个 `package.json` + 3 处文本（`apps/web/src/App.tsx`、`apps/web/src/components/SettingsPanel.tsx`、`apps/sync-server/src/index.ts`）统一 bump 版本。
-2. `pnpm --filter @zidiankaifa/core build` && `pnpm --filter @zidiankaifa/web build`。
-3. 打包（见第 3 节三件套）→ `dist-release/` 产出 exe + portable + `latest.yml` + `.blockmap`。
-4. `git add <明确文件>` → commit → push → `git tag vX.Y.Z` → push tag。
-5. `gh release create vX.Y.Z <4 个附件> --notes-file docs/release-vX.Y.Z.md`。
-6. 更新 `docs/需求总结.md`（新增章节）与 `README.md`（功能行 + Roadmap）。
+2. **三个 build 都要跑**：core（`dist`）+ web（`apps/web/dist`，桌面端打包会内嵌它）+ **sync-server**。
+   ```powershell
+   pnpm --filter @zidiankaifa/core build
+   pnpm --filter @zidiankaifa/web build
+   pnpm --filter @zidiankaifa/sync-server build   # ← v0.7.1 漏跑过，导致 /health 仍返回旧版本号
+   ```
+3. 跑测试（core 5 个文件 + desktop）。
+4. 打包（见第 3 节三件套）→ `dist-release/` 产出 exe + portable + `latest.yml` + `.blockmap`。
+5. `git add <明确文件>`（**禁用 `git add -A`**）→ commit → push → `git tag vX.Y.Z` → push tag。
+6. `gh release create vX.Y.Z <4 个附件> --notes-file docs/release-vX.Y.Z.md`。
+7. 更新 `docs/需求总结.md`（新增章节）与 `README.md`（功能行 + Roadmap）。
 
 ---
 
