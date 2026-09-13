@@ -27,8 +27,33 @@
 | T10 | 把 `ru_morph.mjs` 接入 `pnpm test` | 开发编程 agent | ✅ 已接入（**exit 2 待 T16 解除**） | `packages/core/package.json:25` |
 | T15 | 独立反核 D1 修法 8 项对照值 + 按订正后断言改写正/反例 | 功能测试 agent | 🔄 进行中 | `.board/EVIDENCE.md` |
 | **T16** | **拆分 2 条 A2 目标断言到 `ru_morph_goals.mjs`，`ru_morph.mjs` 归 exit 0** | 功能测试 agent | 🔄 **进行中（发布阻塞项）** | `packages/core/test/ru_morph*.mjs` |
-| T13 | bump 版本 → core/web 构建 → 打包 → commit/tag/push → `gh release v0.8.0` | 项目主管 | ⏸ 待 T16 | `dist-release/` |
-| T14 | 补 `docs/需求总结.md` §21 + README Roadmap + 交接文档 | 需求管理 agent | ⏸ 待 T13 | `docs/` |
+| T13 | bump 版本 → core/web 构建 → 打包 → commit/tag/push → `gh release v0.8.0` | 项目主管 | ✅ **已完成**（源码发布，无安装包） | commit `4c89272` · tag `v0.8.0` · [Release](https://github.com/lzk101/zidiankaifa/releases/tag/v0.8.0) |
+| T14 | 补 `docs/需求总结.md` §21 + README Roadmap + 交接文档 | 需求管理 agent | 🔄 进行中（README/`AGENTS.md`/Release Notes 已更新；§21 与交接文档待补） | `docs/` |
+
+### T13 完成记录（2026-09-16）
+
+| 项 | 结果 |
+|---|---|
+| 版本 bump | 0.7.1 → **0.8.0**（4 个 `package.json` + 3 处文本） |
+| core build | ✅ `tsc -p tsconfig.build.json` exit 0 |
+| sync-server build | ✅ exit 0，**`/health` 实测返回 `version: "0.8.0"`**（v0.7.1 遗留项 C1 闭环） |
+| **web build** | ❌ **受限沙箱下无法完成**（esbuild 需管道 IPC，`spawn EPERM`；已用 4 个判别实验逐一排除绕行方案） |
+| 门禁 | ✅ **480 通过 / 0 失败**（core 458 + desktop 22），exit 0 |
+| commit | ✅ `4c89272`（97 文件；已剔除 `scripts/_tmp` 与 `.board/_tmp` 的临时引擎副本） |
+| push | ✅ `055c753..4c89272  main -> main`，与 `origin/main` 差异 `0 0` |
+| tag | ✅ `v0.8.0`（附注 tag）已推送 |
+| Release | ✅ https://github.com/lzk101/zidiankaifa/releases/tag/v0.8.0 （非草稿、非预发布、**0 附件 = 仅源码**） |
+
+**⚠ 本次 Release 不含安装包**（用户拍板）：`apps/web/dist` 未重建，仍是 v0.7.1 产物，
+故 UI 关于页会显示「v0.7.1」而实际为 0.8.0。恢复正常发布只需在**普通（非受限）终端**跑：
+```powershell
+$env:ELECTRON_MIRROR='https://npmmirror.com/mirrors/electron/'
+$env:electron_config_cache='D:\lzk17\Documents\zidiankaifa\.electron-cache'
+$env:ELECTRON_BUILDER_CACHE='D:\lzk17\Documents\zidiankaifa\.eb-cache'
+pnpm --filter @zidiankaifa/web build
+pnpm --filter @zidiankaifa/desktop build
+```
+根因与完整处置见 `AGENTS.md` 第 3 节与 `docs/release-v0.8.0.md`。
 
 ### 阶段门（Gate）—— 已通过
 
