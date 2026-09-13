@@ -1171,7 +1171,78 @@ if (cp.busy !== 0) {
 
 ### §11.12.7 · 通报（非裁决）
 - **T60 探针已出现（测试 agent 写域）**：`scripts/probe_t60_rm_forensics.mjs`（3,908 B）· `scripts/probe_t60_handle_hook.mjs`（4,086 B）—— **未跟踪、未被 gitignore** ⇒ 属「未跟踪待入库」**非垃圾** ⇒ **T60 收口时一并 tracked 或清理**。**结构 agent 不动（非其写域）。**
+  > **✅ 已闭环（T60 尾款 `4548987`）**：3 份探针 `probe_t60_rm_forensics.mjs` / `probe_t60_handle_hook.mjs` / `probe_t60_leak_impact.mjs` **均已 tracked 入库**。
 - **`scripts/_tmp` 现状 = 0 文件**（结构 agent 已清空，故 ⑦=0 ✅）；T60 修好后「⑦=0 ↔ 门禁跑绿」互斥即解除。
+  > **⚠ 该结论在 T61 未落地前不成立（2026-09-16 主管实测）**：复跑 core 门禁后 `scripts/_tmp/booklang_tmp/` **仍有 3 个 `run-*`** —— T60 的「残留恒 0」靠测试侧 `reclaimLeakedConnections()` **兜底回收**得来，**非根因修复**。根因见 §11.13.7 `V11-OPENDB-LEAK`。
+
+---
+
+## §11.13 · T61–T64 派单与裁决（主管，2026-09-16）
+
+> 用户本轮指令原文：**「精简项目结构，包括文件结构和agent结构」**（继 T55 后第 4 轮结构治理）
+> 用户两项授权（`ask_user_question` 答复）：① 删除范围 = **「只删『Ⅰ 可清理』档，Ⅱ 档逐条报我裁」**
+> ② 根目录僵尸文档 = **「移入 `docs/legacy/` 归档目录」**（**推翻 `DEC-008` 原「保留原位」**）
+
+### §11.13.1 · 已提交清单（均 push，`origin/main` 同步）
+| commit | 内容 |
+| --- | --- |
+| `0155a64` | **T63** 需求 agent：`.board/DECISIONS.md`（672 → **710** 行）· `.board/REQ.md`（1336 → **1338** 行） |
+| `98613ac` | **执行 `docs/legacy/` 归档**：5 文件 `git mv`（均 **`R100`**）+ `PROJECT_CHARTER.md` 铁律 6 重写 + `docs/交接文档.md` §8 + 新增 `docs/legacy/README.md` |
+| `17ef659` | **T62**：删除 **39** 个零引用脚本 + 新增 `.board/structure/recheck_zero_refs.mjs` |
+
+### §11.13.2 · 裁决一 · **否决「改名解除禁令」**（需求 agent 建议 ①）
+需求 agent 提议归档时改名 `check_requirements.py.archived`（「禁令防故意，改名防疏忽」）。**否决**，理由落盘于 `docs/legacy/README.md`：
+- 本项目**口径陷阱已发生 10+ 次**；为**同一件东西制造第二个合法文件名形态**，恰恰**生成新的口径歧义**；
+- `DEC-008` 修订块的「文件身份」判据**本身就是文件名**，改名 ⇒ **第二次口径分裂**；
+- 已显式写明：**「改名不等于解除禁令 —— 即便改名成 `*.archived`，运行它仍被禁止」**。
+- **采纳其建议 ③**（为 `docs/legacy/` 定义「只增不改的归档区」写权限）⇒ 已写入 README。
+- **采纳其建议 ④ 并把根因写进 `PROJECT_STRUCTURE.md` §6**：我原裁定出错在**把「禁令的坐标系」当成不可变给定条件**，于是「坐标会失锚」反成**阻止移动**的理由。**正解 = 改写指代（位置 → 身份），而非为保住旧坐标放弃治理**（与 `DEC-023` 同类）。
+
+### §11.13.3 · 裁决二 · T62 零引用清理 —— **Ⅰ 档判据必须自建，两份既有分析共享盲点**
+- **两份独立分析（我的 20 文档语料 / 结构 agent `classify_mece.mjs`）都得「零引用 = 52」，但语料都不含 `packages/**`·`apps/**`·`scripts/**` 自身** ⇒ **共享盲点**。
+- 建 `.board/structure/recheck_zero_refs.mjs`（只读四通道）复核 ⇒ **救回 11 个**，其中两个决定性反例：
+  - `probe_t15_d6_residual.mjs` ← `packages/core/test/ru_morph_defects.mjs`
+  - `probe_t32_noi_audit.mjs` ← `packages/core/test/ru_morph_v090_guard.mjs:391`（逐字写「由 T32 独立发现（`scripts/probe_t32_noi_audit.mjs`）」）
+- **★ 复核器自身暴露两层缺陷（均已修并留痕）**：
+  1. **brace 声明式引用**：`book_lang.mjs:131/:401/:1765` 写作 `scripts/probe_t42_wal_fixture{,2,3}.mjs` ⇒ **字面量 `probe_t42_wal_fixture2.mjs` 在该文件里根本不存在**（`.Contains()` 实测 `False`）⇒ 任何字符串匹配都抓不到 ⇒ 判据补 **brace 展开**。
+  2. **路径未 normalize**：正斜杠比较对 `packages/`·`apps/` 下文件**全部失效** ⇒ 差一点误删 `probe_t32_noi_audit.mjs`。
+- **执行**：删 **39** 个（`git rm`，历史保留于 `98613ac`）。**保留 1 个** `exp_v9_signature.mjs`（被 `BOARD.md`/`TASKS.md` **真引用** ⇒ C 档）。
+- **量化**：删 39 个只减 **258 KB / 14.3% 体积**，但减 **27.5% 文件数** ⇒ **价值在导航性**（「结构臃肿」的真实含义），**不在体积**。
+- **Ⅱ 档（报主管裁）**：**无** —— 复核后 40 个真候选中 39 个我判 Ⅰ 档、1 个（`exp_v9_signature.mjs`）判 C 档保留，**故本轮无 Ⅱ 档待裁项**。
+
+### §11.13.4 · 裁决三 · **T64 全库扇描提速 = 不做**（测试 agent 判别实验，采纳）
+- **结论**：**99.4% 是 JS 拆解开销，SQLite 只占 0.6% 且根本不在计时区内** ⇒ **SQL 侧没有可优化的对象**（不是风险高，是**没有对象**）。
+- 硬数字：逐词 SQL 调用 **0**（101,512 词全程 `prepare=0/get=0/all=0`）· 纯 SQL 取数 **64.9 ms** vs 完整扇描 **11,483.5 ms** · 分组**扁平**（长度 4–6/7–9/10–12/≥13 ⇒ **9,997/10,145/10,009/9,455 词/秒**；**词长 5.75× ⇒ 成本仅 1.17×**）⇒ 落点是**每次调用的固定开销**，非 DP 随词长增长。
+- 候选：① 复用 `prepare` 落在噪声内且**该段不在 `scanMs` 内** ⇒ 收益 0；② **现实现（批量取）已比逐词 `prepare().get()` 快 ≈13–23×** ⇒ **已是最优形态**；③ `breakdownWord`（`packages/core/src/db/index.ts:961`）**函数体内 0 处 `db.prepare`**，唯一相关点 `loadMorphemes`（`:912`）的 `:917` `prepare` 已由 `morphemeCacheByLang`（`:910/:914/:929`）按 lang 缓存。
+- **一并纠正我两处口径**（采纳）：① **「21 秒」在原文中不存在** —— `EVIDENCE.md:1299/1373` 记主管参考 **8,971 ms**、5 次实测 **12,059/16,998/14,230/12,409/19,209 ms**，**最慢 19.209 s**；② **`DEC-010` 不是性能条**（`DECISIONS.md:227` = 「全绿」的定义 226+20=246 项），性能口径在 **`TASKS.md:44`**。
+- **将来若真要做**：唯一有实测支持的轴 = 每次调用的固定开销 ⇒ 需把「词素 → 候选结构」**按 lang 预计算一次**（`src` 侧，属开发 agent 写域），须重验 **33,495 / 63 / 134 / D1=0** 与 26 条守卫，**加速比尚未实测**。
+
+### §11.13.5 · 裁决四 · **收回对开发 agent「越权」的指控**（我的判断错误，已订正）
+- 我一度认定它越权改测试 agent 写域的 `scripts/check_v10_ui_contract.mjs`。**核验后收回**：
+  - 该文件**由它自己在 `041c6e7` 创建**（`git log --diff-filter=A` 实测）；
+  - `dev-agent.md:17` 明文允许它「**必要时新建自己的临时探针脚本（放 `scripts/`）**」⇒ **它是该文件的正当写者**。
+  - ⇒ **我的分工表记错了边界。** 结构 agent 的 `.board/agents.md` 与我的记忆均须以**委任书原文**为准。
+- **同时采纳它的 T39 顶回**：`apps/desktop/src/main.mjs:121-134` 的 `book:update` 守卫**已在 HEAD**（注释自标「v0.10.0 裁决十九 + T41」，白名单 `'en'|'ru'` + `throw`），**我引用的「裸 `bookUpdate(db, item)`」是过时行号表述**。它给出 `git show HEAD:` 级证据 ⇒ 采纳。
+- **采纳它的口径建议**（待办）：在 `AGENTS.md` 记一行索引 —— 「`apps/web/src/App.tsx` 的 `bookList()` **全量读取 = 跨语言判定豁免**，见 `scripts/check_v10_ui_contract.mjs` 头部」。
+- **★ 一条方法论教训（重要，本轮实测）**：我在**开发 agent 并行写 `apps/web/src/` 期间**跑门禁，测到 `[D] 24/1 · 136/1 · exit 1` 并曾误判为「偶发 flake」。**真相 = 它 v1 方案的中间状态**（它随后自己撞红 `book_lang.mjs` D22 并回退）。
+  ⇒ **纪律：任何门禁数字必须在「工作区无并行写入」时采集；否则数字无效，不得作为结论。**
+
+### §11.13.6 · 计数（**带时点 `17ef659`**）
+- **已跟踪 219** = `scripts/` **99** + `packages/` 43 + `apps/` 38 + `.board/` 15 + `docs/` 13 + `data/` 1 + 根目录 10（预算 300）
+- **`scripts/` 138 → 99**（预算 165）
+- ⚠ **第 9 次同类计数陷阱（本轮新增，均为我犯）**：
+  1. 我报「218」漏数 `.board/structure/recheck_zero_refs.mjs`（真值 **219**）；
+  2. **`git ls-files` 默认对非 ASCII 路径加引号并八进制转义**，我按首段分组**凭空造出一个名为 `"docs` 的目录**（6 个）⇒ 需分组统计时**必须用 `git ls-files -z`**。**磁盘上不存在任何含字面引号的路径**（已实测证伪）。
+- ⇒ 纪律升级：**分组统计一律用 `-z` 或 `core.quotepath=false`**；已写入 `PROJECT_STRUCTURE.md` §0。
+
+### §11.13.7 · 未闭环（转 v0.11.0）
+| 项 | 状态 |
+| --- | --- |
+| **`V11-OPENDB-LEAK`** | **T61 已派开发 agent**（修法 `try{…}catch(e){db.close(); throw e}`，**原错误须原样抛出**——`assertBookCompositeOrThrow` 的中文消息经桌面端 `dialog.showErrorBox` **用户可见**）。**主证据 = `book_lang.mjs` 收尾「漏关连接 6 个」⚠ 输出应消失**（该提示只在 `leaked > 0` 时打印）。⚠ `run-*` 残留「恒 0」**是测试侧兜底回收的结果，不能作为修好的证据**。 |
+| **结构 agent `2d4ba4d0`** | **`[diagnostic: corrupt]`**，T62 派单**永久未回执**。它的写域（`.board/STRUCTURE.md`·`.board/agents.md`·`.board/structure/**`·`PROJECT_STRUCTURE.md`·`.gitignore`）目前**无人接管** ⇒ 本轮 `PROJECT_STRUCTURE.md` 的 §6 重写与数字订正**由我代写并注明**。**修复手段尚未确定**（工具层无删除 API；`send_message` 对 corrupt 者能否唤醒未验证）。 |
+| **agent 结构精简** | **物理「精简 agent 数量」在本工具层做不到** —— `list_agents` 12 条子代理**全 `ready`**、`interrupt_agent` 对 `ready` 者**是无操作**。⇒ 只能做 **台账压缩 · 口径收敛 · 抑制新增**（结构 agent 的 T62-B 方案未产出）。 |
+| `docs/legacy/` 后置 | `check_requirements.py` 归档后**写目标转移到 `docs/legacy/`**（不再碰权威 `docs/需求总结.md`），但**废弃横幅仍会被重写**；**风险随移回根目录立即复原**。 |
+
 
 
 
