@@ -1,7 +1,7 @@
 # 调度板 — 在飞任务
 
 > **维护者**：项目主管。任何 agent 只读；如需变更请向主管提请。
-> **最后更新**：2026-09-16（第十一节：第 4 个常驻角色「项目结构管理 agent」建立）
+> **最后更新**：2026-09-16（§11.11：T55 收口提交 `fe2da36` + T60 派发 + 结构治理与门禁互斥约束）
 
 ---
 
@@ -1101,6 +1101,40 @@ if (cp.busy !== 0) {
 
 **裁决 G · `interrupt` 动作 = 0 次（确认结构 agent 的判断）**
 它指出 **7 个可回收者与 2 个孙代理全部 `ready`、无一个 `running`**，而 `interrupt_agent` 的语义是「停当前一轮」⇒ **对 `ready` 者调用是无操作**。⇒ 本轮**不需执行任何 `interrupt`**；请求的是「**不再唤醒**」这条纪律的确认。**该判断正确，照此办理。**
+
+---
+
+## §11.11 · T55 收口（提交 `fe2da36`）与 T60 派发
+
+### 一、提交与复核
+- **提交 `fe2da36`**「board(structure): T55 首轮结构快检收口」（4 文件 +78/−22：`.board/BOARD.md` · `.board/STRUCTURE.md` · `.board/agents.md` · `PROJECT_STRUCTURE.md`）→ **已 push**，`origin/main...HEAD` = `0 0`，工作区干净。
+- **主管独立复核结构 agent 申报数字（全部命中）**：已跟踪 **253** · `dist-release/` **8 文件 / 700,062,244 B** · `dist-release` 已跟踪数 **0** · `.board` tracked **14** · 污染扫描通过。
+
+### 二、★★ 新增操作性约束（结构 agent 提出，主管采纳为纪律）
+> **在 `scripts/_tmp` 根因修好之前，任何一次 `pnpm --filter @zidiankaifa/core test` 都会重新制造 1 个 `run-*` 目录 ⇒ 体检⑦「临时残留 = 0」与「门禁跑绿」在当前根因未修时互斥，二者只能保证其一。**
+
+- **这正是结构 agent 本轮未复跑门禁的理由**（防主动制造越线）。⇒ **纪律：结构 agent 复跑门禁后，体检⑦ 允许为「复跑产生的 N 个 `run-*`」，不得据此判越线；须与「本次复跑次数」对账。**
+- 最近一次门禁实测（T55 清理后）：core **621/0 exit 0** · desktop **22/0 exit 0** ⇒ 合计 **643/0**。
+
+### 三、`_tmp` 死引用的真实根因（制度自相矛盾，非证据丢失）
+- 三处死引用：`.board/REQ.md:383`（`.board/_tmp/count_defects.mjs` ＋ `defects_out.txt` 标「有意保留，勿当垃圾清理」）· `.board/REQ.md:1318`（`.board/_tmp/probe_t47_backup_fail.mjs` 标「未删除」）· `.board/BOARD.md:2440`（`scripts/_tmp/out_t24d_diff.txt` 标「保留」）—— **四目标均不存在**。
+- **根因**：目标**全在 `_tmp/` 目录**，而 `roles/structure-agent.md` §3.1 **授权结构 agent 自主清理 `_tmp/`** ⇒ **同一制度内一处说「有意保留」、另一处说「可自主清理」**。
+- ⇒ **新判据（已下令写入 `STRUCTURE.md` §7）**：**`_tmp*` 目录下任何文件，无论文档怎么写「保留/勿删」，一律按可清理处理；凡结论必须落在非 `_tmp` 路径或 DEC/AC 正文中。**
+
+### 四、T60 派发（测试 agent `7ff57407`，已发出）
+| 项 | 内容 |
+| --- | --- |
+| 目标 | 修 `packages/core/test/book_lang.mjs` 收尾 `rmSync` 的 **EPERM** 根因 + 清理遗留 `run-*` |
+| 现象 | `EPERM, Permission denied: \\?\...\scripts\_tmp\booklang_tmp\run-<随机>`；**1:1（3 次测试 ↔ 3 目录）**；每目录恒 **54 文件 / 2,470,148 B**；**exit 仍 0**（全绿后才走到的分支） |
+| 内容 | 全为合成夹具（`a5_old_with_lang.db` `b_isolation.db` `c_sync.db` `d_*.db` `e_{busy,prod,remnant,remnant_src,vacuum_ctl,variant}/` `dist_variant/`），**无断言输出/快照 ⇒ 不含留红取证** |
+| 候选假设（要求验证，非照抄） | `DatabaseSync` 句柄未 `close()` · WAL sidecar 未释放 · `dist_variant/` 的 `file://` 动态 import 句柄 · Windows 延迟释放（`force/maxRetries/retryDelay`） |
+| 约束 | **137 条断言数与语义不变**（已发布 v0.10.0 门禁文件）· **两种 cwd 均 exit 0** · 清理失败**不得**改变退出码语义（若要改须先报主管）· 只改该文件 · 不改其余 6 个门禁测试文件 · 无 git 写操作 |
+| 验收 | 「修复前 N 个目录 → 复跑 → 修复后 0 个（或不增长）」实测链 + 遗留目录清理数 |
+
+### 五、D 档新增 2 项候选（主管已裁定接受）
+`scripts/probe_t15_reconcile_and_harm.mjs`（§B「96 词真误伤」已作废）· `scripts/exp_v9_criterion_d.mjs`（`:97` `EX_ALL` 系未经核证的注入件）。
+- **D 档充分判据（钉死）**：**结论已错/已作废 ∧ 当前无任何活跃引用**；仅「含『推翻』字样」或「仅时间久」都不够。
+- **反向澄清**：`probe_t28_*` / `probe_t29_*` / `probe_sup_bolnoy_mincost.mjs` 虽含「推翻」字样但**正是推翻者** ⇒ **保持 C 档**。
 
 
 
