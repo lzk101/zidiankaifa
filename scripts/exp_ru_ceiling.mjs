@@ -1,16 +1,18 @@
 /**
- * ⛔⛔ 已过期（v0.8.0 之后）—— 禁止再用作基线来源 ⛔⛔
+ * ✅ 已修复（V9-7，2026-09-16）—— 恢复可用
  *
- * `:147` 的 gap 判据仍是修复前的默认值 `>= (g.gapMin ?? 2)`，
- * 而生产 `packages/core/src/db/index.ts:859` 已是 `>= 1`（v0.8.0 / D1 修法）。
- * ⇒ 直接以默认开关复用它，得到的是**修复前基线**（R=244 / D1=267 / A=33,441），
- *   与冻结基线（R=238 / D1=0 / A=33,174）**差 296 例**。
- * ⇒ 新实验请改用 `scripts/exp_v9_admission.mjs`（按现源码复刻，全库 101,512 词 0 例不一致）。
- * ⇒ 修复动作见 `.board/TASKS.md` 的 **V9-7**（把默认值更新为 1 并标注）。
+ * 本脚本在 v0.8.0 之后曾**失效**，两处原因（均已修）：
+ *  ① `GATES_STRICT` 缺 `gapMin`，`:147` 的 `>= (g.gapMin ?? 2)` 因而落到**修复前的 2**，
+ *     而生产 `packages/core/src/db/index.ts:859` 已是 `>= 1`（v0.8.0 / D1 修法）。
+ *  ② `buildMatchers` 未复刻 `index.ts:691` 的 tie-break 顺序
+ *     （按 kind 分组 + 组内按 morpheme 串长降序）。
  *
- * 另：复刻的任何引擎都必须计入 `packages/core/src/db/index.ts:691` 的词素顺序
- * （`byKind` 按 kind 分组 + 组内按 morpheme 串长降序），它是 DP 的 tie-break，
- * 漏掉它会产生 29 例不一致（T17 实测）。
+ * 失效的**表现形式是自检失败并中止，而不是静默给出错误基线**：
+ *   `【自检】复刻版 vs 官方 breakdownWord（全 791 词）：不一致 6 例 ⚠ 中止`（exit 1）
+ * ⇒ 它**不会**污染下游（无法运行），但会浪费一次调用。**此前把它描述为「静默给出修复前基线」是不准确的。**
+ *
+ * 修复后：`gapMin` 显式取 1（生产值）；如需复现**修复前**基线，显式传 `{ gapMin: 2 }`。
+ * 新实验优先用 `scripts/exp_v9_admission.mjs`（全库 101,512 词 0 例不一致）。
  *
  * ---------------------------------------------------------------------------
  * A2 判别实验 —— 尺子 R 的「可拆解天花板」量化（只读：不改库、不改 src/、不改 test/）
@@ -62,6 +64,15 @@ function buildMatchers(lang, extra = []) {
     origin: r.origin ?? null,
   }));
   for (const x of extra) list.push({ morpheme: x.morpheme, kind: x.kind, meaningZh: x.meaningZh ?? '', origin: null });
+  // ★ 必须复刻 packages/core/src/db/index.ts:691 的 tie-break 顺序（否则 6/791 例不一致，自检会中止）：
+  //   生产是 `const byKind = (k) => list.filter((m) => m.kind === k).sort((a,b) => b.morpheme.length - a.morpheme.length)`
+  //   → 按 kind 分组（prefix→suffix→root）+ 组内按原始 morpheme 串长降序。DP 同分时依赖此顺序。
+  const KIND_RANK = { prefix: 0, suffix: 1, root: 2 };
+  list.sort((a, b) => {
+    const k = (KIND_RANK[a.kind] ?? 3) - (KIND_RANK[b.kind] ?? 3);
+    if (k !== 0) return k;
+    return String(b.morpheme).length - String(a.morpheme).length;
+  });
   const isRu = lang === 'ru';
   const all = list.map((m) => {
     const raw = m.morpheme.replace(/^-+|-+$/g, '');
@@ -89,7 +100,7 @@ function matchersWith(lang, extra) {
   return m;
 }
 
-const GATES_STRICT = { threshold: true, leadGap: true, gapExplain: true, suffixPos: true, prefixPos: true, oneCharPre: true };
+const GATES_STRICT = { threshold: true, leadGap: true, gapExplain: true, suffixPos: true, prefixPos: true, oneCharPre: true, gapMin: 1 }; // ★ gapMin:1 = 生产值（index.ts:859 `parts[0].start >= 1`）；原缺省走 `?? 2` 会复现修复前基线并使自检中止
 
 function breakdownEx(word, lang, gates, extra = [], bundle = null) {
   const g = { ...GATES_STRICT, ...gates };
