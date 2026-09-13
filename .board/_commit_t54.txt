@@ -1,0 +1,53 @@
+docs(v0.10.0): T54 文档收尾 + 主管两处订正（注1 证伪 / 账本归因纠正）
+
+## 一、T54 需求管理 agent 交付（四项，均落盘）
+  - docs/需求总结.md 1313 → 1478 行（新增 §23 八小节）
+  - docs/交接文档.md 367 → 409 行（§3.3 新增 v0.10.0 并顺移；§5.3 账本；§6 重组
+    + 4 条已闭环 + 新增 C7–C10；§6.D 增 3 条；§9 补 v0.10.0 步骤）
+  - .board/REQ.md 1300 → 1336 行（§8.0.1 逐 AC 收口表 AC-12…AC-19 全 ✅；AC-18 定版）
+  - .board/DECISIONS.md 642 → 672 行（新增 DEC-027 门禁账本口径定版 + T48–T54 追加段）
+  - .board/CHANGELOG.md 161 → 179 行（v0.10.0 转「已发布」，开发留痕原样保留）
+  独立验证（她实跑非转述）：七个 core 文件 + desktop 测试逐个直跑 node ⇒ exit 全 0；
+  book_lang.mjs 逐块 [A]42/[B]26/[C]18/[D]25/[E]26 = 137 ⇒ 与 643/621/137 一致。
+
+## 二、★ 主管归因被顶回并采纳（账本口径）
+主管初稿「旧账本漏了 ru_morph.mjs 的 60 条」并给出 99+67+38+194+26 —— 该式子
+= 424，而 424+22 = 446 ≠ 506，**本身不自洽**。需求 agent 按实情改写：
+  - 旧·分项（含 60）：core 484 = 99+67+38+60+194+26 + desktop 22 = 506 ✅ 自洽
+  - 真正根因是**汇总方式**：ru_morph.mjs 的计数行**无「结果：」前缀**，
+    凡按该前缀做后缀式汇总的账本都会静默漏 60 条 ⇒ 并存 484（含）/ 424（不含）两种分项口径
+  - 新：core 621 = 99+67+38+60+194+26+137 + desktop 22 = 643
+⇒ 定版 DEC-027；旧口径按 DEC-014 保留为历史值。
+⇒ .board/TASKS.md §10.3 已按此重述（原表述与 506 冲突，是主管的错，不是她的）。
+
+## 三、★ 主管实测证伪发布说明 §四.1 注 1（需求 agent 提请的第 2 项）
+注 1 原称「『备份失败』路径会绕过 T45 后置校验」。T48 已把校验上移到
+openDatabase() 出口（packages/core/src/db/index.ts:144 assertBookCompositeOrThrow）。
+新增探针 scripts/probe_sup_t48_assert_coverage.mjs：
+  手法 = 冻结 Date.now()/toISOString() 使备份名可预测 + 在确切路径预建非空目录
+         ⇒ 确定性触发 VACUUM INTO 失败 ⇒ :279 ⇒ :310 早期 return
+  结果 = **7 通过 / 0 失败**：
+    - 前置条件成立：捕获到「备份失败（…），放弃迁移（数据优先）」
+    - 该路径**抛错** book 表未能迁移到 (word, lang) 复合主键（当前主键列 = ["word"]）…
+    - 判别力守卫：无干扰时同一夹具**不抛错**且迁移成功、主键为复合 ✅
+  ⇒ 发布说明注 1 已在原地标注「已实测证伪」（保留原措辞 + 订正理由，遵 DEC-014）
+
+### 探针自身的三次修正（均已记入脚本头注）
+  1. `:memory:` 库测 `!file` 分支 —— **无效**：:memory: 先经 SCHEMA_SQL 直建复合主键，
+     在 `:302 if (isComposite) return` 就返回，根本没进备份段（0 条警告即证）
+  2. 预建同名 `book` 目录 —— **无效**：`book` 是表名，备份名是 `<db>.bak-<ISO>`，两者不相干
+  3. 清理顺序 —— rmSync 在末尾因句柄未释放报 `EPERM, Permission denied`
+     ⇒ 改为**先打印结果、清理容错**（本项目第二次踩清理 EPERM）
+
+## 四、新登记一条 v0.11.0 正确性候选（需求 agent 提请）
+`packages/core/src/db/index.ts` 两处 inBook 内联 SQL：
+  - `:764`（lookupI18n）= `WHERE word = ? AND lang = ? AND deleted = 0` **正确**
+  - `:823`（lookupWord 英语主路径）= `WHERE word = ? AND lang = 'en' AND deleted = 0` **硬编码**
+可达性（主管读码确认）：lookupWord 在 `:780`（lang==='ru'）与 `:788-791`（西里尔 auto）
+两条俄语入口**都会提前 return lookupI18n(...)** ⇒ 俄语词走不到 `:823`
+⇒ 定性为**潜在不一致**（非当前活跃缺陷），与 v0.10.0 修掉的跨语言「★ 已收藏」误报同族。
+已写入 docs/release-v0.10.0.md §四.6 与 §六-A2。
+
+## 五、同批确认已闭环（T54 实测）
+  - apps/desktop/src/main.mjs:125 的 `book:update` **已校验 lang**（缺省抛错，:130）⇒ T39 闭环
+  - apps/desktop/src/main.mjs:317 **已有 dialog.showErrorBox** + app.exit(1) ⇒ T47 异议③ 已落地
