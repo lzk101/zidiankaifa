@@ -231,12 +231,18 @@ export interface DictBackend {
   lookup(word: string, lang?: LangMode | string): Promise<WordDetail | null>;
   suggest(prefix: string, limit?: number, lang?: string): Promise<SuggestItem[]>;
   breakdown(word: string, lang?: LangMode | string): Promise<BreakdownPart[]>;
-  bookList(): Promise<BookItem[]>;
+  /** 列出未删除的生词；**缺省（不传 lang）= 不过滤，返回全部语言**（v0.10.0：UI 必须显式传 lang） */
+  bookList(lang?: string): Promise<BookItem[]>;
   bookAdd(word: string, tags?: string[], lang?: string): Promise<BookItem>;
-  bookRemove(word: string): Promise<void>;
+  /** 删除 = 写墓碑；缺省沿用该词既有语言（v0.10.0：墓碑不得改语言） */
+  bookRemove(word: string, lang?: string): Promise<void>;
   bookUpdate(item: BookItem): Promise<void>;
-  /** 生词本按词根/词缀分组（知识图谱）；可选能力，缺失时前端自行聚合 */
-  bookGroups?(): Promise<MorphemeGroup[]>;
+  /**
+   * 生词本按词根/词缀分组（知识图谱）；可选能力，缺失时前端自行聚合。
+   * ★ v0.10.0 分层：语言过滤发生在**这一层**（先按 lang 过滤 items，再交给
+   * `groupBookByMorpheme`）；缺省（不传 lang）= 不过滤（与 `bookList` 一致）。
+   */
+  bookGroups?(lang?: string): Promise<MorphemeGroup[]>;
   /** 查词页「同根词」：当前词经构词拆解关联到的词族（按共享词素分组） */
   relatedByMorpheme?(word: string, lang?: string): Promise<MorphemeGroup[]>;
   /** 词根表 / 词缀表列表查询（可选能力，浏览器端走同步服务） */

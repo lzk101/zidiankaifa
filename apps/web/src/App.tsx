@@ -9,12 +9,14 @@ import BreakdownCard from './components/BreakdownCard';
 import RelatedCard from './components/RelatedCard';
 import BookPanel from './components/BookPanel';
 import LexiconPanel from './components/LexiconPanel';
+import RootClassPanel from './components/RootClassPanel';
 import SettingsPanel from './components/SettingsPanel';
 import ClipboardPopup from './components/ClipboardPopup';
 import UpdateBanner from './components/UpdateBanner';
 import { isAutoUpdateEnabled, useUpdateState } from './useUpdate';
 
-type Panel = 'lookup' | 'book' | 'lexicon' | 'settings';
+/** v0.10.0：新增 'rootclass'（🌱 词根分类）—— 共 5 个顶层面板（不新增第 6 个） */
+type Panel = 'lookup' | 'book' | 'lexicon' | 'rootclass' | 'settings';
 
 const LAST_WORD_KEY = 'zidian-last-word';
 const LANG_KEY = 'zidian-lang';
@@ -71,6 +73,15 @@ export default function App() {
     localStorage.setItem(LANG_KEY, l);
   }, []);
 
+  /**
+   * 生词本**全量**（全部语言）读取。
+   *
+   * ★ 这里刻意**不传 lang**：本读取不是「列表展示读取」，而是给跨语言状态判定用的
+   *   （`toggleBook` 要知道 (word, lang) 到底在不在生词本里，`items` 同时充当子面板的
+   *   「有变化就重载」信号）。**列表展示读取全部在子面板内**，且按 AC-16⑦ **显式传 lang**
+   *   （`BookPanel.tsx` 的 `bookList(lang)` / `RootClassPanel.tsx` 的 `bookGroups?.(lang)`）。
+   *   契约脚本 `scripts/check_v10_ui_contract.mjs` 头部已记档这条豁免及其理由。
+   */
   const refreshBook = useCallback(() => {
     getBackend()
       .bookList()
@@ -130,18 +141,19 @@ export default function App() {
 
   const toggleBook = useCallback(
     async (word: string) => {
+      // v0.10.0：按 (word, lang) 判定与操作 —— 同拼写的另一语言条目互不影响
+      const entryLang = current?.i18n?.lang ?? 'en';
       const inBook = book.some(
-        (b) => b.word.toLowerCase() === word.toLowerCase(),
+        (b) =>
+          b.word.toLowerCase() === word.toLowerCase() &&
+          (b.lang ?? 'en') === entryLang &&
+          !b.deleted,
       );
       try {
         if (inBook) {
-          await getBackend().bookRemove(word);
+          await getBackend().bookRemove(word, entryLang);
         } else {
-          await getBackend().bookAdd(
-            word,
-            [],
-            current?.i18n?.lang ?? 'en',
-          );
+          await getBackend().bookAdd(word, [], entryLang);
         }
       } catch {
         // 忽略
@@ -223,6 +235,13 @@ export default function App() {
             🌱 词根词缀
           </button>
           <button
+            className={activePanel === 'rootclass' ? 'active' : ''}
+            title="按词根归类我的生词（英语 / 俄语分开）"
+            onClick={() => setActivePanel('rootclass')}
+          >
+            🌱 词根分类
+          </button>
+          <button
             className={activePanel === 'settings' ? 'active' : ''}
             onClick={() => setActivePanel('settings')}
           >
@@ -230,7 +249,7 @@ export default function App() {
           </button>
         </nav>
         <div className="copyright">
-          我的电子辞典 v0.9.0
+          我的电子辞典 v0.10.0
           <br />
           词库来源 ECDICT
         </div>
@@ -262,6 +281,12 @@ export default function App() {
             }}
           >
             词根词缀
+          </button>
+          <button
+            className={activePanel === 'rootclass' ? 'active' : ''}
+            onClick={() => setActivePanel('rootclass')}
+          >
+            词根分类
           </button>
           <button
             className={activePanel === 'settings' ? 'active' : ''}
@@ -334,6 +359,9 @@ export default function App() {
               onLangChange={(l) => setLangAndPersist(l as LangMode)}
               onPickWord={lookup}
             />
+          )}
+          {activePanel === 'rootclass' && (
+            <RootClassPanel items={book} onPick={lookup} />
           )}
           {activePanel === 'settings' && <SettingsPanel />}
         </div>

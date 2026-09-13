@@ -4,7 +4,7 @@
  * - IPC 提供查词/词形/词源/拆解/生词本/同步
  * - 剪贴板取词轮询（仅监听类英文单词文本）
  */
-import { app, BrowserWindow, clipboard, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, clipboard, dialog, ipcMain, shell } from 'electron';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -109,15 +109,33 @@ function registerIpc() {
   );
   ipcMain.handle('dict:breakdown', (_e, word, lang) =>
     word ? plain(breakdownWord(db, String(word), lang ? String(lang) : 'en')) : []);
-  ipcMain.handle('book:list', () => plain(bookList(db)));
+  // v0.10.0：book:list / book:remove / book:groups 均带可选 lang
+  // book:list 缺省 = 不过滤（全部语言）；UI 必须显式传 lang（AC-16 第 7 条）
+  ipcMain.handle('book:list', (_e, lang) => plain(bookList(db, lang ? String(lang) : undefined)));
   ipcMain.handle('book:add', (_e, word, tags, lang) =>
     bookAdd(db, String(word), Array.isArray(tags) ? tags.map(String) : [], lang ? String(lang) : 'en'),
   );
-  ipcMain.handle('book:remove', (_e, word) => {
-    bookRemove(db, String(word));
+  ipcMain.handle('book:remove', (_e, word, lang) => {
+    bookRemove(db, String(word), lang ? String(lang) : undefined);
   });
-  ipcMain.handle('book:update', (_e, item) => bookUpdate(db, item));
-  ipcMain.handle('book:groups', () => plain(groupBookByMorpheme(db, bookList(db))));
+  // ★ v0.10.0 裁决十九 + T41：book:update 必须显式带 lang。
+  // 核心 `bookUpdate` 对缺省 lang 走 `existingLangForWord()`（不按语言、按 updated_at 取「较新」的那条），
+  // 同词双语言下**改哪条不可预期**（测试 agent B24/B25 以读码 + 断言登记）⇒ 本层拒绝无 lang 的更新，
+  // 避免弱类型 IPC 通道静默改错语言。`lang` 亦必须是两个已知值之一，防止写入意外的语言标签。
+  ipcMain.handle('book:update', (_e, item) => {
+    const it = item && typeof item === 'object' ? item : {};
+    const lang = it.lang;
+    if (lang !== 'en' && lang !== 'ru') {
+      throw new Error(
+        'book:update 需要显式 lang（"en" | "ru"）：缺省语义在同词双语言下不确定（裁决十九）'
+      );
+    }
+    return bookUpdate(db, it);
+  });
+  // 语言过滤发生在本层（先按 lang 过滤 items）；groupBookByMorpheme 只负责按 it.lang 选词素库（AC-17 第 6 条）
+  ipcMain.handle('book:groups', (_e, lang) =>
+    plain(groupBookByMorpheme(db, bookList(db, lang ? String(lang) : undefined))),
+  );
   ipcMain.handle('dict:related', (_e, word, lang) =>
     word ? plain(relatedByMorpheme(db, String(word), lang ? String(lang) : 'en')) : []);
 
@@ -284,7 +302,34 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
-  db = openDatabase(resolveDbPath());
+  // ★★ T49（采纳需求 agent T47 异议 3）：`openDatabase()` 现在会**抛错**（迁移无法完成时，
+  // 见 packages/core/src/db/index.ts 的 `assertBookCompositeOrThrow`）。
+  // 若此处不捕获，抛错发生在 `createWindow()` **之前** ⇒ 打包版（无控制台）表现为
+  // 「**双击图标没反应**」—— 那只是把静默从「写不进去」换成了「打不开」，对用户仍然不响亮。
+  // 故必须：① 捕获 ② 用 `dialog.showErrorBox` **明确告知原因与出路** ③ 再退出。
+  // 为什么不用 `app.quit()`：它在无窗口时可能不立即结束进程，且在 `whenReady` 早期行为不确定；
+  // `app.exit(1)` 是同步立即退出，配合 `showErrorBox`（同步阻塞直到用户点确定）不会闪退。
+  try {
+    db = openDatabase(resolveDbPath());
+  } catch (e) {
+    const detail = e?.message ?? String(e);
+    console.error('[zidiankaifa] 打开词库失败：', detail);
+    dialog.showErrorBox(
+      '无法打开词库',
+      [
+        '词典数据未能打开，为避免生词本出现「能看不能加」的静默故障，此处直接终止启动。',
+        '',
+        `原因：${detail}`,
+        '',
+        '可尝试：',
+        '1. 确认磁盘剩余空间充足（生词本迁移需要写入备份）；',
+        '2. 确认没有另一个词典实例或同步工具正在占用词库文件，然后重新打开；',
+        '3. 若反复失败，可在数据目录中找到迁移时生成的 `dict.db.bak-<时间戳>` 备份并恢复。',
+      ].join('\n')
+    );
+    app.exit(1);
+    return;
+  }
   const words = countWords(db);
   console.log(`[zidiankaifa] dict.db opened, ${words} words`);
   updater = createUpdater({

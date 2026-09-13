@@ -1,3 +1,29 @@
+/**
+ * book 表列定义 —— **唯一来源**。
+ * 新库建表（`SCHEMA_SQL`）与老库主键迁移（`packages/core/src/db/index.ts` 的
+ * `migrateBookCompositeKey`）共用本常量，避免两处结构漂移。
+ */
+export const BOOK_COLUMNS_SQL = `
+  word             TEXT NOT NULL,
+  lang             TEXT NOT NULL DEFAULT 'en',
+  added_at         INTEGER NOT NULL,
+  updated_at       INTEGER NOT NULL,
+  status           TEXT NOT NULL DEFAULT 'new',
+  note             TEXT,
+  tags             TEXT NOT NULL DEFAULT '[]',
+  review_count     INTEGER NOT NULL DEFAULT 0,
+  last_reviewed_at INTEGER,
+  deleted          INTEGER NOT NULL DEFAULT 0`;
+
+/**
+ * book 表 DDL。
+ * v0.10.0：主键由 `word` 升级为 **(word, lang)** —— 同一拼写在不同语言下是两条独立记录
+ * （英文 `book` 与俄文 `book` 不再互相覆盖）。
+ */
+export const BOOK_TABLE_SQL = `CREATE TABLE IF NOT EXISTS book (${BOOK_COLUMNS_SQL},
+  PRIMARY KEY (word, lang)
+);`;
+
 /** zidiankaifa 词库模式（与 schema.sql 保持一致，供 node:sqlite 直接执行） */
 export const SCHEMA_SQL = `
 PRAGMA journal_mode = WAL;
@@ -83,7 +109,7 @@ CREATE TABLE IF NOT EXISTS morphemes (
 );
 
 CREATE TABLE IF NOT EXISTS book (
-  word             TEXT PRIMARY KEY,
+  word             TEXT NOT NULL,
   lang             TEXT NOT NULL DEFAULT 'en',
   added_at         INTEGER NOT NULL,
   updated_at       INTEGER NOT NULL,
@@ -92,7 +118,9 @@ CREATE TABLE IF NOT EXISTS book (
   tags             TEXT NOT NULL DEFAULT '[]',
   review_count     INTEGER NOT NULL DEFAULT 0,
   last_reviewed_at INTEGER,
-  deleted          INTEGER NOT NULL DEFAULT 0
+  deleted          INTEGER NOT NULL DEFAULT 0,
+  -- v0.10.0：生词本按 (word, lang) 分离，同一拼写在不同语言下是两条独立记录
+  PRIMARY KEY (word, lang)
 );
 CREATE INDEX IF NOT EXISTS idx_book_updated ON book(updated_at);
 `;

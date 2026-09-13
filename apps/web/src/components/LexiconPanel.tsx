@@ -3,6 +3,11 @@
  *
  * 需求：把单词表分成英语和俄语，并新增可浏览、可搜索的词根表与词缀表。
  * 数据来自 roots / affixes 表，关联词由真实拆解统计（非子串匹配）。
+ *
+ * ★ 职责区分（v0.10.0 AC-17 第 4 条，勿与 `RootClassPanel.tsx` 混淆、勿判为重复实现）：
+ *   本面板 = **全库**词根/词缀表（数据源 = `roots`/`affixes` 倒排表，与生词本**无关**）；
+ *   `RootClassPanel.tsx`（顶层「🌱 词根分类」）= **只归类「生词本」里的词**（数据源 = 生词本 items）。
+ *   ⇒ 两者数据源不同、用途不同：这里是「这本书里有哪些词根」，那里是「我背的词落在哪些词根下」。
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { LexiconEntry, LexiconKind, LexiconPage, LexiconStats } from '@zidiankaifa/core';

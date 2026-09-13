@@ -13,7 +13,7 @@ import type {
   WordDetail,
   WordListPage,
 } from '@zidiankaifa/core';
-import { groupBookByMorphemeData } from '@zidiankaifa/core';
+import { groupBookByMorphemeData, isCyrillic } from '@zidiankaifa/core';
 
 const DEFAULT_SYNC_URL = 'http://localhost:4570';
 const SYNC_URL_KEY = 'zidian-sync-url';
@@ -27,21 +27,61 @@ export function getSyncUrl(): string {
   return localStorage.getItem(SYNC_URL_KEY) || DEFAULT_SYNC_URL;
 }
 
-/* ---------------- 本地生词本（浏览器 / PWA 模式） ---------------- */
+/* ---------------- 本地生词本（浏览器 / PWA 模式） ----------------
+ * v0.10.0（AC-16 第 5/6 条）：SQLite 与 localStorage **两条路径都要做语言隔离**。
+ * 存储结构升级为 `{ version: 2, items: BookItem[] }`（条目带 `lang`）；
+ * 旧的**裸数组**（条目无 `lang`）在**首次读取时**按 `isCyrillic(word)` 归语言并**立即写回一次**，
+ * 写回后不再满足迁移条件 ⇒ 天然幂等（不会重复改写）。
+ */
+
+const BOOK_LOCAL_VERSION = 2;
+
+interface LocalBookFile {
+  version: number;
+  items: BookItem[];
+}
+
+/** 按词形判语言（与 BookPanel 的添加规则同源：西里尔 = ru，其余 = en） */
+function inferLang(word: string): string {
+  return isCyrillic(word) ? 'ru' : 'en';
+}
+
+/** 条目语言（缺省兼容旧数据：无 lang 字段时按词形判定，不写回也读得对） */
+function itemLang(b: BookItem): string {
+  return b.lang && b.lang !== 'auto' ? b.lang : inferLang(b.word);
+}
 
 function readLocalBook(): BookItem[] {
   try {
     const raw = localStorage.getItem(BOOK_LOCAL_KEY);
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as BookItem[]) : [];
+    const legacyArray = Array.isArray(parsed);
+    const arr: unknown[] = legacyArray
+      ? (parsed as unknown[])
+      : Array.isArray((parsed as LocalBookFile | null)?.items)
+        ? ((parsed as LocalBookFile).items as unknown[])
+        : [];
+    if (!arr.length && !legacyArray) return [];
+    let migrated = legacyArray; // 旧结构（裸数组）⇒ 必须写回一次
+    const items = arr.map((raw2) => {
+      const it = raw2 as BookItem;
+      if (it && typeof it.word === 'string' && !it.lang) {
+        migrated = true;
+        return { ...it, lang: inferLang(it.word) };
+      }
+      return it;
+    });
+    if (migrated) writeLocalBook(items);
+    return items;
   } catch {
     return [];
   }
 }
 
 function writeLocalBook(items: BookItem[]): void {
-  localStorage.setItem(BOOK_LOCAL_KEY, JSON.stringify(items));
+  const file: LocalBookFile = { version: BOOK_LOCAL_VERSION, items };
+  localStorage.setItem(BOOK_LOCAL_KEY, JSON.stringify(file));
 }
 
 /* ---------------- 语音合成：统一走 Web Speech API ---------------- */
@@ -102,9 +142,14 @@ const restBackend: DictBackend = {
     );
     if (!detail) return null;
     // 浏览器模式下生词本在本地，inBook 以后端为准再叠加本地状态
+    // v0.10.0：按 **(word, lang)** 判定 —— 同拼写的另一语言条目不算「已收藏」
     const local = readLocalBook();
+    const entryLang = detail.i18n?.lang ?? 'en';
     const inBook = local.some(
-      (b) => b.word.toLowerCase() === detail.word.toLowerCase(),
+      (b) =>
+        b.word.toLowerCase() === detail.word.toLowerCase() &&
+        itemLang(b) === entryLang &&
+        !b.deleted,
     );
     return { ...detail, inBook };
   },
@@ -129,20 +174,23 @@ const restBackend: DictBackend = {
     return r.groups ?? [];
   },
 
-  async bookList(): Promise<BookItem[]> {
-    return readLocalBook();
+  /** 缺省（不传 lang）= 不过滤，返回全部语言（与 core `bookList` 语义一致，AC-13 第 6 条） */
+  async bookList(lang?: string): Promise<BookItem[]> {
+    const items = readLocalBook().filter((b) => !b.deleted);
+    return lang ? items.filter((b) => itemLang(b) === lang) : items;
   },
 
   async bookAdd(word: string, tags: string[] = [], lang = 'en'): Promise<BookItem> {
     const items = readLocalBook();
+    const l = lang && lang !== 'auto' ? lang : inferLang(word);
     const existed = items.find(
-      (b) => b.word.toLowerCase() === word.toLowerCase(),
+      (b) => b.word.toLowerCase() === word.toLowerCase() && itemLang(b) === l && !b.deleted,
     );
     if (existed) return existed;
     const now = Date.now();
     const item: BookItem = {
       word,
-      lang,
+      lang: l,
       addedAt: now,
       updatedAt: now,
       status: 'new',
@@ -155,18 +203,22 @@ const restBackend: DictBackend = {
     return item;
   },
 
-  async bookRemove(word: string): Promise<void> {
-    writeLocalBook(
-      readLocalBook().filter(
-        (b) => b.word.toLowerCase() !== word.toLowerCase(),
-      ),
-    );
+  /** 只删指定语言的条目：同拼写的另一语言条目不受影响（AC-13 第 2 条） */
+  async bookRemove(word: string, lang?: string): Promise<void> {
+    const items = readLocalBook();
+    const w = word.toLowerCase();
+    const l =
+      lang ?? items.find((b) => b.word.toLowerCase() === w)?.lang ?? inferLang(word);
+    writeLocalBook(items.filter((b) => !(b.word.toLowerCase() === w && itemLang(b) === l)));
   },
 
   async bookUpdate(item: BookItem): Promise<void> {
+    const items = readLocalBook();
+    const w = item.word.toLowerCase();
+    const l = item.lang ?? items.find((b) => b.word.toLowerCase() === w)?.lang ?? inferLang(item.word);
     writeLocalBook(
-      readLocalBook().map((b) =>
-        b.word.toLowerCase() === item.word.toLowerCase() ? item : b,
+      items.map((b) =>
+        b.word.toLowerCase() === w && itemLang(b) === l ? { ...item, lang: l } : b,
       ),
     );
   },
@@ -197,16 +249,21 @@ const restBackend: DictBackend = {
     }
   },
 
-  /** 浏览器模式：生词本在本地，逐个拆解后聚合分组（按条目语言选用对应词素库） */
-  async bookGroups(): Promise<MorphemeGroup[]> {
-    const items = readLocalBook().filter((b) => !b.deleted);
+  /**
+   * 浏览器模式：生词本在本地，逐个拆解后聚合分组（按条目语言选用对应词素库）。
+   * v0.10.0：**语言过滤发生在本层**（先按 lang 过滤 items）；缺省（不传 lang）= 不过滤。
+   * 拆解回调按条目语言取词素库（`itemLang`），故同拼写的英/俄两条各用各的词素库。
+   */
+  async bookGroups(lang?: string): Promise<MorphemeGroup[]> {
+    const all = readLocalBook().filter((b) => !b.deleted);
+    const items = lang ? all.filter((b) => itemLang(b) === lang) : all;
     const partsMap = new Map<string, BreakdownPart[]>();
     await Promise.all(
       items.map(async (b) => {
-        const lang = b.lang ?? 'en';
+        const l = itemLang(b);
         try {
           const parts = await restFetch<BreakdownPart[]>(
-            `/api/v1/breakdown?word=${encodeURIComponent(b.word)}&lang=${encodeURIComponent(lang === 'auto' ? 'en' : lang)}`,
+            `/api/v1/breakdown?word=${encodeURIComponent(b.word)}&lang=${encodeURIComponent(l)}`,
           );
           partsMap.set(b.word, parts);
         } catch {
@@ -264,11 +321,11 @@ function electronBackend(): DictBackend {
     lookup: (w, lang) => api.lookup(w, lang),
     suggest: (p, l, lang) => api.suggest(p, l, lang),
     breakdown: (w, lang) => api.breakdown(w, lang),
-    bookList: () => api.bookList(),
+    bookList: (lang) => api.bookList(lang),
     bookAdd: (w, t, lang) => api.bookAdd(w, t, lang),
-    bookRemove: (w) => api.bookRemove(w),
+    bookRemove: (w, lang) => api.bookRemove(w, lang),
     bookUpdate: (i) => api.bookUpdate(i),
-    bookGroups: () => (api.bookGroups ? api.bookGroups() : Promise.resolve([])),
+    bookGroups: (lang) => (api.bookGroups ? api.bookGroups(lang) : Promise.resolve([])),
     relatedByMorpheme: (w, lang) =>
       api.relatedByMorpheme ? api.relatedByMorpheme(w, lang) : Promise.resolve([]),
     lexiconList: (o) => (api.lexiconList ? api.lexiconList(o) : Promise.reject(new Error('当前后端不支持词根表'))),

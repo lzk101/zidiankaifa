@@ -106,7 +106,7 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
       ok: true,
       words: countWords(dictDb),
       sync: 'zidiankaifa-sync-server',
-      version: '0.9.0',
+      version: '0.10.0',
     });
   }
 
@@ -177,8 +177,11 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
   }
 
   // 生词本 × 词根分组（知识图谱）：以服务端生词本为准
+  // v0.10.0：入参 lang 可选（缺省不过滤）；语言过滤在**本层**（先过滤 items），
+  // groupBookByMorpheme 只负责按 it.lang 选词素库（AC-17 第 6 条）。协议未变（仅多一个 query 参数）。
   if (req.method === 'GET' && p === '/api/v1/book-groups') {
-    const items = bookList(syncDb);
+    const lang = url.searchParams.get('lang') ?? undefined;
+    const items = bookList(syncDb, lang);
     return sendJson(res, 200, { groups: groupBookByMorpheme(dictDb, items) });
   }
 

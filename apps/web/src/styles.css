@@ -1628,6 +1628,49 @@ input {
   color: var(--accent);
 }
 
+/* ---------------- 生词本：语言子页签（v0.10.0 语言分离） ---------------- */
+
+.book-lang-tabs {
+  display: inline-flex;
+  gap: 4px;
+  margin: 10px 0 2px;
+}
+
+.lang-tab {
+  padding: 5px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.lang-tab.active {
+  border-color: var(--accent);
+  background: var(--accent-weak);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.book-lang-select {
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.rootclass-hint {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
 /* ---------------- 生词本视图切换与分组 ---------------- */
 
 .book-view-tabs {

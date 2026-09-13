@@ -5,6 +5,8 @@
 export * from './lexicon.js';
 
 import { DatabaseSync } from 'node:sqlite';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import type {
   BookItem,
   BookStatus,
@@ -27,7 +29,7 @@ import type {
 } from '../types.js';
 import { isCjk, isCyrillic, I18N_LANG_NAME } from '../lang.js';
 import { groupBookByMorphemeData } from '../graph.js';
-import { SCHEMA_SQL } from './schema.js';
+import { SCHEMA_SQL, BOOK_TABLE_SQL } from './schema.js';
 
 export { SCHEMA_SQL };
 
@@ -126,15 +128,247 @@ interface SuggestRow {
 export function openDatabase(path: string): DatabaseSync {
   const db = new DatabaseSync(path);
   db.exec(SCHEMA_SQL);
+  // 迁移顺序不可颠倒：先 ADD COLUMN lang（老库没有该列），再升级为 (word, lang) 复合主键
   migrateBookLang(db);
+  migrateBookCompositeKey(db);
+  // ★★ T48（采纳需求 agent T47 异议 1）：后置校验**必须放在这里**，不能放在 `migrateBookCompositeKey` 内。
+  //
+  // 为什么：`migrateBookCompositeKey` 内部有**两条位于 try 内的早期 `return`**，会绕过该函数末尾的任何校验：
+  //   ① `:207` 取不到主库文件路径（如内存/共享库）⇒ `return`
+  //   ② `:236` 备份写不出（`SQLITE_FULL` 磁盘满 / `EACCES` 只读）⇒ `return`
+  // 这两条路径下 `book` 仍是 `PRIMARY KEY (word)`，而 `upsertBook` 用 `ON CONFLICT(word, lang)`
+  // ⇒ **4/4 写入全部抛** `ON CONFLICT clause does not match any PRIMARY KEY or UNIQUE constraint`，
+  //   而 `bookList`/`bookListAll` 正常 ⇒ 回到「能打开、列表正常、但一条也加不进去」的静默故障
+  //   （受控实验 scripts/_tmp/probe_sup_degraded_write2.mjs，夹具由 BOOK_COLUMNS_SQL 派生）。
+  // 放在本函数出口处，才对**所有**返回路径生效（含上述两条早期 return）。
+  assertBookCompositeOrThrow(db);
   migrateAddColumn(db, 'word_etymology', 'lang', "ALTER TABLE word_etymology ADD COLUMN lang TEXT NOT NULL DEFAULT 'en'");
   migrateAddColumn(db, 'morphemes', 'lang', "ALTER TABLE morphemes ADD COLUMN lang TEXT NOT NULL DEFAULT 'en'");
   return db;
 }
 
+/**
+ * T48：`book` 表必须是 `(word, lang)` 复合主键，否则**响亮失败**。
+ *
+ * 为什么必须抛错而不是 `console.warn` 后继续：降级态下生词本的**读取正常、写入全失败**
+ * （实测 4/4：`bookAdd(en)` / `bookAdd(ru)` / `bookRemove` / `bookUpdate` 均抛
+ * `ON CONFLICT clause does not match any PRIMARY KEY or UNIQUE constraint`），
+ * 对用户表现为「能打开、列表正常、但一条也加不进去」—— 属静默故障，不是可用状态。
+ * 另叠加静默语义错误：老结构下 en/ru 同形词互相覆盖（本迭代正是要消除它）。
+ * 取舍依据 `DEC-002`：正确性 > 可用性表象。桌面端在 `apps/desktop/src/main.mjs` 捕获本错误并**弹窗告知**。
+ *
+ * 表不存在时**跳过**（此时 `SCHEMA_SQL` 会建出复合主键新表，正常不会走到）。
+ */
+function assertBookCompositeOrThrow(db: DatabaseSync): void {
+  const pk = bookPkCols(db);
+  if (!pk.length) return; // 表不存在 ⇒ 无需校验
+  if (pk.length === 2 && pk.includes('word') && pk.includes('lang')) return;
+  throw new Error(
+    `book 表未能迁移到 (word, lang) 复合主键（当前主键列 = ${JSON.stringify(pk)}）：` +
+      '继续运行会导致生词本写入全部失败（ON CONFLICT 不匹配）且同形词跨语言互相覆盖。' +
+      '请确认磁盘空间充足、数据库未被其他进程占用后重试（迁移前已生成 .bak-<ISO> 一致性快照备份）。'
+  );
+}
+
 /** 老库迁移：book 表补 lang 列（默认 'en'） */
 function migrateBookLang(db: DatabaseSync): void {
   migrateAddColumn(db, 'book', 'lang', "ALTER TABLE book ADD COLUMN lang TEXT NOT NULL DEFAULT 'en'");
+}
+
+/**
+ * v0.10.0 迁移：book 表主键 word → **(word, lang) 复合主键**（生词本语言分离）。
+ *
+ * 为什么需要真迁移而不是"展示层过滤"：老库 `PRIMARY KEY(word)` 意味着英文 `book` 与俄文 `book`
+ * 只能存一条，`ON CONFLICT(word)` 会把另一语言的记录**覆盖**掉 —— 语言分离必须在存储层解决。
+ *
+ * 幂等：先读 `PRAGMA table_info(book)` 的主键列，已是 (word, lang) 则直接返回。
+ * 安全：① 迁移前按项目惯例备份 `.bak-<ISO 时间戳>`；② 全程事务，失败 ROLLBACK；
+ *      ③ 迁移前后比对行数，行数变少视为数据丢失 → 抛错回滚。
+ * 注意：SQLite 标准 12 步法的子集（无外键引用 book，故 foreign_keys 开关仅作规范动作）。
+ */
+/**
+ * 读 `book` 表的主键列（按 pk 序号排序）。表不存在时返回 `[]`。
+ * T45 抽出：主键判据此前只写在 `migrateBookCompositeKey` 内，现被「迁移前置判据」与
+ * 「迁移后置校验」共用，避免两处判据漂移。
+ */
+function bookPkCols(db: DatabaseSync): string[] {
+  const cols = db.prepare('PRAGMA table_info(book)').all() as unknown as { name: string; pk: number }[];
+  return cols
+    .filter((c) => Number(c.pk) > 0)
+    .sort((a, b) => Number(a.pk) - Number(b.pk))
+    .map((c) => c.name);
+}
+
+/** 表存在则删除；返回是否已删除（不存在也算成功，便于调用方判断"可以重试"） */
+function dbTryDropTable(db: DatabaseSync, table: string): boolean {
+  try {
+    db.exec(`DROP TABLE IF EXISTS ${table}`);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * T49：迁移前一致性快照。返回 `true` = 可继续迁移；`false` = **放弃迁移**（数据优先）。
+ *
+ * ★ 复用已有备份（采纳需求 agent T47 异议 4）：`book_new` 残留触发的**重试**会再次调用本函数。
+ *   若不加判断，一次自愈会落**两个**备份 —— 桌面端库约 494 MB ⇒ 约 1 GB 磁盘占用。
+ *   故：只有当「`.bak-<ISO>` 形态的备份**已存在且非空**」时才复用它，不新建。
+ *   ⚠ 刻意**不**判断该文件是否为上一次迁移的备份（无从判断）：只在「目标文件已存在」这一条上复用，
+ *     失败则回落到正常新建路径。这是磁盘卫生的优化，不改变正确性。
+ *
+ * 备份必须是一致性快照 —— 为什么不能用 `fs.copyFileSync(主库文件)`：
+ *   本库恒为 WAL 模式（`packages/core/src/db/schema.ts:29` 的 `PRAGMA journal_mode = WAL`），
+ *   **已提交但尚未并回主库的事务只存在于 `-wal`**，只复制主库会静默漏掉它们
+ *   （受控实验 `scripts/_tmp/probe_sup_wal_snapshot2.mjs`：「主库 12288 B + `-wal` 8272 B、
+ *   写连接仍打开、表内 4 行」⇒ 副本只有 3 行，**用户刚加的生词不在备份里**）。
+ *
+ * 为什么不用「先 `wal_checkpoint(TRUNCATE)` 再复制」（T41 首版方案 A）：那个方案引入
+ * **一条新的降级路径** —— checkpoint 若有并发读者/写者则返回 `busy !== 0`，只能放弃迁移，
+ * 而**放弃迁移的后果极其严重**：库里 `book` 仍是 `word` 单主键，而 `upsertBook` 用的是
+ * `ON CONFLICT(word, lang)` ⇒ 实测（`scripts/_tmp/probe_sup_degraded_write2.mjs`，夹具由
+ * `BOOK_COLUMNS_SQL` 派生）**4/4 写入操作全部抛**
+ * `ON CONFLICT clause does not match any PRIMARY KEY or UNIQUE constraint`
+ * ⇒ 生词本对用户表现为「能打开、列表正常、但一条也加不进去」的静默故障。
+ *
+ * `VACUUM INTO` 是 SQLite 官方的一致性快照导出：在**单个读事务**内完成、**没有 busy 分支**
+ * （要么得到一致快照、要么抛错），因此不存在「迁移被跳过」这条降级路径。
+ * 代价：备份不是主库的逐字节副本（页布局重排、`journal_mode=delete`）⇒ 断言比较
+ * **逻辑内容**而非字节（SQLite 打开该备份后内容与迁移前完全一致，可直接作为回退库）。
+ */
+function ensurePreMigrationBackup(db: DatabaseSync, st: MigrationState, isRetry: boolean): boolean {
+  const main = db.prepare('PRAGMA database_list').all() as unknown as { name: string; file: string }[];
+  const file = main.find((d) => d.name === 'main')?.file;
+  if (!file || !fs.existsSync(file)) {
+    console.warn('[zidiankaifa] book 复合主键迁移：取不到主库文件路径，放弃迁移（数据优先）');
+    return false;
+  }
+  // ★★ 复用判据（T49 引入 → T51 收紧）：**只复用「同一次迁移调用内、本次刚刚创建并验证过」的那一份**。
+  //
+  // 为什么不扫目录找 `.bak-*`（T49 首版做法）—— 测试 agent 在 T50 用两个受控场景证明它**过宽**：
+  //   ① **第二道防线落空**：用户/清理工具删掉了 `.bak-<ISO>` 主文件，但 SQLite 打开过该备份时生成的
+  //      sidecar（`<db>.bak-<ISO>-wal`）还在。前缀匹配会命中 sidecar 并打印「复用已有迁移前备份」，
+  //      **不再新建** ⇒ 磁盘上没有可用快照，而迁移照常完成 ⇒ AC-12⑧ 的「与事务并列的第二道独立防线」失效。
+  //   ② **回退点数据不匹配**：目录里存在**上一代**库留下的 `.bak-<ISO>`（用户还原/替换过 dict.db）时，
+  //      复用会把「另一个库的快照」当作本次迁移的回退点（实测回退点内容 = 陈旧库的行，≠ 本次迁移前的行）。
+  //
+  // 用 `st.bak`（本函数上一次调用时记录、且当时 `statSync` 成功且非空）作为判据，两个问题同时消除：
+  //   sidecar 永不会被记录为 `st.bak`；跨代陈旧文件不在 `st` 里 ⇒ 一律新建。
+  // 而 T49 要解决的体积问题（一次自愈落两份 494 MB 快照 ≈ 1 GB）依然成立 —— 重试复用同一份。
+  const bak = st.bak ?? `${file}.bak-${new Date().toISOString().replace(/[:.]/g, '-')}`;
+  if (st.bak) {
+    // 仍做一次存在性/非空校验：万一被外部删掉，则回落到重新创建
+    try {
+      if (fs.statSync(st.bak).size > 0) {
+        console.log(`[zidiankaifa] 复用本次迁移已创建的快照：${path.basename(st.bak)}`);
+        return true;
+      }
+    } catch {
+      /* 已被删除 ⇒ 走下面的新建路径 */
+    }
+    st.bak = null;
+  }
+  try {
+    db.exec(`VACUUM INTO '${bak.replace(/'/g, "''")}'`);
+    // 记录前先验证：文件确实存在且非空，才允许后续重试复用它（防止把 0 字节/失败产物当回退点）
+    if (fs.statSync(bak).size > 0) st.bak = bak;
+    return true;
+  } catch (e) {
+    console.warn(
+      `[zidiankaifa] book 复合主键迁移：备份失败（${(e as Error)?.message}），放弃迁移（数据优先）`
+    );
+    return false;
+  }
+}
+
+/** 单次 `openDatabase()` 内的迁移状态（T51：仅用于把「本次已创建的快照」传给重试，见 `ensurePreMigrationBackup`） */
+interface MigrationState {
+  bak: string | null;
+}
+
+function migrateBookCompositeKey(db: DatabaseSync, st: MigrationState = { bak: null }, isRetry = false): void {
+  try {
+    const cols = db.prepare('PRAGMA table_info(book)').all() as unknown as {
+      name: string;
+      pk: number;
+    }[];
+    if (!cols.length) return; // 表不存在（SCHEMA_SQL 已建新表，正常不会走到）
+    const pkCols = cols
+      .filter((c) => Number(c.pk) > 0)
+      .sort((a, b) => Number(a.pk) - Number(b.pk))
+      .map((c) => c.name);
+    const isComposite = pkCols.length === 2 && pkCols.includes('word') && pkCols.includes('lang');
+    if (isComposite) return; // 已是新结构 ⇒ 幂等返回
+
+    // 迁移前备份（AC-12 第 8 条：与事务并列的第二道独立防线）
+    // ★ 备份失败 ⇒ **放弃迁移**（宁可暂不迁移，也不在无备份的情况下动用户数据）
+    // ★ 备份只在「真迁移」时发生**一次**：已是复合主键时上一行的 `if (isComposite) return` 已提前返回，
+    //   故幂等重跑（第二次 openDatabase）既不迁移、也不重复备份。
+    //   唯一例外是下方的 `book_new` 残留重试 —— 那条路径**复用首次备份**，不落第二个文件（见 `ensurePreMigrationBackup`）。
+    // ★ 体积提醒：桌面端目标库是 userData 下的 dict.db（约 494 MB），一次性快照可接受。
+    if (!ensurePreMigrationBackup(db, st, isRetry)) return;
+
+    const before = Number(
+      (db.prepare('SELECT COUNT(1) AS n FROM book').get() as unknown as { n: number }).n
+    );
+    db.exec('PRAGMA foreign_keys = OFF');
+    db.exec('BEGIN IMMEDIATE');
+    try {
+      // 表结构复用 schema.ts 的唯一定义（只换表名），避免两处结构漂移
+      db.exec(BOOK_TABLE_SQL.replace('CREATE TABLE IF NOT EXISTS book', 'CREATE TABLE book_new'));
+      // 显式列名（含墓碑 deleted 与 lang）；老数据 lang 为空按 'en' 归位
+      db.exec(`INSERT OR REPLACE INTO book_new
+        (word, lang, added_at, updated_at, status, note, tags, review_count, last_reviewed_at, deleted)
+        SELECT word, COALESCE(NULLIF(lang, ''), 'en'), added_at, updated_at, status, note, tags,
+               review_count, last_reviewed_at, deleted
+        FROM book`);
+      const after = Number(
+        (db.prepare('SELECT COUNT(1) AS n FROM book_new').get() as unknown as { n: number }).n
+      );
+      if (after < before) throw new Error(`book 迁移行数减少：${before} → ${after}`);
+      db.exec('DROP TABLE book');
+      db.exec('ALTER TABLE book_new RENAME TO book');
+      db.exec('CREATE INDEX IF NOT EXISTS idx_book_updated ON book(updated_at)');
+      db.exec('COMMIT');
+    } catch (e) {
+      try {
+        db.exec('ROLLBACK');
+      } catch {
+        /* 已回滚 */
+      }
+      throw e;
+    } finally {
+      try {
+        db.exec('PRAGMA foreign_keys = ON');
+      } catch {
+        /* ignore */
+      }
+    }
+  } catch (e) {
+    // ★ 有界重试（T45）：迁移失败最常见的原因是上一轮留下了残留的 `book_new` 表
+    //   （`CREATE TABLE book_new` 报 `table book_new already exists`）。该残留可安全清除后重试一次。
+    //   注意：真正的崩溃不会留下它 —— 整个迁移在 `BEGIN IMMEDIATE` 事务内（`book_new` 随事务回滚），
+    //   故本分支只处理「非事务方式写入的残留」，属恢复性动作而非兜底正常路径。
+    const msg = (e as Error)?.message ?? String(e);
+    if (isRetry) {
+      // 重试后仍失败 ⇒ 不再递归；由本函数末尾的后置校验统一抛出
+      console.warn(`[zidiankaifa] book 表向 (word, lang) 复合主键迁移重试仍失败：${msg}`);
+    } else if (/book_new/.test(msg) && dbTryDropTable(db, 'book_new')) {
+      console.warn(`[zidiankaifa] 检测到残留的 book_new 表，已清除并重试一次迁移`);
+      // 重试走 isRetry=true 分支 ⇒ 再失败时只告警、不再递归（有界，杜绝无限重试）
+      // `st` 携带本次已创建的快照 ⇒ 重试复用同一份，不落第二个 494 MB 文件（T49，判据见 T51 收紧说明）
+      migrateBookCompositeKey(db, st, true);
+      return;
+    } else {
+      console.warn(`[zidiankaifa] book 表向 (word, lang) 复合主键迁移失败：${msg}`);
+    }
+  }
+
+  // T48：后置校验**已上移到 `openDatabase()` 出口**（`assertBookCompositeOrThrow`）。
+  // 为什么不能留在本函数末尾：本函数内有两条位于 try 内的早期 `return`（`:240` 取不到主库路径、
+  // `:268` 备份失败）会绕过它；且本函数的递归重试路径也会绕过。放 `openDatabase()` 出口才对所有路径生效。
+  assertBookCompositeOrThrow(db);
 }
 
 /** 通用列迁移：列不存在则 ALTER TABLE ADD COLUMN */
@@ -525,7 +759,9 @@ function i18nToDetail(db: DatabaseSync, i: I18nWord, lang: string): WordDetail {
     origin: getOrigin(db, base),
     etymology: getEtymology(db, base, lang),
     breakdown: breakdownWord(db, i.word, lang),
-    inBook: false,
+    // v0.10.0：多语言词条也要如实反映「是否已在生词本」——按 (word, lang) 判定，
+    // 否则俄语词条永远显示未收藏（生词本已按语言分离，收藏状态也必须按语言分离）
+    inBook: !!db.prepare('SELECT 1 FROM book WHERE word = ? AND lang = ? AND deleted = 0').get(i.word, lang),
     i18n: i,
   };
 }
@@ -584,7 +820,7 @@ export function lookupWord(
     origin: getOrigin(db, matched),
     etymology: getEtymology(db, matched),
     breakdown: breakdownWord(db, matched),
-    inBook: !!db.prepare('SELECT 1 FROM book WHERE word = ? AND deleted = 0').get(matched),
+    inBook: !!db.prepare("SELECT 1 FROM book WHERE word = ? AND lang = 'en' AND deleted = 0").get(matched),
     i18n: null,
   };
 }
@@ -954,11 +1190,27 @@ export function relatedByMorpheme(db: DatabaseSync, word: string, lang = 'en'): 
 const BOOK_INSERT =
   'INSERT INTO book (word, lang, added_at, updated_at, status, note, tags, review_count, last_reviewed_at, deleted) VALUES (?,?,?,?,?,?,?,?,?,?)';
 
-function upsertBook(db: DatabaseSync, it: BookItem): void {
+/** 缺省语言（历史数据全为 'en'，v0.10.0 前无语言维度） */
+const BOOK_DEFAULT_LANG = 'en';
+
+/**
+ * 推断某 word 既有记录的语言（该词只有一种语言时有效）。
+ * 仅用于 bookUpdate / bookRemove **未显式传 lang** 的老调用点：沿用既有语言，
+ * 而不是老实现的 `?? 'en'`（那会把俄语条静默改写成英语条，见 REQ.md §8.1-B-3）。
+ */
+function existingLangForWord(db: DatabaseSync, word: string): string | null {
+  const row = db
+    .prepare('SELECT lang FROM book WHERE word = ? ORDER BY deleted ASC, updated_at DESC LIMIT 1')
+    .get(word) as unknown as { lang: string } | undefined;
+  return row ? row.lang : null;
+}
+
+function upsertBook(db: DatabaseSync, it: BookItem & { lang: string }): void {
+  // v0.10.0：冲突目标 = (word, lang) 复合主键 ⇒ 同一拼写的英/俄两条互不覆盖（AC-13）
+  // 注意：不再写 `lang = excluded.lang`（主键已含 lang，改写它只会在旧单键结构下造成跨语言覆盖）
   db.prepare(
     `${BOOK_INSERT}
-     ON CONFLICT(word) DO UPDATE SET
-       lang = excluded.lang,
+     ON CONFLICT(word, lang) DO UPDATE SET
        added_at = excluded.added_at,
        updated_at = excluded.updated_at,
        status = excluded.status,
@@ -969,7 +1221,7 @@ function upsertBook(db: DatabaseSync, it: BookItem): void {
        deleted = excluded.deleted`
   ).run(
     it.word,
-    it.lang ?? 'en',
+    it.lang,
     it.addedAt,
     it.updatedAt,
     it.status,
@@ -981,15 +1233,27 @@ function upsertBook(db: DatabaseSync, it: BookItem): void {
   );
 }
 
-export function bookGet(db: DatabaseSync, word: string): BookItem | null {
-  const r = db.prepare('SELECT * FROM book WHERE word = ?').get(normalizeWord(word)) as unknown as BookRow | undefined;
+/** 查一条生词；**缺省 lang = 'en'**（与既有行为一致：历史数据全为 en，AC-13 第 6 条） */
+export function bookGet(db: DatabaseSync, word: string, lang: string = BOOK_DEFAULT_LANG): BookItem | null {
+  const r = db
+    .prepare('SELECT * FROM book WHERE word = ? AND lang = ?')
+    .get(normalizeWord(word), lang) as unknown as BookRow | undefined;
   return r ? rowToBook(r) : null;
 }
 
-export function bookList(db: DatabaseSync): BookItem[] {
-  const rows = db
-    .prepare('SELECT * FROM book WHERE deleted = 0 ORDER BY updated_at DESC')
-    .all() as unknown as BookRow[];
+/**
+ * 列出未删除的生词。
+ * ★ 缺省（不传 lang）= **不过滤，返回全部语言** ——「宁可多不可少」：缺省过滤会让俄语条
+ * 在未改造的调用点静默消失（AC-13 第 6 条 / D17）。**UI 层每一处读取必须显式传 lang**（AC-16 第 7 条）。
+ */
+export function bookList(db: DatabaseSync, lang?: string): BookItem[] {
+  const rows = (
+    lang
+      ? db
+          .prepare('SELECT * FROM book WHERE deleted = 0 AND lang = ? ORDER BY updated_at DESC')
+          .all(lang)
+      : db.prepare('SELECT * FROM book WHERE deleted = 0 ORDER BY updated_at DESC').all()
+  ) as unknown as BookRow[];
   return rows.map(rowToBook);
 }
 
@@ -999,7 +1263,7 @@ export function bookListAll(db: DatabaseSync): BookItem[] {
   return rows.map(rowToBook);
 }
 
-export function bookAdd(db: DatabaseSync, word: string, tags: string[] = [], lang = 'en'): BookItem {
+export function bookAdd(db: DatabaseSync, word: string, tags: string[] = [], lang = BOOK_DEFAULT_LANG): BookItem {
   const w = normalizeWord(word);
   const now = Date.now();
   upsertBook(db, {
@@ -1013,15 +1277,19 @@ export function bookAdd(db: DatabaseSync, word: string, tags: string[] = [], lan
     reviewCount: 0,
     lastReviewedAt: null,
   });
-  return bookGet(db, w)!;
+  // ★ 必须按 (word, lang) 回读：否则俄语条会读成同拼写的英语条
+  return bookGet(db, w, lang)!;
 }
 
-export function bookRemove(db: DatabaseSync, word: string): void {
+/** 删除 = 写墓碑。★ 墓碑必须保留原语言（AC-13 第 5 条） */
+export function bookRemove(db: DatabaseSync, word: string, lang?: string): void {
   const w = normalizeWord(word);
+  const l = lang ?? existingLangForWord(db, w) ?? BOOK_DEFAULT_LANG;
   const now = Date.now();
-  const existing = bookGet(db, w);
+  const existing = bookGet(db, w, l);
   upsertBook(db, {
     word: w,
+    lang: l,
     addedAt: existing?.addedAt ?? now,
     updatedAt: now,
     status: existing?.status ?? 'new',
@@ -1033,22 +1301,63 @@ export function bookRemove(db: DatabaseSync, word: string): void {
   });
 }
 
-export function bookUpdate(db: DatabaseSync, item: BookItem): BookItem {
+/**
+ * 更新一条生词（按 (word, lang) 定位；未传 lang 时沿用既有语言，不隐式回退 'en'）。
+ *
+ * ★ 入参允许**局部字段**（AC-13 第 3 条判定式用 `{ word, lang, note }` 这种不完整对象）：
+ *   未提供的字段一律**沿用该 (word, lang) 既有行的值**，行不存在时才用缺省值
+ *   （addedAt/updatedAt 取 now，status='new'，tags=[] 等）。
+ *   ⇒ 局部更新**不会**把同一 word 的另一语言条目的字段带过来，也不会写坏本行其它字段。
+ */
+export function bookUpdate(db: DatabaseSync, item: Partial<BookItem> & { word: string }): BookItem {
   const w = normalizeWord(item.word);
-  const it: BookItem = { ...item, word: w, updatedAt: Date.now() };
+  const lang = item.lang ?? existingLangForWord(db, w) ?? BOOK_DEFAULT_LANG;
+  const prev = bookGet(db, w, lang);
+  const now = Date.now();
+  const it: BookItem & { lang: string } = {
+    word: w,
+    lang,
+    addedAt: item.addedAt ?? prev?.addedAt ?? now,
+    updatedAt: item.updatedAt ?? now,
+    status: item.status ?? prev?.status ?? 'new',
+    note: item.note !== undefined ? item.note : (prev?.note ?? null),
+    tags: item.tags ?? prev?.tags ?? [],
+    reviewCount: item.reviewCount ?? prev?.reviewCount ?? 0,
+    lastReviewedAt:
+      item.lastReviewedAt !== undefined ? item.lastReviewedAt : (prev?.lastReviewedAt ?? null),
+    deleted: item.deleted ?? prev?.deleted ?? false,
+  };
   upsertBook(db, it);
-  return bookGet(db, w)!;
+  return bookGet(db, w, lang)!;
 }
 
-/** 跨端同步合并（last-write-wins），返回合并后的全量记录（含墓碑） */
+/**
+ * 跨端同步合并（last-write-wins），返回合并后的全量记录（含墓碑）。
+ * v0.10.0：冲突判定键 = **(word, lang)** —— 另一语言的 updatedAt 不再决定本条是否被推（AC-14 第 3 条）。
+ */
 export function syncMerge(db: DatabaseSync, items: BookItem[]): { pushed: number; pulled: number; items: BookItem[] } {
   let pushed = 0;
   for (const it of items) {
-    const cur = db.prepare('SELECT updated_at FROM book WHERE word = ?').get(normalizeWord(it.word)) as unknown as
+    const word = normalizeWord(it.word);
+    const lang = it.lang ?? BOOK_DEFAULT_LANG;
+    const cur = db.prepare('SELECT updated_at FROM book WHERE word = ? AND lang = ?').get(word, lang) as unknown as
       | { updated_at: number }
       | undefined;
     if (!cur || it.updatedAt > cur.updated_at) {
-      upsertBook(db, it);
+      // 远端载荷可能缺字段（老客户端）：缺失项沿用本端既有行，避免写入 undefined 触发绑定错误
+      const prev = bookGet(db, word, lang);
+      upsertBook(db, {
+        word,
+        lang,
+        addedAt: it.addedAt ?? prev?.addedAt ?? it.updatedAt,
+        updatedAt: it.updatedAt,
+        status: it.status ?? prev?.status ?? 'new',
+        note: it.note ?? prev?.note ?? null,
+        tags: it.tags ?? prev?.tags ?? [],
+        reviewCount: it.reviewCount ?? prev?.reviewCount ?? 0,
+        lastReviewedAt: it.lastReviewedAt ?? prev?.lastReviewedAt ?? null,
+        deleted: it.deleted ?? prev?.deleted ?? false,
+      });
       pushed++;
     }
   }
@@ -1058,7 +1367,14 @@ export function syncMerge(db: DatabaseSync, items: BookItem[]): { pushed: number
 
 /* ---------------- 生词本 × 词根分组（知识图谱数据层） ---------------- */
 
-/** 把生词按命中的词根/词缀分组（词频排序：命中词多的词素靠前） */
+/**
+ * 把生词按命中的词根/词缀分组（词频排序：命中词多的词素靠前）。
+ *
+ * ★ 分层纪律（v0.10.0 AC-17 第 6 条）：本函数**不负责按语言过滤** —— 它按 `it.lang`
+ * **选对应的词素库**去拆解（俄语生词用俄语词素，否则会被英语库误拆）。
+ * ⇒「某个语言的词根分类」这件事发生在 **`bookGroups(lang)` 那一层**（先过滤 items），
+ *   **不是**发生在词素库层。后人勿以为这里会替调用方过滤。
+ */
 export function groupBookByMorpheme(db: DatabaseSync, items: BookItem[]): MorphemeGroup[] {
   // 按生词条目自身的语言选词素库（俄语生词用俄语词素，否则会被英语库误拆）
   return groupBookByMorphemeData(items, (w, lang) => breakdownWord(db, w, lang ?? 'en'));

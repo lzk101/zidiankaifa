@@ -16,7 +16,9 @@
 | 同步服务 | `apps/sync-server/src/index.ts` | Node http，端口 4570 |
 | 词库 | `data/db/dict.db` | ~494MB，**不入 git**（.gitignore） |
 
-**测试**：`pnpm --filter @zidiankaifa/core test` → 跑 `test/regress.mjs`(99) + `test/lexicon.mjs`(67) + `test/related.mjs`(38) + `test/ru_morph.mjs`(60) + `test/ru_morph_d1fix.mjs`(194) + `test/ru_morph_d1guard.mjs`(26)（需本地 `data/db/dict.db`）→ **core 484 / 0**；`apps/desktop/test/dbmigrate.test.mjs`(22) ⇒ **门禁 506 通过 / 0 失败**（v0.9.0 后）。
+**测试**：`pnpm --filter @zidiankaifa/core test` → 跑 `test/regress.mjs`(99) + `test/lexicon.mjs`(67) + `test/related.mjs`(38) + `test/ru_morph.mjs`(60) + `test/ru_morph_d1fix.mjs`(194) + `test/ru_morph_d1guard.mjs`(26) + `test/book_lang.mjs`(137)（需本地 `data/db/dict.db`）→ **core 621 / 0**；`apps/desktop/test/dbmigrate.test.mjs`(22) ⇒ **门禁 643 通过 / 0 失败**（v0.10.0 后）。
+⚠ **`book_lang.mjs` 不读 `data/db/dict.db`**（全程临时合成库），测的是 `packages/core/dist/` 构建产物 ⇒ **改 `packages/core/src/db/**` 后必须先 `pnpm --filter @zidiankaifa/core build`**，否则测的是旧实现（铁律 3）。
+⚠ **旧口径 506 = core 484 + desktop 22**，而 core 484 = 99+67+38+**60**+194+26 —— 旧账本一度**漏了 `ru_morph.mjs` 的 60**，系本项目第 5 次同类计数陷阱。
 ⚠ **断言计数陷阱**：`ru_morph.mjs` 打印「回归护栏（…）：60 通过 / 0 失败」，**无「结果：」前缀**，用 `Select-String '结果：'` 会漏掉这 60 条。
 `ru_morph_defects.mjs`（缺陷台账，**留红即待办**；v0.9.0 后 **55 通过 / 1 失败** exit 1，唯一余红 = `термостат`）、`ru_morph_goals.mjs`（迭代目标，0/2 exit 2）、`ru_morph_semantic.mjs`（语义判别集，v0.9.0 后 **44 通过 / 1 失败，回归项 0**）**均不接入** `pnpm test`，手动跑。
 ⚠ `lexicon.mjs:122-141` 的 4 条统计断言是**冻结快照**，随倒排表重建而变，须在每次落库迭代后同步（口径注释已写在断言上方）。
@@ -119,6 +121,13 @@ $env:ZIDIANKAIFA_DB='D:\lzk17\Documents\zidiankaifa\data\db\dict.db'; node apps/
 - **经 `ask_user_question` 获得的用户选项答复不算人类回合**——试过，同样被拒。
 - ⇒ 需要改 goal 口径时，**让用户亲自发一条普通消息**，不要重试工具调用。
 - `complete` / `blocked` 在自动续跑轮内是允许的；`blocked` 另要求同一阻塞条件持续 ≥3 轮。
+- ⚠ **有 active goal 时 `create_goal` 会失败**：报 `Error: goal "goal-xxxx" already exists with phase "active"`。
+  **同一会话只有一个 goal** ⇒ 进入下一迭代时**改 objective，不要新建**（实测 v0.9.0 → v0.10.0 切换）。
+- ⚠ **`edit` 之后 goal 会变成 `activation: disarmed`**（不再自动续跑），须**紧接一次 `update_goal action=resume`** 才会回到 `armed`。
+  ⚠ **`resume` 必须传 `edit` 返回的新 revision**（不是编辑前那个），否则版本不符会被拒。
+  实测序列：`get_goal`(rev 3) → `edit`(rev 3→4, disarmed) → `resume`(rev 4→5, **armed** ✔)。
+- 改 objective 的**正确触发点是人类回合**：用户直接发一条普通消息（如「把 goal 改成 …」）即构成 human turn，
+  **同一轮内** `get_goal` → `edit` → `resume` 全部可用。`ask_user_question` 的选项答复仍不算。
 
 **Playwright / 浏览器**
 - 搜索框是 React 受控组件：`browser_fill` **必须先填空字符串再填值**，否则值被回滚。

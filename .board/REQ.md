@@ -31,7 +31,7 @@
 | 主题 | 俄语拆解**防假拆解**：V9-1 词根语义误判 ＋ V9-2 真前缀 gap 语义核证 **＋ 语义纠错补词素**（T25 用户拍板） |
 | 来源 | 用户拍板「**按裁决十三：只做 V9-1/V9-2 防假拆解**」；`.board/BOARD.md:1285-1411` 裁决十三；`.board/TASKS.md:180-253` |
 | 优先级 | P0（唯一在办迭代）；**本迭代不设覆盖率目标** |
-| 状态 | 🟡 **已实施完毕；放行待 T28 独立复核 ＋ `термостат` 的 H-d 四件证据**。逐 AC 实况：AC-2 **条件式满足**（`|H-d| = 1`）/ AC-3 第 3 条（假族 26）**未达成·延期** / AC-4 ✅ / AC-5 **豁免放行** / AC-6 **只报不判** / AC-9① **延期**——**逐条口径见 §6.2，结项数据见 §0.3** |
+| 状态 | ✅ **已发布（v0.9.0）**——commit **`889674f`** / tag **`v0.9.0`**（附注对象 `ef56fc6`）/ GitHub Release **4 附件**（2026-09-16）。逐 AC 实况：AC-2 **条件式满足**（`|H-d| = 1`）/ AC-3 第 3 条（假族 26）**未达成·延期** / AC-4 ✅ / AC-5 **豁免放行** / AC-6 **只报不判** / AC-9① **延期**——**逐条口径见 §6.2，结项数据见 §0.3**；发布后经 **T33** 依发布事实复核（订正见 §0.3 注与 §7.5 修订留痕） |
 | 交付边界 | 迭代完成即 bump **0.9.0** + build + tag + GitHub Release（用户明确定） |
 | 硬约束 | **允许补词素**（受 **AC-11 落库门**约束：来源可复核 ＋ 主管逐条复核 ＋ 用户事后否决权）／ **不动任何阈值** ／ **不放松任何位置规则** ／ **不设覆盖率目标**（见 §6.6「非目标」） |
 
@@ -50,13 +50,15 @@
 
 | 判据 | v0.8.0 基线 | v0.9.0 实测 | 结论 |
 | --- | --- | --- | --- |
-| **loses（全库 可拆→不可拆）** | — | **0** | ✅ 零回归 |
+| **loses（全库 可拆→不可拆）** | — | **2** | ⚠ **★ T33 订正（原记 0，错）**：具名 = **`поднаковальня`** / **`поднакопить`** —— 此前被拆成含**假词根 `дн-`** 的双重错误拆解（`наковальня` 铁砧的词源是 `ковать` 锻造，与 `день` 日无关）⇒ **由假拆解转为不拆属净改善**。**但计量事实必须并存登记：`loses` 就是 2，不因定性为改善而写成 0**。兼容性：在 **AC-4 容差 12** 之内（`breakableMin: 33162` 正是为 V9-2 登记的 12 词消除而设），且净可拆 **+321** ⇒ **AC-4 未破** |
 | 全库可拆 | 33,174 | **33,495** | ✅ ≥33162 |
 | 全库空洞≥3 口径A（绝对值/率） | 20,214 / 60.9333% | 20,243 / **60.4359%** | ⚠ **绝对值 +29 ↑ / 率 −0.4974pp ↓** ⇒ 按**裁决二双口径通过**、按**旧判据（绝对值不得上升）不通过** ⇒ **豁免放行**（AC-5 留痕） |
 | 全库空洞≥3 口径B（绝对值/率） | 18,762 / 56.5563% | 18,799 / **56.1248%** | ⚠ **绝对值 +37 ↑ / 率 −0.4315pp ↓** ⇒ 同上；**率的分母 = 全库可拆（33,174→33,495，+321），含「分母长大」成分** |
 | 真前缀组（口径＝「gap=1 且 gap 字符 ∈ 库内前缀集」的**残余组**） | 75 | **63** | ✅ **仅表示未跌破守卫地板 63**；**不得读作「63 词全对」**——构成＝**真族 10 ＋ 假族 26 ＋ 27 词不可判定**（T20 核证；AC-3 填实） |
 | `да-` 子集 | 63 | **63** | ⚠ **未变 ⇒ 假族 26 未消除** ⇒ AC-3 第 3 条**未达成 · 延期 v0.10.0（§7.1 A-5）**；`daCoreMin: 63` 仍成立，但其语义是**混合计数**（守卫**地板**，非真族数） |
 | 尺子 R | 238 = 30.09% | **241 = 30.47%** | ✅ ≥238 |
+| 尺子 A（全库 101,512；**T33 补登**） | 33,174 = 32.7% | **33,495 = 32.99%** | ✅ 与「全库可拆」同源（**A 的分子 = 全库可拆数**，勿当作独立指标） |
+| 尺子 B（有俄语词源池 **31,193**，固定种子 `seed=20260913`，N=800；**T33 实测**） | 304/800 = 38.0% | **308/800 = 38.5%** | ⚠ **非「维持」**——本次实跑 `node packages/data-pipeline/measure_ru_breakdown.mjs 800` 得 **+4 词**（脚本 import 已于 v0.8.0 修复，可跑通） |
 | L4（R 内空洞≥3 口径A） | 134 | **132** | ✅ ≤134 |
 | 全库 D1 形态计数 | 0 | **0** | ✅ ===0 |
 | AC-2 条件式 `(30 − |H-d|) 红 → 0 红` | 30 红 | **`|H-d| = 1`**（唯一红 = `термостат`，D4b）；整文件实测 **55 通过 / 1 失败** | 🟡 **条件式满足**，但**放行待**：① **T28 独立复核**；② `термостат` 的 **DEC-016 H-d 四件证据**（§7.1 A-2 尚未齐备）⇒ **本轮不得标 ✅**，且**不得宣称「30 条全清」**（29 绿 + 1 留红） |
@@ -69,7 +71,7 @@
    根因（读源确认）：`build_roots_tables.mjs` 重建时**只收「有真实关联词」的词素** ⇒ `word_count=0` 者不入表（ru suffix `-еский`/`-ьё`/`-ёк`；ru prefix `о-`；en root `ment`）。**即 v0.8.0 遗留项 C3「倒排表差 10 条」的同一成因**。
 2. `packages/core/test/ru_morph_d1guard.mjs` 的 `FROZEN` 注释重标为 v0.9.0 值（**常量数值未动**；三个地板常量 `breakableMin` 33162 / `truePrefixMin` 63 / `daCoreMin` 63 **明确不上调**——上调会把未来合法工作造成的下降误报为红）。
 
-**⚠ 尚未完成的交付动作（发布前必做）**：版本仍为 **0.8.0**（4 个 `package.json` + 3 处文本待 bump 到 0.9.0）· 未 commit/tag → **见 §7 待办清单**。
+**✅ 交付动作已完成（2026-09-16；本行为 T33 依发布事实回写）**：4 个 `package.json` + 3 处文本已 bump 到 **0.9.0**；commit **`889674f`**（32 文件，+8319 / −5270）；tag **`v0.9.0`**（附注对象 `ef56fc6` → commit `889674f`；仓库第 **14** 个 tag）；GitHub Release **https://github.com/lzk101/zidiankaifa/releases/tag/v0.9.0** —— 非草稿 / 非预发布 / **附件 4 个**（安装版 `zidiankaifa-0.9.0-x64.exe` **175,032,818 B ≈ 166.92 MiB** · 便携版 **174,803,084 B** · `.blockmap` **182,907 B** · `latest.yml` **347 B**）。**三项 build 全 exit 0**（core / **web：内嵌版本号已修 ⇒ B-1 闭环** / sync-server）。
 
 ---
 
@@ -344,7 +346,8 @@ C1（发布卫生，随本次发布） → A2（本迭代） → A3（复用 A2 
 | 编号 | 主题 | 优先级 | 验收标准 | DoD | 状态 |
 | --- | --- | --- | --- | --- | --- |
 | REQ-A2-001 | 提高俄语词根词缀拆解覆盖率 | P0 | §1.2 AC-1…AC-6（**尺子 R > 45% 已取消**，见 §1.9） | §1.3 D1…D12 | ⚪ **已结项**：v0.8.0 交付 30.09%，目标取消，留痕 §1.9 |
-| **REQ-V9-001** | **俄语拆解防假拆解（V9-1 + V9-2）＋ 语义纠错补词素** | **P0** | **§6.2 AC-1…AC-11** | **§6.5 D1…D11** | 🟡 **AC 已定稿**（2026-09-16 **T25**：AC-2 条件式 ＋ AC-11 落库门），待 T24 实测 → 实施 |
+| **REQ-V9-001** | **俄语拆解防假拆解（V9-1 + V9-2）＋ 语义纠错补词素** | **P0** | **§6.2 AC-1…AC-11** | **§6.5 D1…D11** | ✅ **已发布（v0.9.0，2026-09-16）**：commit `889674f` / tag `v0.9.0` / Release 4 附件；AC-2 **条件式满足**（`|H-d| = 1`）· AC-3 第 3 条（假族 26）**延期 v0.10.0** · AC-5 **豁免放行** · AC-6 只报不判 · AC-9① 延期；**逐 AC 口径见 §6.2，结项数据见 §0.3** |
+| **REQ-V10-001** | **生词本语言分离（`(word, lang)` 复合主键）＋ 词根分类独立模块** | **P0（唯一在办迭代）** | **§8.2 AC-12…AC-19** | **§8.3 D13…D22** | 🟡 **标准已冻结（2026-09-16 T34）**，待实施；用户三项架构拍板见 **`DEC-021`** |
 | REQ-A3-001 | 拆解残余噪声 | P1 | **未定义**（未排期） | 未定义 | ⚪ 候选 |
 | REQ-A5-001 | 清理备份表 + VACUUM | P1 | 未定义 | 未定义 | ⚪ 候选 |
 | REQ-B2-001 | 背单词 / 记忆曲线 | P1 | 未定义 | 未定义 | ⚪ 候选 |
@@ -610,6 +613,29 @@ C1（发布卫生，随本次发布） → A2（本迭代） → A3（复用 A2 
   ⑧ **§5.1** 更新 T30 复跑值（55/1）并登记新探针 `.board/_tmp/probe_t30_inverted.mjs`（倒排表差额对账）。
   ⑨ **§7 订正 6 处**：日期；**A-1 的「现存 3 条红／仍留 3 条红」过时**（实测 3/0）；**B-3 的「达成态 53/3」过时**（实测 55/1）；**B-2 的 C3 差额构成已变**（ru 缺 1 `о-` ＋ en 缺 9）；**§7.4 顺序订正为 A-3 > A-1 > A-4 > A-2 > A-5**；**§7.5 由三条扩为六条**（＋AC-11 落库门 ＋ 禁改断言/守卫常量 ＋ H-d 四件证据）并加**标准差异留痕**；C-2 错字订正。**§7 存放位置裁定：留在本台账**（§2 = 历史清单、§7 = 细化定稿；排期派单仍属主管）。
   ⑩ **DEC-019**（v0.9.0 AC 收口与三处改判）＋ **DEC-020**（v0.10.0 准入条件与排序，瘦身版）落盘；**待用户拍板表新增 Q6**（AC-5 的「豁免放行」是否接受）。
+- 2026-09-16 **T33 发布后收尾（依发布事实订正；`docs/需求总结.md` 新增 §22、`docs/交接文档.md` 全面更新）**：
+  ① **§0.2 状态行 → ✅ 已发布（v0.9.0）**；
+  ② **§0.3 表 `loses` 行订正 0 → `2`**（具名 `поднаковальня` / `поднакопить`；**计量值不因定性为改善而写成 0**），并注明在 **AC-4 容差 12** 内；
+  ③ **§0.3 表补登尺子 A（33,495 = 32.99%）与尺子 B（T33 实跑 308/800 = **38.5%**，非「维持」）**；
+  ④ **§0.3 交付动作段**改为已完成的发布事实（commit/tag/4 附件/三项 build exit 0/体积）；
+  ⑤ **§7.5 第 2 条改为「空洞三条式」并落盘 `DEC-020-R1`**（原「绝对值与率同时不得上升」被认定**结构上不可满足**）；第 3 条补 v0.9.0 的 `loses = 2` 事实与「不得再豁免」纪律；
+  ⑥ **§7.2 B-1 与 §7.4 第 5 行 → ✅ 已闭环**，并**修正根因**（是**文件策略**所致：`workspace-write` 阻塞 / `danger-full-access` 可跑；旧结论「无合法绕行、须用户代跑」作废）；
+  ⑦ **§7.3 C-2 口径**补登「合法候选上限 33.88% = 该挖掘方法下的上界，非 R 的可达上限」（候选池未纳入全库 68,338 个不可拆词，另 1,966 条未审定）；
+  ⑧ **流程观察落盘**：`roots_ru.json` v0.9.0 diff 达 **10,492 行**（远超 9 条新增，系整体重新序列化）⇒ **AC-11(d) 逐条复核成本升高**，后续落库须保持文件原有格式与顺序。
+     > ★ **T35 订正（本 agent 留痕，依 `DEC-014` 原则不删原判定）**：上句的「**系整体重新序列化**」**已被主管逐条比对推翻** —— 实测 **真实新增 9 / 删除 0 / 字段改动 0**，首个条目**逐字节相同** ⇒ 那 10,492 行**全部是行尾翻转噪声**（CRLF/LF 混用），根因 = 仓库此前无 `.gitattributes`；已新建 `.gitattributes`（`*.json text eol=lf`）**结构性修复，C6 闭环** ⇒ 「后续落库须保持文件原有格式与顺序」这条建议**作废**。详见 `docs/交接文档.md` §6-C6 与 `docs/需求总结.md` §22.8。
+- 2026-09-16 **T34 立项 v0.10.0（REQ-V10-001）**：**新增 §8**（8.0 总览 / 8.1 背景与用户拍板 ＋ **定位声明** ＋ 缺陷机制 6 条 ＋ 实测事实 ＋ **T34 补登的爆炸半径** / 8.2 **AC-12…AC-19 定稿**（各含判定式与判定命令）/ 8.3 **DoD D13…D22** / 8.4 优先级 ＋ 依赖 ＋ **UI 冒烟协议** / 8.5 **不做清单 10 条** / 8.6 红线 6 条 / 8.7 需主管确认 4 项）；§4 总表**新增 REQ-V10-001 行**并把 REQ-V9-001 置为 ✅ 已发布；落盘 **`DEC-021`**（用户三项架构拍板 ＋ 六项附带约束）。**本 agent 实查补登的爆炸半径 4 处**（`types.ts:239` `bookGroups` 契约 · `main.mjs:120` `book:groups` IPC · **`sync-server/src/index.ts:182`** · `LexiconPanel.tsx:29` 职责区分）。**★ 两处口径订正**：① AC-18 由「506 / 0」改为「**既有 506 不回归 ＋ 新增 N 项**」（否则实施完成当刻必然自判失败）；② 明确 `bookGet` 与 `bookList` 的**缺省 `lang` 不对称语义**。
+- 2026-09-16 **T35 三处窄范围订正（依主管裁决）**：
+  ① **AC-12 新增第 8 条「迁移前备份 `<db>.bak-<ISO>`」**（与事务并列的**两道独立防线**；备份失败 ⇒ 放弃迁移；幂等重跑不重复备份；备份不入 git），并同步 **D15**（改称「两道独立防线」）与 AC-12 判定载体（块 A 须断言备份文件存在且不重复）；
+  ② **AC-16 新增第 7 条**「UI **必须显式传 `lang`**」（因 `bookList()` 缺省不过滤）、**AC-17 新增第 6 条**「**分层纪律**：语言过滤发生在 `bookGroups(lang)` 层，**不在**词素库层（`groupBookByMorpheme` 按 `it.lang` 选词素库，不代过滤）」；
+  ③ **§8.6 红线新增第 7 条 ＋ 落盘 `DEC-022`**「**证据来源纪律：临时脚本（`_tmp*`）不得作为证据来源**」（起因：`loses = 2` 曾被引到已删除的 `scripts/_tmp_readme_v090.mjs:17`；**正确来源 = `scripts/probe_t29_contrib.mjs:107/110-111` 与 `.board/EVIDENCE.md:2044/2113-2114/2160`**，本 agent 已独立复核命中）；
+  ④ **§8.7 四项待确认 → 全部裁决落定**（结果表已附）；**AC-18② 与 D21 补「作者 = 测试 agent / 加链 = 主管」**（防文件未落地即加链崩 `pnpm test`）；**§7.3 C-2 行**及本变更记录 ⑧ 的「整体重新序列化」判定按 T35 取证**订正为行尾翻转噪声**（原判定保留留痕）。
+- 2026-09-16 **T38 行号漂移订正 ＋ 需求审计报告（依主管指令）**：
+  ① **通篇复核 §8 内全部 `文件:行号` 引用**并重述：`types.ts:239→:245` · `schema.ts:85-96→:111-123`（PK `:123`；另新增 `BOOK_COLUMNS_SQL`/`BOOK_TABLE_SQL`）· `sync-server/src/index.ts:182→:180-181` · `index.ts` 一批符号（`upsertBook :957→:1067`、`ON CONFLICT :960→:1072`、`bookGet :984→:1093`、`bookList :989→:1105`、`bookListAll :998→:1117`、`bookAdd :1002→:1122`、`bookRemove :1019→:1144`、`bookUpdate :1036→:1164`、`syncMerge :1044→:1173`、`groupBookByMorpheme :1062→:1200`、`migrateAddColumn :141→:231`、`inBook 内联 :587→:623`）；**未变**者已逐条标注「T38 复核未变」（`api.ts:20/132/136/158/166/201`、`App.tsx:17`、`BookPanel.tsx:106`、`LexiconPanel.tsx:29`、`lang.ts:53`、`main.mjs:112-120`、`preload.mjs:11-15`、`package.json:25`）；
+  ② **§8.1-B 的全表改造**：该表是**已修复缺陷的历史位置**⇒ 加「**历史值，不得按当前文件检索**」警示 ＋ 新增「修复后（当前符号）」列（**不做虚假重编号**）；
+  ③ **新增 §8.6 红线第 8 条 ＋ 落盘 `DEC-023`**「**行号引用纪律：行号是指示性而非规范性**」（判定以符号名为准；引用须符号＋行号成对；历史条目不追溯重编号；D22 按最终行号重述）；
+  ④ **新增 §8.8 行号对照表**（T38 实测的**回落基线**，含当前总行数与冻结时对照）；
+  ⑤ **新增 §9 需求审计报告**（9.1 逐 AC 吻合度 · 9.2 `localStorage` 缺口独立复核 **3 处 → 4 处** · 9.3 AC-18 的 506 口径 · **9.4 本 agent 新发现 5 项（缺省 `lang` 删除语义未定义 / 「只迁移一次」不可判定 / AC-16⑤ 判定层未写明 / 8 条盲区 / 本 agent `inBook` 自纠）** · 9.5 与主管缺口清单核对 · 9.6 结论与建议动作）；
+  ⑥ **自纠 1 处**：§8.1-C 原把 `inBook` 写作函数 —— 实为 `WordDetail` 的**字段**（`types.ts:192`），SQL 现为**内联**查询（`index.ts:623`，已按 `(word, lang)` 过滤）。
 
 ---
 
@@ -655,7 +681,7 @@ C1（发布卫生，随本次发布） → A2（本迭代） → A3（复用 A2 
 
 | 编号 | 项 | 现状 / 证据 | 备注 |
 | --- | --- | --- | --- |
-| **B-1** | ★ **`apps/web/dist` 版本陈旧** | 内嵌仍是「我的电子辞典 **v0.7.1**」，而实际版本 0.8.0（v0.9.0 发布后将差两个版本） | **根因**：受限沙箱禁管道 stdio 的 spawn ⇒ `vite build` 三处 esbuild 依赖全阻，**无合法绕行**（铁律 4 禁提权）⇒ **必须由用户在普通终端跑**。**直接影响本次发布** |
+| **B-1** | ~~★ `apps/web/dist` 版本陈旧~~ → ✅ **已闭环（v0.9.0）** | 内嵌版本号已更新为 **v0.9.0**（v0.8.0 时期曾滞后为 v0.7.1，差两个版本） | **★ 根因修正（`AGENTS.md` §3 已改，T33 记录）**：**不是**「沙箱绝对禁止」，而是**文件策略**所致——`workspace-write` 下禁**带管道 stdio 的 spawn**（esbuild 必需）⇒ 阻塞；放宽为 **`danger-full-access`** 后 **web build（vite 6.4.3，1.18 s）与 desktop build（electron-builder 26.15.3）均一次通过**。⇒ 旧结论「**无合法绕行、必须由用户代跑**」**作废**；遇此现象**先查当前 DSH 文件策略** |
 | **B-2** | C3 倒排表与 `morphemes` 表系统差额 | 根因已查明：`build_roots_tables.mjs` 只收「有真实关联词」的词素。**⚠ T30 实测：差额 = 10 条，构成已变** —— **ru 缺 1 条 = `о-`**；**en 缺 9 条 = `al-` `auto-` `circum-` `hyper-` `mal-` `ment` `multi-` `omni-` `un-`**（与 v0.8.0 时「ru 差 10 条」不同，勿沿用旧表述） | 口径已在 `lexicon.mjs` 注释写清；**是否补全为「全量列示」需产品决策**（缺失词素关联词为 0，用户可见性≈0） |
 | **B-3** | AC-9 ① `defects` 末尾按块计数 | 现已由需求 agent 提供**块级普查式**判定（**⚠ T30 实测订正：达成态 = 55 通过 / 1 失败**，非「53/3」；六块分解 D1 7/0 · D2 3/0 · D3 2/0 · D4 5/1 · D5 2/0 · D6 36/0） | 落地后 AC-2 可机械判定；**本轮已用等价解析法放行**（AC-9 填实段） |
 | **B-4** | V9-8 判据① 替代量断言 | 必须以 **342** 为基线且**只能用 `gapMin=2` 退回变体测**，**不得用生产输出测**（生产已拒绝这些词，输出里只有 75） | 未落地 |
@@ -668,7 +694,7 @@ C1（发布卫生，随本次发布） → A2（本迭代） → A3（复用 A2 
 | 编号 | 项 | 实测依据 |
 | --- | --- | --- |
 | **C-1** | `ru_morph_goals.mjs` 2 条目标 | `вдыхать` 缺 `дых-`；`безаварийный` 缺 `аварий-`（0/2 exit 2） |
-| **C-2** | 词素扩充（**不承诺目标值**） | T17 候选审定实测：**合法候选上限 33.88%**（过审定门的候选距离 45% 差 88 词）；「零新增只改规则」上限 **36.54%（289/791）**；R ~30% 为**诚实值**（AC-7：覆盖率如实交付，**不得与 45% 比较**） |
+| **C-2** | 词素扩充（**不承诺目标值**） | T17 候选审定实测：**合法候选上限 33.88%**（过审定门的候选距离 45% 差 88 词）；「零新增只改规则」上限 **36.54%（289/791）**；R ~30% 为**诚实值**（AC-7：覆盖率如实交付，**不得与 45% 比较**）。**★ T33 补登自限制（主管裁决十三已记档）**：33.88% 是「**只从 R 缺失词的头部子串挖矿**」这一方法下的上界（候选池 1,992 条，**未纳入全库 68,338 个不可拆词**，另 1,966 条未审定）⇒ **不得表述为「R 的可达上限」** |
 
 ### 7.4 优先级表（可执行版）
 
@@ -678,7 +704,7 @@ C1（发布卫生，随本次发布） → A2（本迭代） → A3（复用 A2 
 | **2** | A-1 D2 词中空洞上限（**须补通用上限断言**） | A | 无 | 其 3 条回归断言**已绿**（见 A-1 订正）⇒ 证据强度低于 A-3；但属**机制缺口**（可复发）⇒ 第二 |
 | 3 | A-4 假词根全库普查 | A | 无 | 兜底是点状抑制，同族未枚举词仍可能误拆；与 A-1 同级但工时低 |
 | 4 | A-2 重估 `стат-` 或转 H-d | A | **1** | **依赖 A-3**：`а-` 落库后须重估 `стат-` 收益/代价；若不落 `а-`，唯一出路是 **H-d 四件证据** |
-| 5 | B-1 web build 版本 | B | **用户在普通终端执行** | **阻塞 v0.9.0 发布口径**（UI 版本号滞后），故须在发布前处理 |
+| ~~5~~ | ~~B-1 web build 版本~~ | B | — | ✅ **已完成（v0.9.0）**：文件策略放宽后 web + desktop build 一次通过，UI 内嵌版本号已是 v0.9.0 ⇒ **本行自 v0.10.0 待办中移除**（T33 订正） |
 | 6 | B-3 / B-4 测量基础设施 | B | 无 | AC-9 挂账项；越早落地越省人工解析 |
 | 7 | A-5 `да-` 假族 26 词 | A | 需**新机制**（两类手段已实测失败）＋ **须同步拆 `daCoreMin`** | 正确性最高但**工具不足** ⇒ 排在「能做的」之后 |
 | 8 | B-2 / B-6 / B-7 | B | 视工时 | 工程债，不阻塞正确性 |
@@ -690,8 +716,12 @@ C1（发布卫生，随本次发布） → A2（本迭代） → A3（复用 A2 
 
 立项前**必须**用**独立只读探针**（不得用生产输出）端到端验证下列判据：
 1. **全库 D1 形态计数**（`gapMin=2` 退回变体口径）**为 0 或下降**
-2. **全库空洞≥3 口径A 与口径B 的绝对值与率必须同时不得上升**（两条口径会反向：2 字符片段把长空洞打散成多个单字符空洞 ⇒ 单看口径B 会误判为「有改善」）
+2. **★ 空洞三条式（`DEC-020-R1` 修订，2026-09-16 T33——取代原「口径A 与口径B 的绝对值与率必须同时不得上升」）**：
+   **① 变差（`loses`）= 0 词**（并见第 3 条：`loses ≠ 回归`，须逐词比对 `parts`）· **② 空洞变多 = 0 词**（按**词数**计，**不是**字符总量）· **③ 固定分母下的率不得上升**（分母冻结，剔除「分母长大」造成的机械改善）。
+   > **修订理由**（依 `docs/release-v0.9.0.md` §三.3）：**原判据在结构上不可满足**——任何「让 N 个不可拆词变为可拆」的词素都**必然推高空洞绝对字符总数**（新解锁词自带残差空洞）。v0.9.0 的 `-ной` 即活例：剔除它会让 **176 个词由可拆变不可拆**（含 `больной`/`внеземной`/`входной`/`выводной` 等**真词**）。⇒「看绝对字符总量」实际奖励「少解锁词」，与 **DEC-002（正确性 > 覆盖率）** 冲突。
+   > **留痕纪律**：**原条文不删除**（本条即留痕，原文见 `DEC-020` 正本与 `DEC-020-R1` 修订块）。
 3. **`loses` 必须为 0**；且 `loses` **不等于回归**（`антияпонский` 从碎片式变完整拆解也会被记成 "lost"）⇒ 判真实回归必须**逐词比对 `parts`**
+   > **v0.9.0 事实（T33 补登）**：该迭代 `loses = `**`2`**（`поднаковальня` / `поднакопить`，旧态含假词根 `дн-`，转为不拆属**净改善**），在 **AC-4 容差 12** 之内 ⇒ **未破 AC-4**；但**按本判据（v0.10.0 起）`loses` 必须为 0**，**不得再以「净改善」为由豁免**。
 4. **（T30 新增）每条新词素必须过 AC-11 落库门**（可复核来源 ＋ 抓取原文片段 ＋ 释义/`kind`/实测边际增益/3–5 例词 ＋ 主管逐条复核 ＋ 用户事后否决权）；**整词兜底型须按 AC-11(f) 单列并披露**
 5. **（T30 新增）不得修改任何测试断言期望值 / 守卫常量以达成判据**（AC-7⑤）：**往低改守卫地板须主管裁定并留痕**；**快照类期望值（如 `lexicon.mjs`）若必须改动，须附「差额的具名原因」**（v0.9.0 先例：en root 322→321 = 词素 `ment` 无关联词；ru prefix 185→184 = 词素 `о-` 同因——**已由本 agent 独立对账确认合法**）
 6. **（T30 新增）H-d 条目须齐备 DEC-016 四件证据**（真实词根 / 词源证据 / **用户可见后果** / 已否证机制清单），且**独立复核 ＋ 主管裁定后方可冻结**
@@ -708,3 +738,563 @@ C1（发布卫生，随本次发布） → A2（本迭代） → A3（复用 A2 
 - **整词兜底条目不得以「真实词素」身份落库**（AC-11(f)）：须单列 + `origin` 注明「兜底条目·非语义切分」+ Release Notes 披露
 - **不得用「越多越好」型护栏制造假达标**；**禁改守卫常量制造假象**（AC-7）
 - 本迭代已确定（可继承）的实测禁忌：**不动任何阈值** · **不放松任何位置规则** · `да-` 族**不得**用补词素方案
+
+---
+
+## 8. REQ-V10-001 生词本语言分离 + 词根分类独立模块（v0.10.0，2026-09-16 立项）
+
+### 8.0 迭代总览
+
+| 项 | 值 |
+| --- | --- |
+| 迭代号 | **迭代 3**（v0.10.0） |
+| 需求编号 | **REQ-V10-001** |
+| 主题 | 生词本**语言分离**（`(word, lang)` 复合主键）＋ **词根分类独立面板** |
+| 来源 | **用户三项架构拍板**（经项目主管转达，2026-09-16；落盘 **`DEC-021`**）：① 语言分离深度 =「**A. 彻底迁移：(word, lang) 复合主键（推荐）**」② 词根分类形态 =「**A. 独立顶层第 5 面板「词根分类」，内部分英/俄两个子页签（推荐）**」③ 生词本导航 =「**一个「📚 生词本」入口 + 内部英/俄子页签（推荐）**」 |
+| 优先级 | **P0（唯一在办迭代）** |
+| 状态 | 🟡 **实施基本完成，剩余 3 项未闭**（T40 实测收口，详见下表） |
+| 交付边界 | 迭代完成即 bump **0.10.0** + 三个 build + 打包 + GitHub Release（用户定的规则） |
+| 硬约束 | **用户已拍板三项架构，不再讨论替代方案**；**两套存储都要隔离**（SQLite ＋ 浏览器 `localStorage`）；**`sync-server` 协议不改**（只改合并逻辑）；不新增第 6 个顶层面板 |
+| **逐 AC 状态（T40 主管实测）** | **AC-12 ✅ / AC-13 ✅ / AC-14 ✅ / AC-15 ✅（实跑 22/0）/ AC-16 ✅ / AC-17 ✅**；**AC-18 ⏳**（`packages/core/test/book_lang.mjs` 未落地 ⇒ 断言缺失）· **AC-19 ⏳**（零 bump）—— 另有 **2 处实现未闭**：`main.mjs:121` `book:update` 未校验 `item.lang` · 契约脚本块 D 待补该断言 |
+| **机械判定入口（T40 新增）** | `node scripts/check_v10_ui_contract.mjs` ⇒ **53 通过 / 0 失败 exit 0**（六块 A–F，覆盖 AC-16/AC-17/D18/D19/AC-12 数据层复核/门禁接入条件式）；**文本级不替代渲染验证**（须另走 §8.4 UI 冒烟协议） |
+
+### 8.1 背景、用户拍板与实测事实
+
+**A. 定位声明（★ 必须如实表述，不得夸大）**
+
+> **英俄同形词 = 0** —— `SELECT COUNT(1) FROM words_i18n e JOIN words_i18n r ON e.word = r.word WHERE e.lang = 'en' AND r.lang = 'ru'` → **0**。
+> ⇒ **本项是「设计正确性」问题，不是「正在丢数据」问题**。任何文档、Release Notes、向用户的汇报**不得**表述为「生词本正在丢俄语词条」。真实性质是：**当前无触发条件，但约束缺失**（一旦词库引入同形的英/俄词条，或用户手工把拉丁串以 `ru` 入库，就会静默覆盖）。
+
+**B. 缺陷机制（**潜在** —— 这是本迭代要消除的对象）**
+
+> ★ **行号纪律（T38）**：下表「v0.9.0 位置」列是**冻结时（本迭代开始前）**的行号 —— 那批代码**已被本迭代修复**，因此**该列的行号是历史值，不得按当前文件检索**（按当前文件检索必然错位）。判定一律以**符号名**为准；每个符号的**当前**行号见 **§8.8 行号对照表**。
+
+| # | v0.9.0 位置（**历史值**） | 机制 | 修复后（**当前符号**） |
+| --- | --- | --- | --- |
+| 1 | `packages/core/src/db/index.ts:954-955` `BOOK_INSERT` · `:960` `ON CONFLICT(word)` · `:961` `lang = excluded.lang` | 同一 `word` 的另一语言写入会**覆盖同一行**，且 `lang` 被**改写** | `BOOK_INSERT` · `upsertBook` · **`ON CONFLICT(word, lang)`**；**`lang = excluded.lang` 已删除**（原位置留注释说明为何不能再写） |
+| 2 | `:957` `upsertBook(db, it)` · `:972` `it.lang ?? 'en'` | 缺省**静默回退 'en'** | `upsertBook(db, it: BookItem & { lang: string })`（**类型上强制带 `lang`**）· `BOOK_DEFAULT_LANG` 常量 |
+| 3 | `:1019` `bookRemove(db, word)` | 调用 `upsertBook` 时**未传 `lang`** ⇒ 墓碑被强制写成 `lang='en'`（**即使原条是 ru**） | `bookRemove(db, word, lang?)` —— 未传时经 `existingLangForWord()` **沿用既有语言**，**不再隐式回退 'en'** |
+| 4 | `:984` `bookGet(db, word)` · `:989` `bookList(db)` | 均**按 word 单键**，无法定位/筛选语言 | `bookGet(db, word, lang = BOOK_DEFAULT_LANG)` · `bookList(db, lang?)` · `bookListAll(db)` |
+| 5 | `:1047` `syncMerge` | 冲突守卫 `WHERE word = ?` **按 word 比对时间戳** ⇒ 另一语言的 `updatedAt` 会决定本条是否被推 | `syncMerge` —— 守卫已改为 **`WHERE word = ? AND lang = ?`** |
+| 6 | `book.lang` 只靠**约定**保证一词一语言 | 表结构（`packages/core/src/db/schema.ts:85-96`）为 `word TEXT PRIMARY KEY` ＋ `lang TEXT NOT NULL DEFAULT 'en'`，**主键不含 lang**，无 DB 层约束 | **复合主键已落库**：`schema.ts` 的 `BOOK_COLUMNS_SQL` / `BOOK_TABLE_SQL`（`PRIMARY KEY (word, lang)`）＋ `SCHEMA_SQL` 内同一结构；新库直建、老库由 `migrateBookCompositeKey()` 事务迁移（含 `.bak-<ISO>` 备份） |
+
+**C. 已实测事实（由项目主管提供，**本 agent 直接引用，未重测**）**
+
+| 事实 | 值 |
+| --- | --- |
+| 英俄同形词 | **0**（SQL 见 A 段） |
+| `words_i18n.lang` 的二值性 | `lang='en'` 且含西里尔 = **0 条** ✅ 干净；`lang='ru'` 且含拉丁 = **8 条** ⚠ **既有小瑕疵，本迭代不处理（已登记，见 §8.5 不做清单第 2 条）** |
+| `book` 表实况 | `pk=1` 仅 `word`；`lang TEXT NOT NULL DEFAULT 'en'`；表内现 **3 行且全为墓碑**（`deleted=1`）。**★ T38 注**：本行为 **T34 时实测、T38 未重测** —— 开发 agent 已实现复合主键结构（`schema.ts`），`data/db/dict.db` 的 `book` 表会在下次 `openDatabase()` 时被 `migrateBookCompositeKey()` 迁移（迁移后 `PRAGMA table_info(book)` 应为 **`word` 与 `lang` 两列 `pk>0`**，即 AC-12⑤；迁移结果由测试 agent 块 A 断言） |
+| 两条存储路径 | ① **SQLite**（core / desktop / sync-server）；② 浏览器 **`localStorage`**（`apps/web/src/api.ts`，**T40 实测行号**：`:20` `BOOK_LOCAL_KEY`、`:178` `bookList`、`:183` `bookAdd`、`:207` `bookRemove`、`:215` `bookUpdate`、`:257` `bookGroups`）⇒ **两套都要做语言隔离**（**T40 实测：两套均已实现**，见 §9.1） |
+| 迁移模板 | `packages/core/src/db/index.ts`：`migrateBookLang(db)`（列迁移）→ `migrateAddColumn(db, table, column, ddl)`（通用列迁移）；统一在 `openDatabase()` 内调用。**本迭代新增** `migrateBookCompositeKey(db)`（复合主键迁移，同处调用）—— 三个迁移**都在 `openDatabase()` 内**，故 core / desktop / sync-server 三入口自动生效（见 D13；行号见 §8.8） |
+| 爆炸半径（SQL 层） | `BOOK_INSERT` · `upsertBook` · `bookGet` · `bookList` · `bookListAll` · `syncMerge` · `inBook`（**字段**，非函数：`packages/core/src/types.ts:192`；其 SQL 现为**内联**查询，见 §8.8）（行号见 §8.8） |
+| 爆炸半径（调用点） | `apps/web/src/api.ts` · `apps/desktop/src/main.mjs`（`book:list/:add/:remove/:update/:groups` 五个 IPC，**T40 实测 `:112-124`**）· `apps/desktop/src/preload.mjs`（**`:11-16`**）· `apps/web/src/components/BookPanel.tsx` · `apps/web/src/App.tsx`（生词本状态 + `inBook` 叠加，**T40 实测 `:136-154`**）· `apps/web/src/components/ClipboardPopup.tsx`（**`:69,72,74`**） |
+| ★ **T34 补登的爆炸半径（主管清单外，本 agent 实查）** | `packages/core/src/types.ts` `bookGroups?(lang?)`（**`:245`**，T38 修正：原写 `:239`；T40 复核未变）· `apps/desktop/src/main.mjs:123-124` `ipcMain.handle('book:groups', …)`（**T40：已带 `lang` ✅**）· `apps/sync-server/src/index.ts` 的 book 分组路由 `GET /api/v1/book-groups`（**T40 实测 `:182`**，传 `bookList(syncDb, lang)` 在 **`:184`**）· `apps/web/src/components/LexiconPanel.tsx`（**T40 实测默认导出于 `:34`**，T38 记 `:29` ⇒ 已漂移）（**须与新的词根分类面板明确区分职责**，见 AC-17④） |
+| 现有 UI 面板枚举 | `apps/web/src/App.tsx` 的 `type Panel`（**T40 实测 `:19`**：`'lookup' \| 'book' \| 'lexicon' \| 'rootclass' \| 'settings'` ⇒ **已是 5 个 ✅**；T38 复核时为 `:17` 的 4 个） |
+| 自动判语言工具 | `packages/core/src/lang.ts` `export function isCyrillic(s: string): boolean`（**`:53`，T40 复核未变**）；既有用法 `apps/web/src/components/BookPanel.tsx` 自动判语言（**T40 实测 `:145`**：`const target: BookLang = choice === 'auto' ? (isCyrillic(w) ? 'ru' : 'en') : choice`；T38 记 `:106` ⇒ 已漂移） |
+| 生词本按词根分组 | `packages/core/src/db/index.ts` `groupBookByMorpheme(db, items)`（**T40 实测 `:1237`**，T38 记 `:1200`）→ 内部 `groupBookByMorphemeData(items, (w, lang) => breakdownWord(db, w, lang ?? 'en'))`（**`:1239`**）（**回调已带 `lang`，数据层天然支持按语言拆解**） |
+
+### 8.2 验收标准 AC-12…AC-19（**已冻结**；每条可机械判定）
+
+> **通用口径**：① 所有数字必须带口径（铁律 7）；② 测试文件词库路径须与 cwd 无关（铁律 6）——本迭代新增测试**用独立临时库**，**不依赖 `data/db/dict.db`**，因此天然两种 cwd 均可跑；③ 新增断言一律**先写断言再改代码**（`AGENTS.md` §4.2），且**不得修改既有断言期望值以达成判据**（沿用 v0.9.0 AC-7⑤）。
+
+#### AC-12 复合主键迁移（自动、保数据、幂等）
+
+**判定式**：
+1. **新库**（空路径 `openDatabase(p)`）建表即 `PRIMARY KEY(word, lang)`（不靠迁移补齐）；
+2. **老库**（`book` 表为 `word TEXT PRIMARY KEY`，**有 `lang` 列**与**无 `lang` 列**两种变体都要覆盖）打开后**自动迁移**；
+3. **保数据**：迁移前 `book` 的每一行，迁移后逐字段相等 —— `word` / `lang`（老库无该列时补 `'en'`）/ `added_at` / `updated_at` / `status` / `note` / `tags` / `review_count` / `last_reviewed_at` / **`deleted`（墓碑必须保留：3 行全墓碑的老库迁移后仍是 3 行 `deleted=1`）**；
+4. **幂等**：连续执行两次（两次 `openDatabase()`，或迁移函数连跑两次）后，`book` 的行内容与 `PRAGMA table_info(book)` **完全一致**；
+5. `PRAGMA table_info(book)` 中 **`word` 与 `lang` 两列 `pk > 0`**（不强制列序）；
+6. **不毁库**：迁移在事务内（`BEGIN IMMEDIATE` … `COMMIT`），异常 `ROLLBACK` 且**保留原表**（迁移失败时老数据仍可读）；
+7. `CREATE INDEX IF NOT EXISTS idx_book_updated ON book(updated_at)` 迁移后仍存在（**当前锚点**：`packages/core/src/db/schema.ts:125`；注意 `DROP TABLE book` 会连带删掉索引 ⇒ 重建表后**必须重建该索引**）。
+8. **迁移前备份（★ T35 主管裁决补充：与事务并列的**第二道独立防线**）**：**检测到老结构（= 确实需要迁移）时**，先把目标库整体复制为 **`<db>.bak-<ISO时间戳>`**（同目录；沿用项目惯例 —— `roots_ru.json.bak-<ISO>` 式命名与 `apps/desktop/src/dbmigrate.mjs` 换库备份的 `.bak-<ts>` 式一致），**备份成功之后才执行迁移**；**备份失败 ⇒ 放弃迁移**（宁可暂不迁移，也不在无备份的情况下动用户数据）；**幂等重跑（表已是新结构）不重复备份**；备份文件**不入 git**（`*.bak*` 已由 `.gitignore` 覆盖）。
+   > 理由（主管）：**事务保证「原子性」，备份保证「即使原子性本身失效（磁盘/断电/逻辑写错）仍有可回退副本」—— 对「会毁用户生词本」的操作，两道防线都要。**
+   >
+   > **★ T41 改写（裁决二十）：本条的「复制」语义已被下面第 9 条取代** —— 原文按 `DEC-014` **保留留痕**（上文不作删改），但**仅满足字面的「先复制 / 失败即放弃 / 幂等不重复」不足以达成本条声明的目的**（见第 9 条的 WAL 机制）。**判定以第 9 条为准。**
+
+9. **★ 备份必须是「一致性快照」＋ 迁移不得静默降级（**T45 改写，裁决二十一**，取代本条 T41 的四条件；原第 8 条与本条 T41/T43 原文按 `DEC-014` 保留留痕，见下方「留痕」标记段）**：
+   **判定式（四条，缺一不达）**：
+   - ① **备份用 `VACUUM INTO`**（SQLite 官方一致性快照导出；实现锚点 `packages/core/src/db/index.ts:231 db.exec(\`VACUUM INTO '${bak.replace(/'/g, "''")}'\`)`，备份名 `:209 const bak = \`${file}.bak-${new Date().toISOString().replace(/[:.]/g, '-')}\``）；**没有 `busy` 分支** —— T41 方案 A 的 `PRAGMA wal_checkpoint(TRUNCATE)` **已从实现中删除**（`grep wal_checkpoint packages/core/src/db/index.ts` ⇒ **0 处命中**）；
+   - ② **迁移流程走完后若 `book` 仍非 `(word, lang)` 复合主键 ⇒ 抛错**（**不得静默降级运行**）；异常信息须含 **`复合主键`**。实现锚点：`index.ts:306 if (!isBookComposite(db))` ⇒ `:307 throw new Error('book 表未能迁移到 (word, lang) 复合主键（当前主键列 = …）…')`；判据共用函数 = `bookPkCols(db)`（`:159`）与 `isBookComposite(db)`（`:178`），**前置判据与后置校验同源**（避免两处判据漂移）；
+   - ③ **残留 `book_new` ⇒ 清除后重试一次**（**有界**，不得无限递归）：`index.ts:285 else if (/book_new/.test(msg) && dbTryDropTable(db, 'book_new'))` ⇒ `:288 migrateBookCompositeKey(db, true)`；重试走 `isRetry = true` 分支（`:282`）**只告警、不再递归**。**性质**：真正的崩溃**不会**留下 `book_new`（整个迁移在 `BEGIN IMMEDIATE` 事务内 ⇒ `book_new` 随事务回滚）⇒ 本分支是**恢复性动作**，不是正常路径兜底；
+   - ④ **备份断言 = 逻辑内容等价**（**行数 ＋ 逐字段 ＋ `PRAGMA integrity_check = ok`**），**不再要求与主库逐字节相等**（`VACUUM INTO` 的产物是**新写的单文件**：页布局重排，且**实测备份头偏移 18/19 = `[1,1]` / `journal_mode=delete`，主库 = `[2,2]` / `wal`**）；**同时保留一条反向断言「备份与主库逐字节`不`相等」**，作为「**实现未被换回 `copyFileSync`（方案 0 / 方案 A）**」的守卫（copy 类备份必与主库逐字节相等 ⇒ 该反向断言对两类实现**有鉴别力**）。
+   **机制（为什么改）**：`packages/core/src/db/schema.ts:29` = `PRAGMA journal_mode = WAL;` ⇒ **所有 `openDatabase()` 打开的库都是 WAL 库**。T41 方案 A（先 `wal_checkpoint(TRUNCATE)` 再复制）**自己引入了一条降级路径**：checkpoint 遇并发读者/写者返回 `busy !== 0` ⇒ 只能**放弃迁移**；而「放弃迁移」的后果是**静默故障** —— 受控实验（主管 `scripts/_tmp/probe_sup_degraded_write2.mjs`，夹具由 `BOOK_COLUMNS_SQL` **派生**）在老结构（`PRIMARY KEY (word)`）库上实测：`bookAdd(db,'newword',[],'en')` / `bookAdd(db,'новое',[],'ru')` / `bookRemove(db,'existing','en')` / `bookUpdate(db,{word,lang,status})` **4/4 全部抛** `ON CONFLICT clause does not match any PRIMARY KEY or UNIQUE constraint`，而 `bookList` / `bookListAll` **仍成功** ⇒ 生词本表现为「**能打开、列表正常、但一条也加不进去**」（叠加静默语义错误：老结构下 en/ru 同形词互相覆盖，正是本迭代要消除的）。`VACUUM INTO` 在**单个读事务**内完成，**要么得到一致快照、要么抛错**，不含「checkpoint 未并回」这条分支 ⇒ 从根上消除该触发条件。
+   **本 agent 独立复现（T47；`.board/_tmp/probe_t47_backup_fail.mjs`，⚠ 依 `DEC-022` 仅作辅证、**不是**证据来源）**：同一夹具（`-wal` **8,272 B**、写连接保持打开、另一连接持未结束读事务）下，由第三个连接执行 `PRAGMA wal_checkpoint(TRUNCATE)` 得 **`{ busy: 1, log: 2, checkpointed: 2 }`**（⇒ 方案 A 在该场景会**放弃迁移**），而当前实现（`VACUUM INTO`）**迁移成功**：主键 `["word","lang"]` · 备份数 **1**；对照（无并发读者）＝迁移成功且备份与主库**逐字节不等**。⇒ **裁决二十一的①与其理由成立**（下述异议不针对「改用 `VACUUM INTO`」本身）。
+   **★ T47 提请（本 agent，**未定案**；对裁决二十一持部分异议，照直登记，共四条）**：
+   1. **「从根上不存在『迁移被跳过』」不成立** —— `migrateBookCompositeKey` 内仍有**两条早期 `return` 位于 `try` 内**，它们**绕过** `:306` 的后置校验：`:207`（`!file || !fs.existsSync(file)` ⇒ 取不到主库文件路径）与 `:236`（**备份失败** ⇒ `:232` 的 `catch` 内 `return`）。即：**触发条件由「checkpoint busy」换成了「备份写不出」**（`SQLITE_FULL` 磁盘满 / 目录只读 `EACCES` 等**生产可达**原因）。**演示（辅证）**：令 `VACUUM INTO` 抛错 ⇒ `openDatabase()` **不抛错**、`PRAGMA table_info(book)` 主键仍 `["word"]`、`bookListAll` 正常返回 2 行、`bookAdd` 抛 `ON CONFLICT clause does not match any PRIMARY KEY or UNIQUE constraint` ⇒ **与 T45 之前的静默故障逐字相同**；另一**独立触发点**（`PRAGMA database_list` 的 `file` 为空的内存共享库 ⇒ 命中 `:205-208`）复现同一模式（该触发点在生产路径**不可达** —— 新内存库由 `SCHEMA_SQL` 直建复合主键，`:195` 已提前返回 —— 但它证明**问题在模式**：任何「`try` 内 return」都会绕过校验）。**建议修法（最小）**：把后置校验**上移到 `openDatabase()`**（`index.ts:132` 之后），一处覆盖**所有**早期返回路径；否则须在本条**如实登记**这条残余降级路径。**二者必择其一。**
+   2. **② 的「异常信息须含『复合主键』」不能作为唯一机械判据**：另一连接持**未结束写事务**时，`openDatabase()` 在**第一条语句** `:129 db.exec(SCHEMA_SQL)` 即抛 **`database is locked`**（栈：`packages/core/dist/db/index.js:15:8` ⇒ `openDatabase`），该消息**不含**「复合主键」，且**不产生任何备份**。（此为**既有行为**，非 T45 引入。）⇒ 判据宜写成两类：**迁移后置校验路径的消息含『复合主键』** **或** **上游锁定类错误原样抛出**，并**限定夹具**，否则断言会因夹具选错而假红。
+   3. **② 的「响亮失败」在桌面端对用户并不响亮**：`apps/desktop/src/main.mjs:304-305` 为 `app.whenReady().then(() => { db = openDatabase(resolveDbPath()); … })`，**无 `try/catch`、无 `dialog`/`showErrorBox`**（`grep` 全 `apps/desktop/src` ⇒ **0 处命中**），而 `createWindow()` 在其后 `:317` ⇒ 抛错时**既不弹窗也不建窗**，用户看到的是「**双击图标无反应**」（未处理的 promise 拒绝；打包版无控制台）⇒ 与静默降级相比，只是把静默从「**写不进去**」换成了「**打不开**」。实现注释 `packages/core/src/db/index.ts:303-304`（「由调用方决定如何呈现（桌面端在 `app.whenReady` 处捕获并弹窗告知，见 `apps/desktop/src/main.mjs`）」）**与磁盘现状不符** ⇒ 建议 ② 增列达成条件「**失败必须用户可见**」（桌面端捕获 ＋ 弹窗/退出提示），或把该注释与 AC 文本**如实改述**。
+   4. **（次要）③ 的代价未登记**：重试使备份数 = **2**（`packages/core/test/book_lang.mjs` A28 实测「实测备份数 2」），而桌面端目标库约 **494 MB**（`index.ts:201` 体积注释）⇒ **一次自愈会落两个 ~494 MB 备份**。建议重试**沿用首次备份**，或在 AC / Release Notes 中登记该代价。
+
+   > **【留痕 · 以下为本条 T41/T43 原文（含其四条判定式、受控实验、方案 B 否决理由、事故记录与 T43 提请），依 `DEC-014` 保留不删改；判定以本条第 9 条上方四条为准。另：T43 提请的三问已由裁决二十一答复 —— ①「该分支是否应改为可见失败/重试」⇒ 采纳为上方 ②（抛错）与 ③（有界重试）；②「是否需增加夹具」⇒ 由 T46 在 `book_lang.mjs` 调整（见 §8.2 块 A 断言要求）；③「若判可接受须如实披露」⇒ 不再适用（判定为「不可接受」，故改为抛错）。】**
+   **原第 9 条（T41/T43）原文如下（留痕，不删改）：**
+   **机制（为什么原实现的目的不成立）**：`packages/core/src/db/schema.ts:29` 是 `PRAGMA journal_mode = WAL;` ⇒ **所有 `openDatabase()` 打开的库都是 WAL 库**；WAL 库里**已提交但尚未并回主库文件**的事务只存在于 `<db>-wal` 中。原实现（`packages/core/src/db/index.ts` 的 `fs.copyFileSync(file, bak)`）**只复制主库文件、不复制 `-wal`/`-shm`** ⇒ 该备份**缺少最新已提交数据**，其声明的用途（「原子性失效时仍有可回退副本」）**在 WAL 库上不成立**。
+   **判定式（四条，缺一不达）**：
+   - ① **备份前必须 `PRAGMA wal_checkpoint(TRUNCATE)` 把 WAL 并回主库**（实现锚点：`index.ts:189 const cp = db.prepare('PRAGMA wal_checkpoint(TRUNCATE)').get()`，结果声明为 `{ busy: number; log: number; checkpointed: number }`），**然后再复制**（`index.ts:201 fs.copyFileSync(file, bak)`，备份名 `:180 const bak = \`${file}.bak-${new Date().toISOString().replace(/[:.]/g, '-')}\``）；
+   - ② **`busy !== 0`（checkpoint 未能完全并回）⇒ 放弃迁移**，**不得**在无备份或缺数据的不完整备份下继续（与第 8 条「备份失败即放弃迁移（数据优先）」同一条原则：**不完整的一致快照不配当回退点**）；
+   - ③ **备份内容与主库逐字节相等**（方案 A 的性质；这是既有「备份 == 迁移前快照」逐字节断言得以保留的前提）；
+   - ④ **保留原第 8 条的两条**：**备份失败即放弃迁移** · **幂等重跑（表已是新结构）不重复备份**，且备份文件**不入 git**（`*.bak*` 由 `.gitignore` 覆盖）。
+   **受控实验（主管，`scripts/_tmp/probe_sup_wal_snapshot2.mjs`；⚠ 依 `DEC-022` 该临时脚本**不得**作为长期证据来源，正式复核须由测试 agent 在 `book_lang.mjs` 块 A 内固化为断言）**：前提 = 主库 12,288 B · `-wal` 8,272 B · 写连接仍打开 · 表内可见 4 行。
+   - 只复制主库 ⇒ 副本 **3 行**，**用户刚加的生词（delta）不在备份里** ❌ ⇒ 原实现**确实**丢最新数据；
+   - **先 `wal_checkpoint(TRUNCATE)` 再复制** ⇒ 副本 **4 行齐全** ✔ 且与主库**逐字节相等**（**方案 A 采纳**）；
+   - `VACUUM INTO` ⇒ 4 行齐全但**与主库字节不等** ⇒ 会打破既有「备份 == 快照」**逐字节**语义（**方案 B 否决**）。
+   **方案 B（`VACUUM INTO`）否决理由（三条；否决不是因为它结果错）**：① 会把「回退副本」换成**另一种格式**的副本，应用不能直接当主库打开（**同构性丢失**）；② **破坏**既有逐字节断言（代价大于收益）；③ 改动面更大。
+   **★ 事故记录（必须登记，依 `DEC-014`）**：主管**第一版实验结论与本条相反**（得出「原实现没问题」），根因 = 在 `copy` 之前调用了 `db.close()`，触发 **clean shutdown 自动 checkpoint**，**掩盖了 WAL 未并回的事实** —— 即**夹具前置条件不成立会产出与事实相反的结论**（与「假红 / 假绿同源」同类）。⇒ **纪律**：涉及 WAL 的备份实验**必须让写连接保持打开**（修正版的受控条件已写明）；任何「前置条件不成立」的实验结论**不得**作为裁决依据。
+   **★ 本 agent 提请（T43，**未定案**，须主管/用户裁定）：`busy !== 0` ⇒「放弃迁移」这条**降级路径的行为未定义**。**
+   - 现状：该分支只 `console.warn` 后 `return`（`index.ts` 备份段内），**用户不可见**；而 `openDatabase()` 会**照常返回一个 `book` 表仍为 `word` 单主键的库**。
+   - **推定风险（本 agent 推理，未跑测试 ⇒ 未验证）**：该状态下 `upsertBook` 的 **`ON CONFLICT(word, lang) DO UPDATE`（`:1091`）在无 `(word, lang)` 唯一约束的表上无法匹配** ⇒ SQLite 应在 prepare/step 阶段**报错**（`ON CONFLICT clause does not match any PRIMARY KEY or UNIQUE constraint`），即「迁移被跳过」不再是「少一个功能」，而可能是**生词本写入直接报错**；且此时 AC-13「跨语言隔离」在运行时**静默不成立**（老主键 = 按 word 单键）。
+   - **请裁定**：① 该分支是否应改为**可见失败**（启动提示 / 阻止写入并给出可操作指引）或**重试策略**（下次启动重试）；② 是否需要在 `book_lang.mjs` 块 A 增加**夹具**（构造 `busy !== 0`，断言「不迁移时不得静默可用」）；③ 若判定为「可接受」，须在 Release Notes 与 §7 已知约束中**如实披露**（否则用户遇到写入报错时无从理解）。
+
+**判定命令**：
+```powershell
+cd D:\lzk17\Documents\zidiankaifa;               node packages/core/test/book_lang.mjs   # 块 A，期望 exit 0
+cd D:\lzk17\Documents\zidiankaifa\packages\core;  node test/book_lang.mjs                # 两种 cwd 都必须 exit 0
+```
+**判定载体**：`packages/core/test/book_lang.mjs`（**新增**，作者 = **测试 agent**（T36）；块 A 用 `node:sqlite` 手工建「老结构 `book` 表 + 夹具 2 行（1 正常 + 1 墓碑）」的临时库，再调 `openDatabase()` 触发迁移）。**块 A 必须额外断言**：迁移后**同目录存在 `<db>.bak-<ISO>` 备份文件**，且**重跑（幂等路径）不产生第二个备份**。
+> **★ T43（裁决二十）追加到块 A 的断言要求**：（a）**备份前发生 WAL 并回** —— 在**写连接保持打开且存在未并回 WAL** 的前提下，备份内容与迁移前数据**行数一致**（即第 9 条 ①）；（b）备份与主库**逐字节相等**（第 9 条 ③）；（c）**`busy !== 0` ⇒ 放弃迁移**（可用占用/只读连接构造，第 9 条 ②）。
+> **★ T45（裁决二十一）改写块 A 的断言口径（**取代**上条 (b)(c)，(a) 的精神保留；上条原文按 `DEC-014` 保留留痕）**：
+> - **A25 / A26 口径反转**（原「注入式故障 ⇒ 迁移失败但 `openDatabase` 仍返回可用连接 ∧ `book` 仍是老结构（主键 `["word"]`）」**不再成立**）：T45 的**有界重试**会**清除残留 `book_new` 并成功迁移** ⇒ **A26 改为**「**残留 `book_new` ⇒ 自愈后迁移成功**：`openDatabase` 不抛错 ∧ `pkCols(book) == ["word","lang"]` ∧ 残留表 `book_new` **已不存在** ∧ 老数据逐字段保真」；**A25 的「不向外抛」保持不变**（该夹具下确不抛）。
+> - **A28 口径改为**：**备份数 ≥ 1 ∧ 每一个备份皆为「迁移前形态」的一致性快照** —— 判据两条并用：① **逻辑内容等价**（行数 ＋ 逐字段 ＋ `PRAGMA integrity_check = ok`）；② 备份内 `book` 的主键**仍为 `["word"]`**（= 确是迁移**前**快照，而非迁移后结构）。**实测值（T45）**：该夹具下备份数 = **2**（首次尝试与重试各落一次，两者内容等价）。
+> - **新增断言（第 9 条 ② 的机械判据）**：构造一个**无法自愈**的迁移失败 ⇒ **`openDatabase` 必须抛错**，且消息**含 `复合主键`**。⚠ **须限定夹具**：依 AC-12⑨「T47 提请」第 2 条，**上游锁定类**失败（另一连接持写事务）的原始消息是 `database is locked`、**不含**该字样 —— 该情形应作为**另一条**断言（「原样抛出」），不得与本条混判。
+> - **块 E 连带（依裁决二十一④推定，供 T46 复核）**：**E6 / E20** 由「备份与主库**逐字节相等**」**反转为「逐字节`不`相等」**（= 守卫实现未被换回 `copyFileSync`）；**E15** 由「持未结束读事务 ⇒ `busy !== 0` ⇒ 放弃迁移」**反转为「同场景下迁移仍成功」**（本 agent 辅证实测期望值：`openDatabase` 不抛错 · 主键 `["word","lang"]` · 备份数 **1** · 无警告）；**E11–E14** 的「方案 0 变体」补丁靶点须由 `wal_checkpoint` 改为 **`VACUUM INTO` ⇒ `fs.copyFileSync`**（否则补丁失配即红）；**A29 的观察文本**（`:679-688`）写着「备份实现 = 先 `PRAGMA wal_checkpoint(TRUNCATE)` 再 `fs.copyFileSync`」**已过期**，须同步；**A14 的 sidecar 注释**（`book_lang.mjs:237`「因备份头里仍写着 `journal_mode=wal`」）**与实测不符**（`VACUUM INTO` 备份头 = `delete` ⇒ **不生成** `-wal`/`-shm` sidecar，实测偏移 18/19 = `[1,1]`）。
+> **★ T43 实测：本载体已落地 ✅** —— `packages/core/test/book_lang.mjs` **存在**，并已接入 `packages/core/package.json:25` 链尾 ⇒ **门禁 core 484 → 582**、**跨命令合计 604**（详见 §8.3-D21）。
+
+#### AC-13 跨语言隔离（同 `word` 不同 `lang` 互不影响）
+
+**判定式**（**用合成词，不依赖真实词库** —— 独立临时库中 `bookAdd(db,'test',[],'ru')` 合法）：
+1. `bookAdd(db,'test',[],'en')` ＋ `bookAdd(db,'test',[],'ru')` ⇒ `bookListAll(db).length === 2`，两条 `lang` 各为 `en`/`ru`，`note`/`status`/`tags` **各自独立**；
+2. `bookRemove(db,'test','ru')` ⇒ ru 条 `deleted=1`，**en 条 `deleted=0` 且全部字段（含 `updated_at`）不变**；反向同理；
+3. `bookUpdate(db, { word:'test', lang:'ru', note:'x' })` ⇒ **en 条任何字段不变**（`updated_at` 亦不变）；
+4. `bookGet(db,'test','ru')` 与 `bookGet(db,'test','en')` 各返回对应条；`bookList(db,'ru')` **只含 ru 条**；
+5. **墓碑不得改语言**：`bookRemove(db,'test','ru')` 后该行 `lang` 仍为 `'ru'`（消除 §8.1-B-3 的 `?? 'en'` 隐式回退）；
+6. 既有默认语义（**向后兼容**，见 D17）：`bookGet(db,'test')`（省略 `lang`）⇒ 返回 `lang='en'` 条；`bookList(db)`（省略 `lang`）⇒ **不过滤，返回全部语言**（宁可多不可少；改造后所有 UI 调用点**必须显式传 `lang`**）。
+7. **★ 缺省 `lang` 的删除语义已定案（裁决十九，T40 落盘；原 §9.4-① 的「未定义」状态就此关闭）**：**核心保留可选 `lang`（向后兼容）＋ UI / IPC 调用点一律必须显式传 `lang`** —— 核心缺省回退走 `existingLangForWord()`（`packages/core/src/db/index.ts:1060`，其 SQL 按「未删除优先 ＋ 最近更新」挑一条，**不按语言**），该缺省**仅作向后兼容存在**；**UI 依赖缺省即视为缺陷**。
+   - **判定**：`apps/desktop/src/main.mjs:118`（`ipcMain.handle('book:remove', (_e, word, lang) => …)`）与 `apps/web/src/components/ClipboardPopup.tsx:72`（`bookRemove(detail.word, lang)`，`lang` 取自 `:69 const lang = detail.i18n?.lang ?? 'en'`）均须显式传 `lang`；`apps/web/src/components/BookPanel.tsx:132`（`bookRemove(item.word, item.lang ?? lang)`）同。
+   - **已否证的候选（保留留痕，原建议见 §9.4-①，均标「未采用」）**：① **删除该 word 的全部语言** —— 破坏性，且与用户「英俄分开」的意图方向相反，**未采用**；② **报错要求必须传 `lang`** —— 会破坏既有调用点兼容性，**未采用**。
+   - **主管裁定理由**：核心缺省语义**可用但不按语言**（属任意性）⇒ UI 不得依赖；据主管探针 `scripts/probe_sup_book_migration.mjs` 实测 **22/0**，「只删一条、另一语言存活」成立。
+
+**判定命令**：同 AC-12（`book_lang.mjs` 块 B）。
+
+#### AC-14 同步合并键 = `(word, lang)`
+
+**判定式**：
+1. `syncMerge` 的冲突判定按 `(word, lang)` 定位：先存 `('test','en',updatedAt=T1)`，再推 `('test','ru',updatedAt=T1−100)` ⇒ **en 保留、ru 写入**，`pushed === 1`；
+2. 同 `(word, lang)` 且 `it.updatedAt <= cur.updated_at` ⇒ **不推**（last-write-wins 语义不变）；
+3. **EN 与 RU 的 `updatedAt` 互不干扰**：更新 en 后 ru 条的 `updated_at` 不变（消除 §8.1-B-5 的按 word 比对）；
+4. `bookListAll(db)` 仍返回**含墓碑的全量**（同步语义不变）；
+5. **`sync-server` 协议不改**：不在 `BookItem` 上增删字段、不改路由与 payload 结构（`lang` 字段本就存在）；仅 `/book/groups` 与 desktop `book:groups` 的**入参**按语言过滤（见 AC-17⑤）。
+
+**判定命令**：同 AC-12（`book_lang.mjs` 块 C）。
+
+#### AC-15 桌面迁移不回归（**数据安全护栏**）
+
+**判定式**：`pnpm --filter @zidiankaifa/desktop test` 的 **22 项 dbmigrate 断言全绿（22 通过 / 0 失败）**；且 `ensureUserDb()` 在**内置库含新复合主键 `book` 表**、userData 侧为**老结构 `book` 表**的用户库时仍成功换库并迁移生词本（含墓碑）。**允许新增场景**（新增数计入 AC-18 的 N）。
+**判定命令**：
+```powershell
+pnpm --filter @zidiankaifa/desktop test      # 期望 22 通过 / 0 失败
+```
+
+#### AC-16 生词本 UI 语言分离（**一个入口 + 内部子页签**）
+
+**判定式**：
+1. 顶层**仍只有一个**「📚 生词本」入口（不新增第 6 个面板）；
+2. 面板内 **🇬🇧 / 🇷🇺 两个子页签**，切换只影响列表内容，**不改变路由/面板数**；
+3. **各自独立的「共 N 词」与状态筛选计数**（`new`/`learning`/`mastered` 等按语言分别计算，状态切换亦独立）；
+4. **添加框自动判语言 + 可手动覆盖**：沿用 `isCyrillic(w) ? 'ru' : 'en'`（**T40 实测 `BookPanel.tsx:145`**：`const target: BookLang = choice === 'auto' ? (isCyrillic(w) ? 'ru' : 'en') : choice` ⇒ 自动判语言 **＋ 手动覆盖已实现**），覆盖后按所选语言入库；
+5. **`localStorage` 路径同样隔离**（`apps/web/src/api.ts`，**T40 实测**：`:20` `BOOK_LOCAL_KEY` · `:178` `bookList(lang?)` · `:183` `bookAdd(word, tags, lang)`（去重 `:186` **按 (word, lang)**）· `:207` `bookRemove(word, lang?)` · `:215` `bookUpdate` · `:257` `bookGroups(lang?)` · `:148-153` `lookup` 的 `inBook` 叠加按 `(word, lang)`（`:151 itemLang(b) === entryLang`））—— 静态托管模式走的就是这条路径，是**必测**路径；
+6. **★ 老 `localStorage` 数据不得丢弃；判定式以「幂等」为准（T40 改写，采纳 §9.4-②）**：无 `lang` 字段的旧条目在首次读取时按 `isCyrillic(word)` 归语言（与 ④ 同规则）；**判定式 = 幂等** —— 已有 `lang` 的条目**不再改写**，无 `lang` 的旧条目回填后**再次读取结果不变**。**原措辞「只迁移一次」已废**（无标记位时「执行一次」无法从外部判定，只能观测结果不变）。
+   - **T40 实测：已实现** —— `apps/web/src/api.ts:37` `BOOK_LOCAL_VERSION = 2` · `:45-47` `inferLang`（`:46 return isCyrillic(word) ? 'ru' : 'en';`）· `:54-80` `readLocalBook`（`:59 const legacyArray = Array.isArray(parsed);` 判旧**裸数组**、`:66 let migrated = legacyArray;` ⇒ 立即写回一次；写回后即为 `{version,items}` 结构、不再满足迁移条件 ⇒ **天然幂等**）· `:82-85` `writeLocalBook`（`:83 const file: LocalBookFile = { version: BOOK_LOCAL_VERSION, items };`）；
+7. **★ 必须显式传 `lang`（T35 主管裁决补充）**：因 `bookList()` **缺省不过滤**（D17），**UI 层的每一处列表读取都必须显式传 `lang`** —— 否则「某语言的生词本」会退化成「全部语言的合集」。**判定方式**：`apps/web/src/components/BookPanel.tsx` 与 `scripts/check_v10_ui_contract.mjs` 均须体现显式传参（不得依赖缺省）。
+
+**判定命令**：`node scripts/check_v10_ui_contract.mjs`（**新增**，文本级契约断言，exit 0）＋ **UI 冒烟协议**（见 §8.4）。
+
+#### AC-17 词根分类独立面板（顶层第 5 面板）
+
+**判定式**：
+1. `apps/web/src/App.tsx` 的 `type Panel` 增加 `'rootclass'`（共 5 个）—— **T40 实测：已实现**，`App.tsx:19 type Panel = 'lookup' | 'book' | 'lexicon' | 'rootclass' | 'settings';`（共 **5** 个；`:18` 注释「共 5 个顶层面板（不新增第 6 个）」），顶层导航含 `rootclass` 入口（`:229-231` 与 `:277-278` 两处）**✅**；
+2. **`apps/web/src/components/RootClassPanel.tsx`** 被 `App.tsx` 引用 —— **T40 实测：已实现**（`App.tsx:12 import RootClassPanel from './components/RootClassPanel';` · `:354-355 {activePanel === 'rootclass' && (<RootClassPanel items={book} onPick={lookup} />)}`）；文件**存在且已实现（152 行）**，内含 `LANG_TABS`（`:29-32`，英/俄两子页签）**✅**；
+3. 面板内**分英/俄两个子页签**；
+4. **★ 职责区分（必须写进代码注释与交接文档，避免后人误判为重复实现）**：`LexiconPanel.tsx`（`/lexicon` 面板）＝ **全库词根/词缀表**（与生词本无关）；`RootClassPanel.tsx` ＝ **只对「生词本」内的词按词根归类**（数据来源 = 生词本按语言过滤后的 items → `groupBookByMorphemeData`）。**生词本为空时必须显示空态**，**不得**回退成展示全库词根表；
+5. `bookGroups(lang?)` **契约贯通** —— **T40 实测：全链已实现 ✅**：`packages/core/src/types.ts`（`:245 bookGroups?(lang?)`，T38 曾修正 `:239`→`:245`）· `apps/desktop/src/main.mjs:123-124`（`ipcMain.handle('book:groups', (_e, lang) => …)`）· `apps/desktop/src/preload.mjs:12-16`（五条 book 通道均带 `lang`）· `apps/sync-server/src/index.ts:182-184`（`GET /api/v1/book-groups` → `const items = bookList(syncDb, lang);`）· `apps/web/src/api.ts:257`（`async bookGroups(lang?: string)` → 门面 `:328`）。缺省语义同 `bookList`（**不过滤**）。
+6. **★ 分层纪律（T35 主管裁决补充，两层不得混）**：`packages/core/src/db/index.ts` 的 `groupBookByMorpheme(db, items)`（**T40 实测 `:1237`**，T38 记 `:1200`）**不负责按语言过滤**（它按 `it.lang` **选对应的词素库**去拆解）⇒ **「某个语言的词根分类」这件事发生在 `bookGroups(lang)` 这一层**（过滤 items），**不是**发生在词素库层。**T40 实测：本条已在代码注释中写明 ✅** —— 函数上方文档注释 `index.ts:1229-1236`（「★ 分层纪律（v0.10.0 AC-17 第 6 条）：本函数**不负责按语言过滤**」）＋ 函数内注释 `:1238`（「按生词条目自身的语言选词素库」）＋ 回调 `:1239`（`groupBookByMorphemeData(items, (w, lang) => breakdownWord(db, w, lang ?? 'en'))`）；**UI 侧同样写明** `apps/web/src/components/RootClassPanel.tsx:22-24`（「语言过滤发生在**后端 `bookGroups(lang)` 这一层**」）与 `:52/:57`（显式传 `lang` 读取）**✅**。
+
+**判定命令**：同 AC-16（契约脚本 + UI 冒烟协议）。
+
+#### AC-18 门禁不回归（★ 含算术订正）
+
+**判定式**：
+1. **既有 506 项不回归**：core **484**（regress 99 + lexicon 67 + related 38 + ru_morph 60 + ru_morph_d1fix 194 + ru_morph_d1guard 26）＋ desktop **22**；
+   > **★ 口径说明（T38 审计补，依 §9.3）**：**`506` 是「跨命令合计」口径** —— 判定命令是**两条互相独立的命令**，故**单条命令的可比数分别是 `484+N1`（core）与 `22+N2`（desktop）**；**不得在单条命令上要求 506**（否则会误判失败）。**`N1` / `N2` 由测试 agent 在 T36 回执中给出**（判定式需要两个实测数才能闭合）。
+2. **新增断言必须纳入 `pnpm test` 链**（`packages/core/package.json:25` 的 `test` 脚本**链尾**追加 `&& node test/book_lang.mjs`，现链末为 `... && node test/ru_morph_d1guard.mjs`；desktop 若有新增场景同理）⇒ **门禁总数 = 506 + N**，N 由实测填写（**不得**继续写死 506）；
+   > **★ 加链责任方与顺序（T35 主管裁决，防「文件未落地即加链 ⇒ `pnpm test` 崩」）**：`book_lang.mjs` **由测试 agent 建**（T36，`.board/roles/test-agent.md`：开发不得改测试断言）；**加链由主管在 T36 回执确认文件存在后执行** ⇒ **本 agent 与开发 agent 均不得自行加链**。
+3. **两种 cwd 均 exit 0**（仓库根 与 包目录）。
+
+**判定命令**：
+```powershell
+pnpm --filter @zidiankaifa/core test        # 期望 (484+N1) 通过 / 0 失败
+pnpm --filter @zidiankaifa/desktop test     # 期望 (22+N2) 通过 / 0 失败
+```
+> **★ 口径订正说明**：主管派单原文写「AC-18 = 506 通过 / 0 失败」。因 AC-12/13/14 要求**可机械判定**，必然新增断言文件 ⇒ 该式**必须写成「既有 506 不回归 ＋ 新增 N 项」**，否则实施完成当刻 AC-18 必然「失败」。**已列为 §8.7 需主管确认项第 1 条。**
+
+#### AC-19 发布
+
+**判定式**：bump **0.10.0**（`packages/core` / `apps/web` / `apps/desktop` / `apps/sync-server` 四个 `package.json` ＋ 3 处文本 `apps/web/src/App.tsx` / `apps/web/src/components/SettingsPanel.tsx` / `apps/sync-server/src/index.ts`）→ 三个 build（core / web / sync-server）→ 测试 → 打包（三件套 env，`dist-release/` 产 exe + portable + blockmap + `latest.yml`）→ `git add <明确文件>`（**禁 `git add -A`**）→ commit → tag `v0.10.0` → `gh release create`（**4 附件** + `docs/release-v0.10.0.md`）→ 更新 `docs/需求总结.md`（新增 **§23**）与 `docs/交接文档.md`。
+**发布件判定式**：Release 非草稿 / 非预发布 / **4 附件**；`latest.yml` 版本 = `0.10.0`；`/health` 返回 `0.10.0`；UI「关于」页显示 `v0.10.0`（`apps/web/dist` 必须重建）。
+**判定命令**：`AGENTS.md` §6 全流程；发布后核对见 §8.3 D22。
+
+### 8.3 DoD（D13…D22）
+
+| # | 项 | 说明 |
+| --- | --- | --- |
+| **D13** | 迁移落在 `openDatabase()` 既有迁移段 | `packages/core/src/db/index.ts` 的 `openDatabase()`（**当前 `:127`**）内调用 —— `db.exec(SCHEMA_SQL)` → `migrateBookLang` → `migrateAddColumn`×2 → **`migrateBookCompositeKey`（当前调用点 `:132`）** ⇒ **core / desktop / sync-server 三条入口自动生效**（不得只在某一条入口做；`apps/desktop/src/dbmigrate.mjs` 已确认**不自建 book 迁移**，只 `import { openDatabase, bookListAll, syncMerge }`） |
+| **D14** | `SCHEMA_SQL` 新库直接建复合主键 | `packages/core/src/db/schema.ts`：**`BOOK_COLUMNS_SQL`（当前 `:6`）** ＋ **`BOOK_TABLE_SQL`（`:23`，`PRIMARY KEY (word, lang)` 在 `:24`）** ＋ `SCHEMA_SQL` 内 book 块（**`:111-123`，PK 在 `:123`**）；**不要**给新列写 `CREATE INDEX`（铁律） |
+| **D15** | 迁移**两道独立防线**：事务化 + 失败回滚 **＋ 迁移前备份** | SQLite **无法 `ALTER` 主键** ⇒ 必须**建新表 → `INSERT SELECT` → 换名**（老表保留至提交成功）；`BEGIN IMMEDIATE` / `COMMIT` / 异常 `ROLLBACK`；**并在检测到老结构时先落 `<db>.bak-<ISO>`（备份失败则不迁移）** —— 事务保证原子性，备份保证「原子性本身失效时仍有副本」（AC-12 第 8 条） |
+| **D16** | `upsertBook` 冲突目标改 `(word, lang)`；消除 `?? 'en'` 隐式回退 | `packages/core/src/db/index.ts` 的 `upsertBook`（**T40 实测 `:1067`**，签名 `it: BookItem & { lang: string }`）内 **`ON CONFLICT(word, lang) DO UPDATE`（**`:1072`**）**；**`lang = excluded.lang` 已删除**（`:1069` 留注释说明原因）；`bookRemove`（def **`:1144`**）/ `bookUpdate`（def **`:1171`**，**T40：签名已放宽为 `item: Partial<BookItem> & { word: string }`** ⇒ 支撑 AC-13③ 的「只改部分字段」用法；注意 `packages/core/src/types.ts:239` 的前端后端契约仍为 `bookUpdate(item: BookItem)`，两层签名不同属有意，**不是**不一致缺陷）显式传 `lang` |
+| **D17** | `bookGet` / `bookList` / `bookGroups` 增可选 `lang`，缺省语义**明确定义** | 裁定：`bookGet(db, word, lang = 'en')`（**与既有行为一致**：历史数据全为 en）；`bookList(db, lang?)` 与 `bookGroups(lang?)` **缺省 = 不过滤（全部语言）**——理由：列表读取**宁可多不可少**，缺省过滤会让俄语条在未改造调用点**静默消失**；**UI 调用点必须显式传 `lang`**（**T40 起升为红线第 9 条 ＋ AC-13⑦，见裁决十九**）。**该不对称性已由主管确认为正确设计（§8.7 裁决第 2 条）** |
+| **D18** | `localStorage` 结构与迁移（**判定式 = 幂等**） | `apps/web/src/api.ts` 的 `BOOK_LOCAL_KEY`（**T40 实测 `:20`**）存储结构已升级为 `{ version, items }`（`:37 BOOK_LOCAL_VERSION = 2`、`LocalBookFile`）；旧**裸数组**无 `lang` ⇒ 按 `isCyrillic` 归语言并**写回一次**（`:66 let migrated = legacyArray;`），写回后不再满足迁移条件 ⇒ **天然幂等**（`:54-85`）。**★ T40 实测：已实现 ✅**（`api.ts:16` 已 `import { …, isCyrillic }`、`:45-47 inferLang`、`:82-85 writeLocalBook`），且原 **4 处「按 word 单键」已全部按 `(word, lang)` 修复**（`:186` `bookAdd` 去重 / `:207` `bookRemove` / `:215` `bookUpdate` / `:148-153` `lookup` 的 `inBook` 叠加）—— **详见 §9.2 与 §9.7 的撤回留痕** |
+| **D19** | 契约与 IPC 贯通 | `packages/core/src/types.ts`（**T40 复核未变**：`bookList(lang?)` `:235` · `bookAdd(…, lang?)` `:236` · `bookRemove(word, lang?)` `:238` · `bookUpdate(item)` `:239` · `bookGroups?(lang?)` `:245`）＋ `apps/desktop/src/preload.mjs`（**T40 实测 `:11-16`**，五条 book 通道均带 `lang` ✅）＋ `apps/desktop/src/main.mjs`（**T40 实测 `:112-124`**：`book:list :114` · `book:add :115-116` · `book:remove :118-119` · `book:update :121` · `book:groups :123-124`）＋ `apps/sync-server/src/index.ts`（**T40 实测** book 路由 `:174` / 分组路由 `:182-184` / sync `:195`）＋ `apps/web/src/api.ts`（`:324-328` 门面）—— **T40 实测：全链已对齐 ✅** |
+| **D20** | UI 契约脚本 | **新增** `scripts/check_v10_ui_contract.mjs`：只读源文件文本断言（`Panel` 联合含 `'rootclass'`；`RootClassPanel.tsx` 存在且被 `App.tsx` 引用；`BookPanel.tsx` 含英/俄子页签与两套计数；`api.ts` 的 `localStorage` 结构含 `lang`；`packages/core/package.json:25` 含 `book_lang.mjs`）。**必须声明其局限**：文本级契约**不替代**真实渲染验证，须配合 §8.4 的一次 UI 冒烟。**★ T40 实测：脚本已存在 ✅**（`scripts/check_v10_ui_contract.mjs`，未接入 `pnpm test`），**判定行尚未执行**（属 T40 之后的验证动作） |
+| **D21** | 新增测试并接入门禁 | **新增** `packages/core/test/book_lang.mjs` —— **作者 = 测试 agent（T36）**；**块 A 迁移 / 块 B 隔离 / 块 C 同步合并 / 块 D 幂等**；须有**块级计数行 ＋ 末行总计**，任一块失败即 exit ≠ 0；**计数行格式以测试 agent 为准**（主管已要求与 `ru_morph_d1guard.mjs` 既有格式一致）；**接入 `package.json:25` 由主管在文件落地后执行**（本 agent 与开发 agent 不加链）。**★ T43 实测：已落地并已加链 ✅** —— `packages/core/test/book_lang.mjs` **存在**（glob 命中）；`packages/core/package.json:25` 的 `test` 链尾已含 `&& node test/book_lang.mjs`（**共 7 个文件**）⇒ **N1 = 98**（门禁 core **484 → 582**），desktop 22 ⇒ **跨命令合计 604**。**加链由主管执行，符合 §8.7 裁决第 1 条的责任划分（本 agent 与开发 agent 未加链）**。**T40 记录「未落地 ⏳」系当时时点事实，保留留痕** |
+| **D22** | 发布件与文档 | `docs/release-v0.10.0.md`（新增）· `docs/需求总结.md` §23（新增）· `docs/交接文档.md`（§3/§4/§5/§6/§9 更新）· `.board/CHANGELOG.md` 转入已发布。**发布说明须含「不做清单」与 §8.1-A 的如实定位**（**不得**写成「正在丢数据」） |
+
+### 8.4 优先级、依赖与 UI 冒烟协议
+
+**优先级（冻结）**：**AC-18 > AC-15 > AC-12 > AC-13 > AC-14 > AC-16 > AC-17 > AC-19**
+> 理由（沿用 **DEC-002「正确性 > 覆盖率」** 与 v0.9.0 的「护栏优先于目标」）：**AC-18 / AC-15 是护栏**（门禁与**数据安全**——迁移写错会毁用户生词本，优先级高于任何新功能）；**AC-12 是结构正确性**（本迭代要消除的对象）；**AC-13 / AC-14 是行为正确性**；**AC-16 / AC-17 是产品形态**；**AC-19 是交付动作**（放最后，但在交付边界上不可省）。
+
+**依赖（实施顺序，非优先级）**：`AC-12 → AC-13 → AC-14`（结构先于行为）· `AC-12 → AC-15`（换库场景依赖新结构）· `AC-16 → AC-17`（词根分类按语言分页签依赖语言分离 UI）· `AC-13 → AC-17`（按语言过滤数据源）· `D21 → AC-18`（门禁算术依赖新增测试接入）。
+
+**★ UI 冒烟协议（AC-16 / AC-17 的第二重判定；**两条存储路径都要走**）**
+```powershell
+# 路径 ①：浏览器 localStorage（rest 后端）
+node _serve_static.mjs 5180
+$env:ZIDIANKAIFA_DB='D:\lzk17\Documents\zidiankaifa\data\db\dict.db'; node apps/sync-server/dist/index.js
+# 浏览器打 http://localhost:5180/ ，逐条核对：
+#   ▢ 顶层面板按钮 = 5 个（查词 / 📚 生词本 / 词根词缀 / 🌱 词根分类 / 设置）
+#   ▢ 生词本内两个子页签 🇬🇧 / 🇷🇺，各自「共 N 词」独立
+#   ▢ 添加 test → 落 🇬🇧；添加 тест → 落 🇷🇺；手动覆盖可把 test 加到 🇷🇺
+#   ▢ 删除 🇷🇺 条后 🇬🇧 列表与计数不变
+#   ▢ 🌱 词根分类内英/俄子页签；生词本为空时显示**空态**（不得显示全库词根表）
+# 路径 ②：桌面端 SQLite（electron 后端）—— 用 --user-data-dir=<临时目录> 启动，重复上述核对
+```
+> ⚠ **截图只截视口**（`ZIDIANKAFA_SHOT`）：**不要**因某卡片空白判定数据为空 ⇒ 用 `browser_snapshot` 或 `ZIDIANKAIFA_DUMP`。
+
+### 8.5 明确不做清单（**本迭代范围外，已冻结**）
+
+| # | 不做 | 理由 / 去向 |
+| --- | --- | --- |
+| 1 | **不新增第 6 个顶层面板**；**不把词根分类并入 `/lexicon`** | 用户拍板 = 独立第 5 面板；`/lexicon` 保持「全库词根词缀表」职责 |
+| 2 | **不处理 `lang='ru'` 含拉丁的 8 条** | 既有小瑕疵、与生词本无关；**已登记**，是否升 v0.11.0 候选由主管定 |
+| 3 | **不改 `sync-server` 协议**（路由、payload、`BookItem` 字段结构） | 只改合并逻辑；协议变更会破坏已发布客户端的兼容性 |
+| 4 | **不从 `words_i18n` 反推/校验入参语言** | 生词本允许存词库外的词；语言由 `isCyrillic` ＋ 用户覆盖决定 |
+| 5 | **不改 `breakdownWord` / 任何阈值 / 位置规则**（承接 v0.9.0 红线） | 与本迭代无关 |
+| 6 | **不改 `groupBookByMorphemeData` 的归类算法** | 仅按语言过滤**入参**（回调已带 `lang`，**当前 `index.ts:1202`**） |
+| 7 | **不动既有 6 个 core 测试文件的断言期望值** | 铁律（v0.9.0 AC-7⑤） |
+| 8 | **不做跨语言同形词去重 / 不设「同形词警告」UI** | 实测量为 **0**，无触发条件 |
+| 9 | **不加新索引、不把新列索引写进 `SCHEMA_SQL`** | `AGENTS.md` §5 铁律（老库会崩 `no such column`） |
+| 10 | **不做背单词/记忆曲线（B2）、不做 Android APK（B3）** | 属 §7 三梯队，未排入本迭代 |
+
+### 8.6 红线
+
+1. **不得把本项表述为「正在丢数据」**（§8.1-A 定位声明）；
+2. **不得只做两条存储路径中的一条**（SQLite 与 `localStorage` 缺一即不达 AC-16）；
+3. **迁移不得有损**：墓碑、`lang`、时间戳、`tags` 全部保真；**不得**用「重建空表」绕过；
+4. **不得改既有断言期望值 / 守卫常量以达成判据**（如需改动须附具名原因并经主管裁定）；
+5. **不得跳过第三项 build**（core / web / sync-server；v0.7.1 漏跑 sync-server 的教训）；
+6. **`git add` 只列明确路径**，禁 `git add -A`（`data/db/` 有数百 MB）；
+7. **★ 证据来源纪律（`DEC-022`，T35 新立）**：**临时脚本（路径含 `_tmp`，如 `scripts/_tmp*`、`.board/_tmp/*`）不得作为证据来源** —— 引用任何实测数字必须给**可长期存在的正式来源**（`scripts/probe_*.mjs` 或 `.board/EVIDENCE.md`）**＋ 行号/段号**；本迭代新产出的实测（`book_lang.mjs` 块级计数、`scripts/check_v10_ui_contract.mjs`）**必须直接落在正式路径**，不得先写成 `_tmp` 再引用；
+8. **★ 行号引用纪律（`DEC-023`，T38 新立，依主管指令）**：**迭代内引用的 `文件:行号` 是「指示性」而非「规范性」** —— 需求冻结时引用的行号**必然随本迭代自身的改动而漂移**（本迭代恰恰在改 `index.ts` / `schema.ts` / `types.ts` / `api.ts` / `App.tsx` 这些被引用的文件：实测 `packages/core/src/db/index.ts` 由 **1074 行长到 1215 行**，`schema.ts` 的 book 块由 `:85-96` 移到 **`:111-123`**，`types.ts` 的 `bookGroups` 由 `:239` 移到 **`:245`**）。因此：
+   - **判定以「函数名 / 符号名 / 字段名」为准，行号仅作辅助** —— 断言与派单**不得**以行号作为判定条件；
+   - 引用行号时**必须同时给出符号名**（例：`upsertBook`（当前 `:1067`）），行号漂移后仍可定位；
+   - **历史条目不追溯重编号**：已修复缺陷的「当时位置」须标注为**历史值**（见 §8.1-B），不得按当前文件检索；
+   - **D22 更新 `docs/交接文档.md` 时须按「最终行号」重述**，并以 **§8.8 行号对照表**作为回落基线。
+9. **★ UI / IPC 调用点必须显式传 `lang`（红线，裁决十九，T40 新立）**：因 `bookList()` / `bookGroups()` **缺省不过滤**（D17），**任何 UI / IPC 调用点不得依赖缺省 `lang`** —— **列表读取**必须显式传语言（否则「某语言的生词本」退化为「全部语言的合集」），**删除**必须显式传语言（否则核心回退 `existingLangForWord()`（`packages/core/src/db/index.ts:1060`）按「未删除优先 ＋ 最近更新」挑一条、**不按语言**，可能删错语言）。**核心的缺省回退仅作向后兼容**；**UI 依赖缺省即视为缺陷**。
+   - **★ 唯一登记例外（主管裁决，T40 结清）**：`apps/web/src/App.tsx:78` `refreshBook` 的 `getBackend().bookList()`（**不传 `lang`**）**为有意例外，不构成违规**。理由：该处**不是列表展示读取**，而是**跨语言状态判定** —— `App.tsx:145/:147` 的 `toggleBook` 需按 `(b.lang ?? 'en') === entryLang` 判断**目标语言**条目是否已在生词本中；若此处只取单一语言，**跨语言状态判定会误判**（例如在英语条目上误显示「已收藏」）。**给 `book` 状态的服务对象是 `inBook` 叠加与 `RootClassPanel` 的各语言计数**，两者都需要全量。
+   - **例外纪律**：本例外**已书面落在** `scripts/check_v10_ui_contract.mjs:16-22`（含理由与判定口径），且该脚本块 B 的「无 `bookList()`」断言**只作用于 `BookPanel.tsx`** —— 即**例外是可机械复核的，不是口头豁免**。**新增同类例外必须走同一程序**：脚本内书面登记 ＋ 主管裁定，否则一律判红。
+   - **剩余未闭环点（T39 在办）**：`apps/desktop/src/main.mjs:121` `ipcMain.handle('book:update', (_e, item) => bookUpdate(db, item))` —— `item` 经 IPC 传入，`item.lang` 缺失时会落到核心的任意性回退；须显式校验/拒绝，并在契约脚本块 D 补可持续断言。**另记一处契约不一致（T40 新发现，须在 AC-16 收口前定案）**：核心 `bookUpdate(db: DatabaseSync, item: Partial<BookItem> & { word: string }): BookItem`（`packages/core/src/db/index.ts:1171`，**要求 `word`、返回对象**）与 `packages/core/src/types.ts:239` 的 `bookUpdate(item: BookItem): Promise<void>`（**要求完整对象、返回 void**）**签名不一致** ⇒ 类型系统**无法**在 UI 侧强制 `lang` 存在（`item` 是完整 `BookItem` 时才带 `lang`，但 IPC 是弱类型通道）。**最小修法**：IPC handler 内显式校验 `typeof item?.lang === 'string' && item.lang`。
+
+### 8.7 需主管裁决 / 确认项
+
+| # | 事项 | 本 agent 的裁定（若主管无异议即执行） |
+| --- | --- | --- |
+| 1 | **AC-18 的算术**：新增测试是否接入 `pnpm test` 链 | **接入**（`packages/core/package.json:25` 追加 `book_lang.mjs`），门禁写成 **506 + N**。若主管主张沿用 v0.9.0 先例（`ru_morph_semantic.mjs` 未接入），则 AC-12/13/14 **将失去门禁保护**，需书面裁定并留痕 |
+| 2 | **缺省 `lang` 的不对称语义**（D17） | `bookGet` 缺省 `'en'`（精确单条定位）／`bookList`＋`bookGroups` 缺省**不过滤**（列表宁可多不可少）。**不对称是有意为之**，请确认 |
+| 3 | `lang='ru'` 含拉丁 8 条 | 本迭代**不处理**、仅登记（不做清单第 2 条）；是否升 v0.11.0 候选由主管定 |
+| 4 | `packages/core/test/book_lang.mjs` 的**块级计数行格式** | 采用 `[A] 7/7` 式块级行 ＋ 末行总计（承接 v0.9.0 AC-9① 的教训：块计数须自带输出，避免人工解析）；若测试 agent 已有统一格式，**以测试 agent 为准** |
+
+**★ 裁决结果（项目主管，2026-09-16，T35）—— 四条全部落定：**
+
+| # | 裁决 | 对台账的影响（已落盘） |
+| --- | --- | --- |
+| 1 | ✅ **采纳本 agent 裁定：新增测试接入 `pnpm test`**（门禁 = **506 + N**）· 文件 `packages/core/test/book_lang.mjs` · **作者 = 测试 agent**（T36）· 链尾追加 `&& node test/book_lang.mjs`（`packages/core/package.json:25`） | AC-18② 补**加链责任方与顺序**；D21 补作者与格式归属 |
+| 2 | ✅ **确认采纳**，且主管认定「**这是正确设计**」；追加两条约束：UI 必须**显式传 `lang`**；**语言过滤发生在 `bookGroups(lang)` 层、不在词素库层** | AC-16 补第 **7** 条；AC-17 补第 **6** 条（分层纪律）；D17 不变 |
+| 3 | ✅ 维持：**本迭代不处理、仅登记**；**不升 v0.11.0 候选**（避免范围蔓延），下轮再评估 | §8.5 第 2 条不变 |
+| 4 | ✅ **以测试 agent 为准**：台账只写「须有块级计数行 ＋ 末行总计」；具体格式由测试 agent 定（主管已把「与 `ru_morph_d1guard.mjs` 既有格式一致」写入 T36 派单） | AC-18、D21 措辞维持（不指定具体格式） |
+
+**★ 协调风险与责任划分（主管已处置；本 agent 记录留痕）**：`book_lang.mjs` 由**测试 agent** 建、`pnpm test` 链由**主管**在 T36 回执确认文件存在后再加 —— **文件未落地前加链会让 `pnpm test` 直接崩** ⇒ **本 agent 与开发 agent 均不得自行加链**（已写入 AC-18② 与 D21）。
+
+**★ 本 agent 顶回/自纠记录（T35）**：① **AC-18 算术订正被主管采纳**（原「506 / 0」应为「既有 506 不回归 ＋ 新增 N 项」）；② 主管 T35 的 **C6 定性（10,492 行 = 行尾噪声）推翻本 agent T33 的「整体重新序列化」判定，本 agent 接受**（其取证为逐条比对：真实新增 9 / 删除 0 / 字段改动 0，首个条目逐字节相同；本 agent 原判定系**从 diff 行数推断**，未逐条比对）—— 订正已落 `docs/交接文档.md` §6-C6 与 `docs/需求总结.md` §22.8，**原判定保留留痕**。
+
+---
+
+### 8.8 行号对照表（**2026-09-16 T40 全篇重扫** · 回落基线）
+
+> 用途：行号是**指示性**的（见 §8.6 第 8 条）。本表给出**符号 → 当前行号**，行号漂移后**按符号名**回落到这里。所有行号为 T40 由本 agent **逐文件 grep/read 实测**（不是转述）。T38 列保留作对比。
+>
+> **⚠ T40 实测警告（本表最重要的前提）**：**`packages/core/src/db/index.ts` 在本轮作业期间仍被开发 agent 并行修改** —— 由 **1215 行 → 1249 行**（+34）：T38 记录的锚点有 8 处 **+3**，`bookUpdate` 由 `:1164` → **`:1171`** 且**签名放宽为 `Partial<BookItem> & { word: string }`**，`syncMerge` 由 `:1173` → **`:1197`**，`groupBookByMorpheme` 由 `:1200` → **`:1237`**。⇒ **本表行号绝不可用于机械断言**；引用必须**符号名 ＋ 行号**成对（§8.6 第 8 条）。
+>
+> **测量时点**：2026-09-16；当时 `git status` 显示 **18 个文件**处于「已修改未提交」（含 `packages/core/src/db/index.ts`、`packages/core/src/db/schema.ts`、`packages/core/src/types.ts`、`apps/web/src/**`、`apps/desktop/src/main.mjs`、`apps/desktop/src/preload.mjs`、`apps/sync-server/src/index.ts`）⇒ 行号只代表**该时点**。
+>
+> **★ T43 刷新（2026-09-16，主管 T41 修复落地后由本 agent 逐符号复测）**：`packages/core/src/db/index.ts` 现为 **1268 行 / 51,023 B**（T40 实测 1249 行 ⇒ **+19**）。主管 T41 的 **WAL 一致性快照**修复（裁决二十）在 `:182` 段内新增 **19 行**（`const bak` `:180` · 语义注释 `:182-188` · `wal_checkpoint` `:189` · `copyFileSync` `:201`）⇒ **`:182` 之后的所有符号一律 +19**。**★ 纪律（T43 新立）：任何改动 `index.ts` 的迭代，结束前必须刷新本表** —— 行号漂移在本项目已发生 **4 次**（T38 三处 · T38 批次 · 需求检查三处 · 本次），故**引用必须「符号名 ＋ 行号」成对**（§8.6 第 8 条）。
+>
+> **★ T45 刷新（2026-09-16，裁决二十一落地后由本 agent 复测）**：`packages/core/src/db/index.ts` 现为 **1331 行 / 55,263 B**（T43 实测 1268 行 / 51,023 B ⇒ **+63**）。**回落规则两条**：**`migrateBookCompositeKey` 函数之后的全部符号 = T43 值 + 63**（实测复核 **12 处**全部吻合：`upsertBook` :1086→**:1149** · `ON CONFLICT(word, lang)` :1091→**:1154** · `bookGet` :1115→**:1178** · `bookList` :1127→**:1190** · `bookListAll` :1139→**:1202** · `bookAdd` :1144→**:1207** · `bookRemove` :1163→**:1226** · `bookUpdate` :1190→**:1253** · `syncMerge` :1216→**:1279** · `groupBookByMorpheme` :1256→**:1319** · `BOOK_INSERT` :1068→**:1131** · `BOOK_DEFAULT_LANG` :1072→**:1135**）；**函数体内**（迁移行数守卫）为 **+30**；`openDatabase`（:127）与 `migrateBookLang`（:139）**未变**。**新增符号（T45 引入）**：`bookPkCols(db)` **:159** · `dbTryDropTable(db, table)` **:168** · `isBookComposite(db)` **:178** · 备份 `VACUUM INTO` **:231** · 有界重试 **:285 / :288** · 后置校验 **:306 / :307**。**★ 作废锚点**：`wal_checkpoint(TRUNCATE)`（旧 `:189`）与 `fs.copyFileSync(file, bak)`（旧 `:201`）**已从实现中删除**（T41 方案 A 被 T45 取代）。
+
+| 文件（T40 实测总行数） | 符号 / 锚点 | **T40 实测行号** | T38 值 | T40 说明 |
+| --- | --- | --- | --- | --- |
+| `packages/core/src/db/index.ts`（**1331**，T45 实测；T43 为 1268 ⇒ **+63**，T40 为 1249，T38 为 1215） | `openDatabase(path)` | **:127** | :127 | 未变（位于所有新增段之前） |
+| | 迁移调用段（`migrateBookLang(db)` → `migrateBookCompositeKey(db)`） | **:131-132** | :129-132 | 缩为两行 |
+| | `migrateBookLang(db)`（定义） | **:139** | :139 | 未变 |
+| | **`migrateBookCompositeKey(db)`（本迭代新增）** | **:154**（定义）· **:132**（调用） | 同 | 未变（**T41 改动在其函数体内**） |
+| | **★ 备份段（T45 裁决二十一：`VACUUM INTO` 一致性快照）**：`const bak` · 语义注释 · **`db.exec(\`VACUUM INTO '…'\`)`** | **:209 · :211-230 · :231** | 无 | **T45 取代 T41 的 19 行**（`:189 wal_checkpoint` / `:201 copyFileSync` **已删除**） |
+| | ~~备份段（T41 裁决二十，**已作废**）~~：WAL 语义注释 · `PRAGMA wal_checkpoint(TRUNCATE)` · `fs.copyFileSync(file, bak)` | ~~:182-188 · :189 · :201~~ | 无 | **作废（T45 改为 `VACUUM INTO`）**，原文留痕见 §8.2 AC-12⑨ |
+| | 迁移行数守卫 `if (after < before) throw` | **:257**（T43 :227 ⇒ **+30**） | :208 | **+30**（函数体内，**不适用 +63 规则**） |
+| | `migrateAddColumn(db, table, column, ddl)` | **:316** | :234 | **+63** |
+| | `inBook` 内联查询（`WHERE word = ? AND lang = ? AND deleted = 0`） | **:642** | :623 | **+19** |
+| | ⚠ **另一处 `inBook` 内联查询（硬编码 `lang = 'en'`）** | **:701** | 未登记 | **★ T43 新发现，见 §9.7** |
+| | `BOOK_INSERT` | **:1068** | :1049 | **+19** |
+| | **`BOOK_DEFAULT_LANG = 'en'`（本迭代新增）** | **:1072** | :1053 | **+19** |
+| | **`existingLangForWord(db, word)`（本迭代新增）** | **:1079** | :1060 | **+19** |
+| | `upsertBook(db, it: BookItem & { lang: string })` | **:1086** | :1067 | **+19（★ T43 订正：主管表把此行记为「不变 `:1067`」有误 —— 它在 `:182` 之后，必然 +19）** |
+| | **`ON CONFLICT(word, lang)`** | **:1091** | :1072 | **+19（同上订正）** |
+| | `bookGet(db, word, lang = BOOK_DEFAULT_LANG)` | **:1115** | :1096 | **+19** |
+| | `bookList(db, lang?)` | **:1127** | :1108 | **+19** |
+| | `bookListAll(db)` | **:1139** | :1120 | **+19** |
+| | `bookAdd(db, word, tags?, lang)` | **:1144** | :1125 | **+19** |
+| | `bookRemove(db, word, lang?)`（内部 `const l = lang ?? existingLangForWord(db, w) ?? BOOK_DEFAULT_LANG`） | **:1163** | :1144 | **+19** |
+| | `bookUpdate(db, item: Partial<BookItem> & { word: string })` | **:1190** | :1171 | **+19** |
+| | `syncMerge(db, items)`（`WHERE word = ? AND lang = ?`） | **:1216** | :1197 | **+19** |
+| | ↳ 分层纪律文档注释（AC-17⑥） | **:1248-1255**（派生：T40 值 +19） | :1229-1236 | +19 |
+| | `groupBookByMorpheme(db, items)` | **:1256** | :1237 | **+19** |
+| | ↳ `groupBookByMorphemeData(...)` 回调 | **:1258**（派生：T40 值 +19） | :1239 | +19 |
+| `packages/core/src/db/schema.ts`（**126**） | **`BOOK_COLUMNS_SQL`（本迭代新增）** | **:6** | :6 | 未变 |
+| | **`BOOK_TABLE_SQL` · `PRIMARY KEY (word, lang)`** | **:23** · **:24** | 同 | 未变 |
+| | `SCHEMA_SQL` 内 book 块 · PK | **:111-123** · **:123** | 同 | 未变（**注意**：`PRIMARY KEY (word, lang)` 在 `schema.ts` 共 **3 处** —— `:24`（`BOOK_TABLE_SQL` book 直建）/ **`:88`（`words_i18n`，与本迭代无关）** / `:123`（`SCHEMA_SQL` 的 book 块）；引用时勿混） |
+| | `idx_book_updated` | **:125** | :125 | 未变 |
+| `packages/core/src/types.ts`（**376**） | `inBook` 字段（`WordDetail`） | **:192** | :192 | 未变 |
+| | `bookList(lang?)` · `bookAdd(…, lang?)` · `bookRemove(word, lang?)` · `bookUpdate(item)` | **:235 · :236 · :238 · :239** | 同 | 未变（**注**：`:239` 仍为 `bookUpdate(item: BookItem)`，而 core 实现已放宽为 `Partial<…>`（`index.ts:1171`）⇒ **两层签名不同，属有意**） |
+| | **`bookGroups?(lang?)`** | **:245** | :245 | 未变 |
+| `apps/web/src/api.ts`（**356**） | `import { …, isCyrillic }` · `BOOK_LOCAL_KEY` · `BOOK_LOCAL_VERSION` · `inferLang` · `itemLang` | **:16 · :20 · :37 · :45-47 · :50** | 无（T38 无此枚） | **本迭代新增** |
+| | `readLocalBook` · `writeLocalBook`（旧裸数组迁移 ⇒ 幂等） | **:54-80** · **:82-85** | — | **本迭代新增** |
+| | `lookup` 的 `inBook` 本地叠加（**已按 `(word, lang)`**） | **:144-154**（判定 `:148-153`） | :106-108（按 word 单键） | **已修** |
+| | `bookList` · `bookAdd`（去重 `:186`）· `bookRemove` · `bookUpdate` · `bookGroups` | **:178 · :183 · :207 · :215 · :257** | :132 · :136 · :158 · :166 · :201 | **全部 +42~+56** |
+| | 门面 `bookList/bookAdd/bookRemove/bookUpdate/bookGroups` | **:324-328** | — | 本迭代新增 |
+| `apps/web/src/App.tsx`（**371**） | `import RootClassPanel` | **:12** | 无 | 本迭代新增 |
+| | `type Panel`（**5 个**，含 `'rootclass'`） | **:19** | :17（4 个） | **已改** |
+| | `refreshBook` 的 `.bookList()`（**未传 `lang`，T39 在办**） | **:78** | :78 | 未改（**红线条 9 的已知未闭环点**） |
+| | `inBook` 叠加（按 `(word, lang)`）+ `bookRemove/bookAdd(word, [], entryLang)` | **:136-154** · **:145** · **:147** | :133-151 | 已改 |
+| | `'rootclass'` 导航 · 渲染 `<RootClassPanel …>` | **:229-231 · :277-278 · :354-355** | 无 | 本迭代新增 |
+| `apps/web/src/components/BookPanel.tsx`（**343**） | `type BookLang` · `LANG_TABS` · `useState<BookLang>('en')` | **:46 · :48-50 · :65** | 无 | 本迭代新增 |
+| | `bookList(lang)` · `bookGroups?.(lang)` · `bookRemove(item.word, item.lang ?? lang)` | **:78 · :94 · :132** | 无 | 本迭代新增 |
+| | `isCyrillic` 自动判语言 + 手动覆盖 `target` · `bookAdd(w, [], target)` | **:145 · :147** | :106（仅自动） | 已改 |
+| | 「共 N 词」· 空态 · `book-lang-badge` | **:164 · :254/:312 · :320** | :118 | 已改 |
+| `apps/web/src/components/RootClassPanel.tsx`（**152，本迭代新建**） | 职责区分注释（勿与 LexiconPanel 混） | **:16-20** | 无 | 本迭代新增 |
+| | 分层纪律注释（AC-17⑥ 的 UI 侧） | **:22-24** | 无 | 本迭代新增 |
+| | `LANG_TABS` · `itemLang` · `bookGroups(lang)` 调用 | **:29-32 · :41-43 · :52/:57** | 无 | 本迭代新增 |
+| `apps/web/src/components/LexiconPanel.tsx` | `export default function LexiconPanel({ lang, focusMorpheme, onLangChange, onPickWord })` | **:34** | :29 | **+5（已漂移）** |
+| `apps/web/src/components/ClipboardPopup.tsx`（**111**） | `const lang = detail.i18n?.lang ?? 'en'` · `bookRemove(detail.word, lang)` · `bookAdd(detail.word, [], lang)` | **:69 · :72 · :74** | :70 · :72（未传 lang） | **已修（显式传 lang）** |
+| `packages/core/src/lang.ts` | `isCyrillic(s)` | **:53** | :53 | 未变 |
+| `apps/desktop/src/main.mjs`（**331**） | `clipboardTimer` · `clipboard:set` · 轮询段 | **:38 · :177 · :198-213** | :38 · :172 · :193-208 | **+5** |
+| | `book:list` · `book:add` · `book:remove` · `book:update` · `book:groups` | **:114 · :115-116 · :118-119 · :121 · :123-124** | :112-120 | 已带 `lang`（`:121 book:update` 仍只传 `item`，见 §9.7 遗留项） |
+| `apps/desktop/src/preload.mjs`（**42**） | book 通道 5 条（均带 `lang`） | **:12-16** | :11-15 | **+1** |
+| `apps/desktop/src/dbmigrate.mjs` | `import { openDatabase, bookListAll, syncMerge }` · `bookListAll(db)` · 换库备份 `.bak-${Date.now()}` | **:14 · :40 · :85**（**T38 值，T40 未重测**） | 同 | 未重测 |
+| `apps/sync-server/src/index.ts`（**217**） | `GET /api/v1/book` · `GET /api/v1/book-groups` · `bookList(syncDb, lang)` · `/api/v1/sync` | **:174 · :182 · :184 · :195** | :174 · :180 · :181 · :192 | **已带 `lang`** |
+| `packages/core/package.json`（**33**） | `test` 链（**尚未含 `book_lang.mjs`**，仍 6 文件） | **:25** | :25 | 未变（AC-18② 未闭合） |
+| `scripts/check_v10_ui_contract.mjs` | 文件存在（D20 交付物） | **存在**（T40 glob 命中；未测行数） | 无 | 本迭代新增 |
+
+---
+
+### 8.9 `roots_ru.json` 词素 `origin` 文本订正登记（**待主管落库**，T43）
+
+> **来源**：功能测试 agent T32 对 9 条 `origin` 的联网复核（通道 = Node OpenSSL ＋ 手写 HTTP CONNECT 隧道走 Clash `127.0.0.1:7897`，直取 MediaWiki `action=parse&prop=wikitext`；**词源正文常托管在 `Шаблон:этимология:<名>` 模板页**）。复核分档：**档 1 充分支撑 6 条 · 档 2 部分支撑 3 条 · 档 3 无支撑 0 条**；需订正的是**档 2**。
+> **本 agent 的边界**：**只登记文本订正，不修改 JSON、不撤任何词素** —— `roots_ru.json` 属 `packages/data-pipeline/`，改动与重建由**主管**执行（词素落库门见 AC-11）。
+
+| # | 词素 | 需订正的问题（联网复核） | 订正要求 | 词素是否保留 |
+| --- | --- | --- | --- | --- |
+| 1 | `домин-` | `oldid=13281907` 实含 `{{морфо-ru\|домин\|-ир-\|-ова\|+ть}}`（**无 `\|и=т`**）⇒ origin 抄的 `…\|+ть\|и=т}}` **逐字不符**；同页**另有竞争分析** `{{морфо-ru\|до-\|мин\|-ир-\|-ова\|+ть}}` ⇒ **来源自身不自洽**；且「拉丁 dominari / 德语 dominieren」在引用页**无原文**（该页词源段为 `Происходит от {{этимология:\|да}}`，**参数为空**） | 改引**实际模板**；标注「**语源主张未在引用页核到**」；**披露竞争分析** | **保留**（切分本身有唯一明文支撑） |
+| 2 | `пад-` | origin 写 `*pasti`，但 `Шаблон:этимология:падать` → `#REDIRECT …:паду`，`паду` 作 `{{праслав\|[[*padati]]}}`；`*pasti` 仅以**阿维斯陀语 `ava-pasti-`** 形式出现 | 改为 **`*padati`** | **保留** |
+| 3 | `-ной` | `больной` 实为 `{{морфо-ru\|боль\|-н\|+ой\|и=т}}`（`{{морфо-ru\|боль\|-ной\|и=т}}` **未命中**）⇒ 外部来源**不支持**把它当单一后缀；但 origin **如实**标注依据是**本地 chain**（`больной=["боль","-ной"]`）、**未伪引** | 改引 `боль\|-н\|+ой`，并说明**引擎把「后缀 `-н` ＋ 词尾 `-ой`」合并为一个单元**（库内 `-ный` 存在 · `-ной` 关联 **72** 词 · `-н-`/`-ой` **均不存在**）。**不补 `-н-`/`-ой`**（会牵动 72 词与口径 A/B） | **保留** |
+| 4 | `однако-` | 共时 `{{морфо-ru\|однако\|и=т}}` 支撑**单词素** ✓，但 `Шаблон:этимология:однако` 记 `др.-русск. одинако … От [[один\|оди́н]]` | **须补共时/历时区分**：历时源自 `один`，与 `дн-`（`*дънь`）无关 ⇒ **修复方向正确**，但表述须分清两层 | **保留** |
+
+**★ 纪律（承接 `DEC-022`）**：以上依据的形式须是**可复核的正式来源**（模板页 URL ＋ 抓取原文片段），**不得**只写「已联网核实」；落库后须按 **AGENTS.md 铁律 2** 重建词素表（`$env:PYTHONIOENCODING='utf-8'; python packages/data-pipeline/build_db.py morphemes`）。
+
+---
+
+
+
+## 9. 需求审计报告（**T38，本 agent 独立执行；T40 / T43 修订见 §9.7-A…E，T45/T47 修订见 §9.7-F/G**）
+
+> 触发：用户直接指令「检查需求」。**方法**：不接受任何转述数字 —— 全部由本 agent 用 glob/grep/read 直接查 `packages/core/src/**`、`apps/web/src/**`、`apps/desktop/src/**`、`apps/sync-server/src/**` 与四个 `package.json` 的**当前磁盘状态**，再与 §8.2 的 AC 文本逐条对照。**未运行任何测试**（测试执行不在审计范围，见 9.1 AC-15 与 AC-18 的「未验证」标记）。**审计时点**：2026-09-16；`packages/core/src/db/index.ts` 当时 **1215 行**（开发 agent 正在改动 ⇒ 行号与实现状态**只代表该时点**）。
+
+### 9.1 AC-12…AC-19 与实现的吻合度
+
+| AC | 状态 | 独立实测证据（当前磁盘） |
+| --- | --- | --- |
+| **AC-12 复合主键迁移** | ✅ **已实现（T45：含第 9 条 `VACUUM INTO` 一致性快照 ＋ 后置校验/有界重试）** | ① 新库直建复合主键：`schema.ts:23-24` `BOOK_TABLE_SQL` + `:111-123`（PK `:123`）；② 老库自动迁移：`migrateBookCompositeKey`（`index.ts:154`，调用 `:132`）；③ **保数据**：迁移用**显式列名** `INSERT OR REPLACE … SELECT word, COALESCE(NULLIF(lang,''),'en'), …`（含 `deleted` 墓碑）；④ **幂等**：先读 `PRAGMA table_info` 判 `pkCols` 是否已是 `(word,lang)`；⑤ `pk>0` 待断言；⑥ **事务 + 回滚**：`BEGIN IMMEDIATE`/`COMMIT`/`ROLLBACK`，**额外**行数守卫 `if (after < before) throw`；⑦ **索引重建**：`DROP TABLE` 后 `CREATE INDEX IF NOT EXISTS idx_book_updated`；⑧ **备份**：`.bak-<ISO>`，**备份失败即放弃迁移**；**⑨ ★ T45（裁决二十一）：备份 = `VACUUM INTO` 一致性快照 ＋ 迁移后置校验 ＋ 有界重试** —— 备份语义锚点 `index.ts:231 db.exec(\`VACUUM INTO '…'\`)`（**T41 的 `wal_checkpoint` 与 `copyFileSync` 已删除**）；迁移走完后若 `book` 仍非复合主键 ⇒ `index.ts:306 if (!isBookComposite(db))` ⇒ `:307 throw new Error('book 表未能迁移到 (word, lang) 复合主键…')`（**不得静默降级**）；残留 `book_new` ⇒ `:285` 清除后 `:288` 重试一次（有界）。备份判据由「逐字节相等」改为**逻辑内容等价 ＋ 反向断言「逐字节不相等」**（详见 §8.2 AC-12⑨ 与其「T47 提请」四条）。
+   > **行号口径**：本行的行号为 **T38 时点值**（未随 T41 的 +19 刷新；**T45 后**的回落规则见 §8.8 表头「函数之后 **+63** / 函数体内 **+30**」）；**引用以 §8.8 表为准**（`DEC-023`：判定以符号名为主）。**B/C/D 项由测试 agent `book_lang.mjs` 块 A 断言**（已落地并接入门禁，见 AC-18 行）。 |
+| **AC-13 跨语言隔离** | ✅ **已实现（T40 复核实况）** | `ON CONFLICT(word, lang)`（`:1072`）· `bookGet(word, lang=BOOK_DEFAULT_LANG)`（`:1096`）· `bookList(db, lang?)`（`:1108`）· `bookAdd(..., lang)`（`:1125`）· `bookRemove(db, word, lang?)`（`:1144`）——`:1146 const l = lang ?? existingLangForWord(db, w) ?? BOOK_DEFAULT_LANG`（**不隐式回退 'en'**，满足 ⑤）· `bookUpdate`（`:1171`，**签名放宽为 `Partial<BookItem> & { word: string }`** ⇒ 支撑判定式 ③ 的「只改部分字段」）· `bookAdd` 回读 `bookGet(db, w, lang)`（注释明确「否则俄语条会读成同英语条」）。**缺省语义已定案（裁决十九，T40）**：核心保留可选 `lang`（向后兼容）＋ **UI/IPC 一律显式传 `lang`**（新增判定式 ⑦ 与红线第 9 条）⇒ 原「一处未定义」**已关闭** |
+| **AC-14 同步合并键** | 🟢 **已实现** | `syncMerge`（`:1173`）：`:1178 WHERE word = ? AND lang = ?` · `:1182 upsertBook(db, { ...it, word, lang })` · `bookListAll` 仍返回含墓碑全量（`:1186`）；**`sync-server` 协议未改**（`/api/v1/book`、`/api/v1/sync` 路由与 payload 结构不变，`sync-server/src/index.ts:174/192`） |
+| **AC-15 桌面迁移不回归** | ✅ **已实现且经主管实测（T40 更新）** | **主管实跑 `pnpm --filter @zidiankaifa/desktop test` ⇒ 22 通过 / 0 失败 exit 0**（场景 1–5 全过）。**降风险证据（本 agent T38 原判仍有效）**：`apps/desktop/src/dbmigrate.mjs:14` 只 `import { openDatabase, bookListAll, syncMerge }`，**不自建 book 表迁移** ⇒ 复合主键迁移由 `openDatabase()` 统一承担（D13 的「三入口自动生效」成立）。**另**：主管实跑 `pnpm --filter @zidiankaifa/core test` ⇒ **484 通过 / 0 失败 exit 0** ⇒ **既有 506 全部不回归** |
+| **AC-16 生词本 UI 分离** | ✅ **已实现（T40 复核实况）** | **★ 本行 T38 的三项断言已被实测推翻，保留留痕见下**。当前实况：`App.tsx` 仍**无第 6 面板**（`:19` `type Panel` = `'lookup' \| 'book' \| 'lexicon' \| 'rootclass' \| 'settings'`，**共 5 个**）；`BookPanel.tsx` **已有 🇬🇧/🇷🇺 语言子页签**（`type BookLang = 'en' \| 'ru'` `:46`、`LANG_TABS` `:49-50`、`const [lang, setLang] = useState<BookLang>('en')` `:65`）；**「共 N 词」已按语言独立**（`:164`）；**添加框自动判语言 ＋ 手动覆盖**（`:145` `const target: BookLang = choice === 'auto' ? (isCyrillic(w) ? 'ru' : 'en') : choice`）；`bookList(lang)` `:78` / `bookGroups?.(lang)` `:94`；空态按语言分流 `:254/:312`；`localStorage` 隔离与迁移**已实现**（见 9.2 订正）。**机械判定**：`node scripts/check_v10_ui_contract.mjs` ⇒ **53 通过 / 0 失败 exit 0**（块 B 覆盖 AC-16②③④⑦） |
+| **AC-17 词根分类面板** | ✅ **已实现（T40 复核实况）** | **★ 本行 T38 的「不存在」断言已被实测推翻，保留留痕见下**。当前实况：`apps/web/src/components/RootClassPanel.tsx` **已建（152 行）**，含 §6 分层纪律注释 `:22`、空态「生词本为空」分支 `:104-106`（**不回退全库词根表**）；`App.tsx:19` **含 `'rootclass'`（共 5 个）**、`:12` import、`:354-355` 渲染、导航 `:229-231` / `:277-278`；**⑤ 契约贯通**：`types.ts:245` ✅ · `main.mjs:123-124 book:groups` ✅ **已传 lang** · `sync-server/src/index.ts:184` ✅ **已传 lang** · `api.ts:257/328 bookGroups(lang?)` ✅ **已加 lang**；**⑥ 分层纪律**：`RootClassPanel.tsx:22` ＋ `index.ts:1192-1199` 注释均在位。**机械判定**：`scripts/check_v10_ui_contract.mjs` 块 A ＋ 块 D 全绿 |
+| **AC-18 门禁不回归** | ✅ **已闭合（T43 实测）** | `packages/core/test/book_lang.mjs` **已落地**（作者 = 测试 agent，T36）· `packages/core/package.json:25` 链尾已含 `&& node test/book_lang.mjs`（**共 7 个文件**）⇒ **N1 = 98**（core **484 → 582**）、desktop **22**（N2 = 0）⇒ **跨命令合计 604**；主管已实跑 **core 582 / desktop 22 均 exit 0**。**判据纪律（§9.3）**：**两条命令分别判定**（core 582 / desktop 22），**不得跨命令合并要求 604**。**加链由主管执行** ✅（符合 §8.7 裁决第 1 条的责任划分） |
+| **AC-19 发布** | 🔴 **未开始（版本号仍 0.9.0）** | 四个 `package.json` **均为 `0.9.0`**（T43 实测 `packages/core/package.json:3`）；三处文本仍为 `0.9.0`（`apps/web/src/App.tsx` / `apps/web/src/components/SettingsPanel.tsx` / `apps/sync-server/src/index.ts`，行号以 §8.8 为回落基线）⇒ **零 bump**。**待办**：bump **0.10.0** → 三个 build（core / web / sync-server）→ 打包 → `docs/release-v0.10.0.md` → Release（**4 附件**）→ 更新 `docs/需求总结.md` §23 与 `docs/交接文档.md` |
+
+### 9.2 `localStorage` 缺口独立复核（★ 主管列 3 处，实测 **4 处**）
+
+**结论：主管的 3 处全部属实，另发现第 4 处。** 全部在 `apps/web/src/api.ts`，**均按 `word` 单键**：
+
+| # | 位置 | 实测代码 | 后果 |
+| --- | --- | --- | --- |
+| 1 | `:136-141` `bookAdd` | `const existed = items.find((b) => b.word.toLowerCase() === word.toLowerCase()); if (existed) return existed;` | **同一 `word` 的 en/ru 互相顶掉**：先加 `test`(en) 再加 `test`(ru) ⇒ **直接 `return` 已存在的 en 条**，ru 条**根本不写入**。（核实主管所述 ✓） |
+| 2 | `:158-163` `bookRemove(word)` | `readLocalBook().filter((b) => b.word.toLowerCase() !== word.toLowerCase())` | **一次删除把两种语言都删掉**；且签名**无 `lang`**，与 AC-13② 的 `bookRemove(word,'en')` 不匹配。（✓） |
+| 3 | `:166-171` `bookUpdate(item)` | `.map((b) => b.word.toLowerCase() === item.word.toLowerCase() ? item : b)` | **两种语言同时被替换成同一条**（若 `item.lang` 为 ru，en 条被改成 ru）。（✓） |
+| 4 | **`:106-108` `lookup` 的 `inBook` 叠加（主管未列，本 agent 新发现）** | `const inBook = local.some((b) => b.word.toLowerCase() === detail.word.toLowerCase());` | **同拼写跨语言误报「已收藏」**：生词本里有俄语 `тест`…对英语同形条目（虽当前库内同形词为 0，但**人为添加**即触发）会显示「★ 已收藏」。属 AC-16 的**可见错误**（比 1–3 更早暴露给用户） |
+| 5 | **无一次性迁移** | ~~`api.ts` **未 import `isCyrillic`**（grep 命中 0 处）~~ | **★ 本行已作废（T40 主管实测证伪）**：见下方「9.2 订正」—— `api.ts:16` 确**有** `import { groupBookByMorphemeData, isCyrillic }`，`:33` 注释与 `:46` 判定均在位，`readLocalBook:54-80` 已实现**完整 D18**。本行原判定作废 |
+
+**★★ 9.2 订正（T40，主管实测证伪本 agent 一处结论）**
+
+> **纪律声明**：依 `DEC-014`「不删历史」，上表 1–5 全部**保留原样**；下述订正**不覆盖**它们。
+
+1. **上表第 5 行「无一次性迁移」作废**。主管实测三处命中：`apps/web/src/api.ts:16` `import { groupBookByMorphemeData, isCyrillic } from '@zidiankaifa/core';` · `:33` 注释（「旧的**裸数组**（条目无 `lang`）在**首次读取时**按 `isCyrillic(word)` 归语言并**立即写回一次**，写回后不再满足迁移条件 ⇒ 天然幂等」）· `:46` `return isCyrillic(word) ? 'ru' : 'en';`（`inferLang` `:45-47`）。且 `readLocalBook()`（`:54-80`）已实现完整 D18：`BOOK_LOCAL_VERSION = 2`（`:37`）、`LocalBookFile = { version, items }`（`:39-42`）、`legacyArray = Array.isArray(parsed)` 判旧裸数组（`:59`）、`let migrated = legacyArray; // 旧结构（裸数组）⇒ 必须写回一次`（`:66`）、`writeLocalBook()`（`:82-85`）。⇒ **D18 与 AC-16⑥ 未实现」的结论不成立**。
+2. **成因说明（写实，非自我辩护）**：本 agent 审计时点在开发 agent 写入 `api.ts` **之前** ⇒ 属**时点差**，**不是审计方法有误**。**教训**：对「正在被并行修改的文件」做 grep 断言，必须**记录取数时点**，否则结论可能在数分钟内失效（本条并入 `DEC-023` 同一族纪律：**迭代内的事实断言具有时效性**）。
+3. **上表 1–4 全部属实且已修复**（主管复核确认）：`bookAdd` 去重已按 `(word, itemLang)`（`:186-188`）· `bookRemove` 只删指定语言（`:206-213`）· `bookUpdate` 按语言映射（`:215-224`）· **`lookup` 的 `inBook` 已按语言判定**（`:148-153`）。**本 agent 新发现的第 4 处（跨语言误报「已收藏」）是本轮最有价值的一项**。
+4. **§9.2 末「是否构成硬障碍 —— 是」的结论应改为**：**T38 时点成立，T40 时点已解除**（四处全修）。
+
+**是否构成 AC-16⑤⑥ 的达成障碍 —— 是，且是硬障碍**：AC-16⑤ 要求「`localStorage` 路径同样隔离」，而 1–3 三处**均为「按 word 单键」的读写**，在浏览器模式下**任何两语言同形词都会互相破坏**（且 1 会静默丢数据：新条目不入库）；AC-16⑥ 要求「旧条目按 `isCyrillic` 归语言且只迁移一次」，当前**连 `lang` 回填都没有** ⇒ ⑥ 直接不成立。**判定方式建议收紧**（否则 D20 的文本契约无法机械判定）：AC-16⑤ 应明确「**必须在 `api.ts` 层实现隔离**（`bookList(lang?)` / `bookRemove(word, lang?)` / `bookUpdate` 按 `(word, lang)` 匹配 / `inBook` 叠加带 `lang`）」，而不是「UI 层内存过滤」。**注**：AC-13 的判定式（合成词 + core 函数）**不受此影响**——core 层已达标；缺口**只在浏览器后端**。
+
+### 9.3 口径复核：AC-18 的「506」与两条独立命令
+
+**主管的判定正确**：**506 是「跨命令合计」口径**（core 484 + desktop 22），而判定命令是**两条独立命令** ⇒ 单条命令的可比数分别是 **`484+N1`** 与 **`22+N2`**（§8.4 已如此写）。
+**我建议 AC-18 第 1 条加一句口径说明**（否则后来者可能在单条命令上要求 506 而误判失败），并在条内给出**两个数各自的来源**：
+> 「**既有 506 = core 484 ＋ desktop 22**；**两条命令分别判定，不得跨命令合并要求 506**。core 484 = regress 99 + lexicon 67 + related 38 + ru_morph 60 + ru_morph_d1fix 194 + ru_morph_d1guard 26。」
+**另一处需补责任方**：`N1` / `N2` 由**测试 agent 在回执中给出**（否则 AC-18 无法闭合 —— 判定式要两个实测数）。
+
+### 9.4 本 agent 另外发现的问题（主管清单外）
+
+| # | 类型 | 问题 | 建议 |
+| --- | --- | --- | --- |
+| **①** | ~~**缺省语义未定义（会导致 UI 删错语言）**~~ → **✅ 已定案（T40，裁决十九）** | ~~`bookRemove(db, word, lang?)` 缺省时走 `existingLangForWord()`（`index.ts:1060-1065`），其 SQL 为 `SELECT lang FROM book WHERE word = ? ORDER BY deleted ASC, updated_at DESC LIMIT 1` —— **按「未删除优先 + 最近更新」挑一条，而不是按语言**。而 **UI 侧确实不传 `lang`**：`apps/desktop/src/main.mjs:116 ipcMain.handle('book:remove', (_e, word) => …)`、`apps/web/src/components/ClipboardPopup.tsx:70 getBackend().bookRemove(detail.word)`。⇒ **同一 word 同时存在 en 与 ru 时，在俄语列表点「删除」可能删掉英语条**（取决于 `updated_at`）。AC-13⑤（墓碑保语言）在**显式传 lang**时成立，但**缺省路径未定义**~~ | **★ 原问题描述与实测全部成立**（主管复核确认）。**原建议（删全部语言 / 报错必传）→ 均未采用**；**主管裁定为第三案**：**核心保留可选 `lang`（向后兼容）＋ UI / IPC 一律显式传 `lang` ＋ 新增红线第 9 条**。理由：① 核心缺省已按 `existingLangForWord` 实现，主管探针 `scripts/probe_sup_book_migration.mjs` **22/0** 实测「只删一条、另一语言存活」，语义可用且不破老调用点；② 但该选择**不按语言**、属任意性 ⇒ **UI 不得依赖它**；③ **不选「删全部语言」**：破坏性是**方向相反**的做法（与用户「英俄分开」的迭代意图冲突）。**裁定已落** `REQ.md` AC-13 判定式 ⑦ ＋ §8.6 红线第 9 条 ＋ `DECISIONS.md`（裁决十九条目） |
+| **②** | **不可机械判定** → **✅ 已采纳（T40）** | AC-16⑥ 原写「**只迁移一次**」—— 若不引入迁移标记位，重复读取也会得到相同结果（**幂等**），「执行一次」**无法从外部判定**（只能观测结果不变）。**本 agent 的论证成立并已被采纳** | **AC-16⑥ 已改写为**：「**幂等**：已有 `lang` 的条目**不再改写**；无 `lang` 的旧条目回填后**再次读取结果不变**」（见 §8.2 AC-16⑥，T40 落盘） |
+| **③** | **判定方式未写明（可判定性不足）** → **✅ 已采纳（T40）** | AC-16⑤「`localStorage` 路径同样隔离」**未说明判定层**（`api.ts` 层 or UI 内存过滤） | **已明确为 `api.ts` 层**（见 9.2 末）并纳入 D20 契约断言 —— 机械判定载体 `scripts/check_v10_ui_contract.mjs` **块 C**（D18 localStorage 语言隔离）即为此而设 |
+
+**★ 9.4 补充：本 agent 的两项「须在动手前定案」全部被主管采纳，且其中一项（缺省删除语义）导致了新增红线。这是本轮三份回执中唯一直接改变实现约束的审计产出。**
+| **④** | **覆盖面缺口（低风险但应登记）** | `lang='ru'` 含拉丁的 **8 条**（§8.5 不做清单第 2 条）**不会被任何断言覆盖**；若 AC-12 的迁移测试只用手工夹具，则「真实数据里的异常 `lang` 值」无回归保护 | 登记为**已知盲区**（不影响达成）；下一次 `lang` 二值性清洗时再处理 |
+| **⑤** | **本 agent 自纠** | §8.1-C 原把 `inBook` 写成函数（`index.ts:587`）—— 实测它是 **`WordDetail` 的字段**（`types.ts:192`），SQL 为**内联**查询（现 `index.ts:623`，已按 `(word, lang)` 过滤 ✓） | 已在 §8.1-C 订正；此处留痕 |
+
+### 9.5 与主管缺口清单的核对
+
+**核对结论**：主管「实现层缺口清单」的方向与我的独立结论**一致**（core 层已做、UI/`localStorage`/测试/发布未做）。**我补充/收紧的部分**：① `localStorage` 缺口由 **3 处 → 4 处**（新增 `lookup` 的 `inBook` 叠加）；② **AC-12 的核验结论比预期更好** —— 主管要求的第 8 条（备份）**已实现**，且实现方**额外**加了「行数守卫」与「`DROP TABLE` 后重建索引」（这两点 AC 未要求）；③ **AC-15 无人验证**（主管清单未列，我标为 ⚪）；④ 新增 2 项**可判定性/语义**问题（9.4-①②）；⑤ §8.8 对照表（主管要求）已落盘。
+
+**★ T40 后续核对（主管实测补记）**：上述 ①–⑤ 中 —— ① **4 处全部属实且已全修**；③ **已由主管实跑补齐**（core 484/0 ＋ desktop 22/0 = **506/0 exit 0**）；④ **两项均被采纳**（①→**裁决十九**，②→AC-16⑥ 改「幂等」）；② 的「质量高于 AC」判断**保持**。**另**：本 agent 在 §9.1 AC-16/AC-17 的「未开始」判定**已被 T40 实测推翻**（两者均已实现）—— 见 §9.1 对应行与 9.2 订正，**原判定按 `DEC-014` 保留留痕**。
+
+### 9.6 审计结论与建议动作
+
+1. **AC-12 / AC-13（SQLite 层）/ AC-14 已由开发 agent 实现**，且**质量高于 AC 要求**（备份 + 行数守卫 + 索引重建 + 类型上强制 `lang`）⇒ 这三条**只差测试断言**（`book_lang.mjs` 块 A/B/C）。
+2. **真正的剩余工作量集中在 4 处**：① `api.ts` 的 4 处 word 单键 + 一次性迁移（AC-16⑤⑥）；② UI 语言子页签与独立计数（AC-16①②③④）；③ `RootClassPanel.tsx` 与面板接线（AC-17）；④ 测试接入与发布（AC-18/AC-19）。
+3. **必须在动手前定案的两件事**（否则会返工或产生不可判定项）：**9.4-①**（缺省 `lang` 的删除语义：UI 必须显式传 `lang` — 涉及 `main.mjs:116` 与 `ClipboardPopup.tsx:70`）· **9.4-②**（AC-16⑥ 由「只迁移一次」改为「幂等」）。
+4. **§5.1 探针登记**：本审计**未新增探针脚本**（全部用 grep/read 完成，符合 `DEC-022` 的「证据须可复核」：证据即**行号 + 符号名**，见 §8.8）。
+
+**★ T40 收口（2026-09-16，主管逐项复核后更新）** —— 上面 1–4 的**现状**：
+
+| # | T38 结论 | **T40 现状** |
+| --- | --- | --- |
+| 1 | AC-12/13/14 已实现，只差断言 | **核心成立**；**AC-18 断言仍未落地**（`packages/core/test/book_lang.mjs` **不存在** ⇒ 块 A/B/C 待测试 agent 交付） |
+| 2① | `api.ts` 4 处 word 单键 + 迁移未做 | ✅ **已全修**（`bookAdd:186-188` / `bookRemove:206-213` / `bookUpdate:215-224` / `inBook:148-153` / `readLocalBook:54-80`） |
+| 2② | UI 语言子页签与独立计数未做 | ✅ **已完成**（`BookPanel.tsx:45-65/78/94/145/164`） |
+| 2③ | `RootClassPanel.tsx` 与接线未做 | ✅ **已完成**（`RootClassPanel.tsx` 152 行 ＋ `App.tsx:19/12/354-355/229-231/277-278`） |
+| 2④ | 测试接入与发布未做 | ⏳ **仍未做**（AC-18 待 `book_lang.mjs`；AC-19 零 bump） |
+| 3① | 缺省删除语义待定案 | ✅ **已定案**（裁决十九 → `DEC-024`） |
+| 3② | AC-16⑥ 改「幂等」 | ✅ **已改写**（T40 落盘） |
+| 4 | 未新增探针 | **保持**；T40 期间新增的正式证据 = `scripts/probe_sup_book_migration.mjs`（主管，22/0）＋ `scripts/check_v10_ui_contract.mjs`（开发 agent，**53/0**），**均为正式路径、可直接引用**（符合 `DEC-022`） |
+
+**⇒ 本审计的核心价值不在于「列了多少缺口」，而在于其中两项直接改变了实现约束**：9.4-① 催生了**红线第 9 条 ＋ `DEC-024`**；9.4-② 使 AC-16⑥ 从**不可判定**变为**可判定**。**另**：本 agent 新发现的 `inBook` 跨语言误报（第 4 处缺口）是**用户可见错误的早期暴露点**（比 1–3 更早被用户看到），已被采纳并修复。
+
+---
+
+### 9.7 T40 / T43 修订记录（本 agent，2026-09-16）
+
+#### A. ★ 撤回记录（本 agent 一处结论被实测证伪；依 `DEC-014` 保留留痕）
+
+- **原判定（三处）**：「`apps/web/src/api.ts` **未引用 `isCyrillic`**（grep 命中 0 处）⇒ **D18 与 AC-16⑥ 未实现**」—— 落点原为 §9.1 的 AC-16 行、§9.2 第 5 行、§9 结论段。
+- **T40 实测证伪（本 agent 已独立复测确认）**：`api.ts:16 import { groupBookByMorphemeData, isCyrillic } from '@zidiankaifa/core';` · `:33` 注释（裸数组首次读取归语言并**立即写回一次** ⇒ 天然幂等）· `:37 BOOK_LOCAL_VERSION = 2` · `:45-47 inferLang`（`:46 return isCyrillic(word) ? 'ru' : 'en';`）· `:50 itemLang` · `:54-80 readLocalBook`（`:59 Array.isArray(parsed)` 判旧裸数组 / `:66 let migrated = legacyArray;`）· `:82-85 writeLocalBook` ⇒ **D18 已完整实现**。
+- **成因 = 取数时点早于开发 agent 的写入（时点差），不是审计方法有误**（主管 T40 判断，本 agent 接受）。**教训已入 §9.2 订正第 2 条**：对**正在被并行修改的文件**做 grep 断言，**必须记录取数时点**。
+- **同族第二例（T43，本 agent 亲历）**：`packages/core/src/db/index.ts` 在本轮作业期间 **1215 → 1249 → 1268 行** 连续漂移（详见 §8.8 表头警告）。
+
+#### B. T40 已落盘的修订（逐项，含落点）
+
+| # | 修订内容 | 落点 |
+| --- | --- | --- |
+| 1 | **AC-13 新增判定式 ⑦**（UI / IPC 一律显式传 `lang`；缺省回退仅作向后兼容）＋ **已否证候选两案留痕** | §8.2 AC-13 ⑦ |
+| 2 | **§8.6 红线新增第 9 条**（UI/IPC 不得依赖缺省 `lang`）—— 本 agent 原拟把 `App.tsx:78` 列为「已知未闭环点」，**主管 T40 已裁定其为有意例外**（Q7：跨语言状态判定，非列表展示读取；书面落 `scripts/check_v10_ui_contract.mjs:16-22`）⇒ 该条随裁定改写为「唯一登记例外」 | §8.6 第 9 条（`:988-990`） |
+| 3 | **AC-16⑥ 由「只迁移一次」改写为「幂等」**（采纳 §9.4-②） | §8.2 AC-16⑥ |
+| 4 | AC-16④⑤ 行号与实现状态更新（`:145` 手动覆盖 ✅ · `localStorage` 六处新行号 ✅） | §8.2 AC-16 |
+| 5 | AC-17①②⑤⑥ 由「未开始」更新为「已实现 ✅」（`type Panel` 5 个 · `RootClassPanel.tsx` 152 行 · 契约全链贯通 · 分层纪律注释在位） | §8.2 AC-17 |
+| 6 | §8.1-C 六行爆炸半径/锚点行号刷新到 T40 实测 | §8.1-C |
+| 7 | D16 / D18 / D19 / D20 / D21 行号与状态刷新（**D18 更正为「已实现」**） | §8.3 |
+| 8 | **§8.8 行号对照表全篇重扫**（含 index.ts 的 1249 → 1268 与 +19 说明、表头漂移纪律） | §8.8 |
+| 9 | §9.1 的 AC-12/13/15/16/17/18/19 行状态与证据刷新 | §9.1 |
+
+#### C. ★ 与主管 T43 表的实测不一致（2 处；以本 agent 复测值为准，依 `DEC-023` 以符号名判定）
+
+1. **`upsertBook` / `ON CONFLICT(word, lang)`**：主管表记 `:1067` / `:1072`（并注明「位于修复点之前故不变」）；**本 agent 实测 = `:1086` / `:1091`**。理由：T41 新增的 19 行插在 `index.ts:182` 段内，而 `upsertBook` **在其之后** ⇒ 必然 +19；且主管表**自身**把 `BOOK_DEFAULT_LANG` 记为 `:1072` ⇒ 「`ON CONFLICT` 仍在 `:1072`」与表内其他行**自相矛盾**（同一行号不能属于两个符号）。
+2. **备份段锚点**：主管表记「备份语义块 `:173` 起 / `const bak` `:201` / `copyFileSync` `:203`」；**本 agent 实测 = 语义注释 `:182-188` · `const bak` `:180` · `wal_checkpoint` `:189` · `copyFileSync` `:201`**。（主管表的另外 12 行 +19 值**全部与实测吻合**，仅上述两处需订正。）
+
+#### D. ★ 新发现（本 agent，T43 复测附加）
+
+`packages/core/src/db/index.ts:701` 存在**第二处 `inBook` 内联查询，且硬编码 `lang = 'en'`**：
+`inBook: !!db.prepare("SELECT 1 FROM book WHERE word = ? AND lang = 'en' AND deleted = 0").get(matched)`（对照 **`index.ts:642` 的正确写法** `... WHERE word = ? AND lang = ? AND deleted = 0`）。
+**风险**：若该代码路径可达，则「俄语词是否已收藏」会被**按英语条**判定 —— 与 §9.2 第 4 处缺口（`lookup` 的 `inBook` 叠加）**同族**。**本 agent 不写代码、不改源码，未追到其宿主函数** ⇒ **提请测试 agent 用夹具确认可达性**；若可达，应作为 **v0.10.0 的正确性缺陷**处理（优先级高于 UI 打磨，依 `DEC-002`）。
+
+#### E. 未落盘 / 不应由本 agent 落盘的部分（如实登记）
+
+1. **`roots_ru.json` 的四条 `origin` 订正**：**只登记不改 JSON**（T43 红线：数据文件由主管落库）⇒ 落点 = 本文件 **§8.9**。
+2. **AC-18 的 `N1` / `N2`**：以**主管实测**为准（core 484→**582**、desktop **22** ⇒ 合计 **604**）；**本 agent 本轮未运行任何测试命令**（审计不跑测试是本 agent 的既定边界，见 §9 引言）。
+3. **`apps/desktop/src/dbmigrate.mjs` 的行号**（`:14 / :40 / :85`）：**T40/T43 均未重测**，沿用 T38 值 —— 该文件不在本轮 `git status` 的已修改清单内（可视为未变，但**未逐字复核**）。
+4. **§9.6 的「T40 收口」表第 1 行**（记「AC-18 断言仍未落地 / `book_lang.mjs` 不存在」）**已被 T43 推翻**：该文件**已落地并已加链** ⇒ 读该表时以 **AC-18 行 + §8.3-D21** 为准（原记录按 `DEC-014` 保留）。
+
+#### F. T45 修订记录：AC-12⑨ 由「方案 A」改为 `VACUUM INTO` ＋ 后置校验（裁决二十一；本 agent **T47** 落盘）
+
+**一、改动原因（一句话）**：方案 A（先 `wal_checkpoint(TRUNCATE)` 再复制）**自己引入了一条降级路径** —— checkpoint 遇并发读者/写者返回 `busy !== 0` ⇒ 只能放弃迁移；而「放弃迁移」意味着库仍是 `PRIMARY KEY (word)`、`upsertBook` 的 `ON CONFLICT(word, lang)` 无法匹配任何约束 ⇒ 实测 `bookAdd` / `bookRemove` / `bookUpdate` **4/4 全部抛** `ON CONFLICT clause does not match any PRIMARY KEY or UNIQUE constraint`，而 `bookList` / `bookListAll` **正常** ⇒ 生词本表现为「**能打开、列表正常、但一条也加不进去**」的**静默故障**（叠加 en/ru 同形词互相覆盖的静默语义错误）。`VACUUM INTO` 在单个读事务内完成，**要么得到一致快照、要么抛错**，不含「checkpoint 未并回」分支 ⇒ 从根上消除该触发条件。**⇒ 本 agent T43 的反对意见第 1 条被采纳，且实测后果比本 agent 的推定（「写入失败」）更严重 —— 它是「静默」的。**
+
+**二、影响面：要改的断言（逐条）**
+
+| 断言 | 原口径（T41/T43） | **T45/T47 新口径** | 依据 |
+| --- | --- | --- | --- |
+| 块 A **A25** | 「注入故障 ⇒ 不向外抛」 | **保持**（自愈路径下确不抛） | 裁决二十一③ |
+| 块 A **A26** | 「迁移失败后 `book` 仍是老结构 `["word"]`」 | **反转**为「残留 `book_new` ⇒ **自愈后迁移成功**」（主键 `["word","lang"]` ∧ 残留已清除 ∧ 数据保真） | 同上 |
+| 块 A **A28** | 「迁移即已先落备份，备份数 === 1」 | 「**备份数 ≥ 1 ∧ 每个备份皆为迁移前形态的一致性快照**」（逻辑等价 ＋ 备份内主键仍 `["word"]`）；**实测数 = 2** | 同上 |
+| 块 A **新增** | — | **无法自愈的迁移失败 ⇒ `openDatabase` 抛错 ∧ 消息含 `复合主键`**（**须限定夹具**：上游锁定类消息为 `database is locked`） | ② |
+| 块 E **E6 / E20** | 「备份与主库**逐字节相等**」 | **反转**为「逐字节`不`相等」（守卫未被换回 `copyFileSync`） | ④ |
+| 块 E **E15** | 「持未结束读事务 ⇒ `busy !== 0` ⇒ 放弃迁移」 | **反转**为「同场景下迁移**仍成功**」（不抛错 · 主键复合 · 备份数 1 · 无警告） | ① |
+| 块 E **E11–E14** | 变体补丁靶点 = 删 `wal_checkpoint` | 靶点改为 **`VACUUM INTO` ⇒ `fs.copyFileSync`** | 机械连带 |
+| 块 A **A14 / A29 文本** | A29 观察文本写「备份实现 = 先 checkpoint 再 copyFileSync」；A14 注释写「备份头里仍写着 `journal_mode=wal`」 | **两处均已过期**：A29 文本须同步；**A14 注释与实测不符**（`VACUUM INTO` 备份头偏移 18/19 = `[1,1]` / `journal_mode=delete` ⇒ **不生成** `-wal`/`-shm` sidecar） | 本 agent T47 实测 |
+
+> **注**：上表「反转」项的**期望值**已由本 agent 用辅证脚本独立取得（`-wal` **8,272 B** / 写连接保持打开 / 另一连接持未结束读事务 ⇒ `PRAGMA wal_checkpoint(TRUNCATE)` = **`{busy:1, log:2, checkpointed:2}`**，而当前实现迁移成功 · 备份数 **1** · 主键 `["word","lang"]`），**可供 T46 直接采用**（依 `DEC-022`，辅证脚本本身**不作**证据来源）。
+
+**三、门禁现状（T47 独立复跑，与主管 T45 实测一致）**：`node packages/core/test/book_lang.mjs` ⇒ **结果：112 通过 / 9 失败（共 121 条断言）exit 1**；失败项 = **A26 · A28 · E6 · E11 · E12 · E13 · E14 · E15 · E20**（**9 条全部是行为变更造成的预期回归**，无未预期缺陷）；desktop **22 / 0**。⇒ §8.3-D21 / §8.4 的「core **582**」**暂不成立**（须待 T46 改毕后由主管复测重述）—— **本次不擅自改写 D21 的达成态数字**（避免第二次口径漂移）。
+
+#### G. T47 未落盘部分（如实登记）
+
+1. **AC-12⑨ 的四条异议**（见 §8.2 AC-12⑨「★ T47 提请」）：**只登记、不擅自改判定** —— 是否采纳「把后置校验上移到 `openDatabase()`」、是否为 ② 增列「**失败必须用户可见**」这一达成条件，**须主管裁定**；本 agent **未改 `packages/**` 一行**。
+2. **块 E 的 7 条红 ＋ A26 / A28**：**由测试 agent 的 T46 改写**（`packages/core/test/book_lang.mjs` 归测试 agent 独占，本 agent **不写测试文件**）。
+3. **§8.3-D21 / §8.4 的「core 582」**：**未改**（须待 T46 完成后由主管复测给出新的 `N1`；本次只登记 112/9 的现状）。
+4. **`apps/desktop/src/main.mjs` 的失败呈现**：**未改**（属开发/主管范围）；本 agent 只登记 `:304-305` 无 `try/catch` 的事实，以及 `packages/core/src/db/index.ts:303-304` 注释与磁盘现状不符。
+5. **辅证脚本 `.board/_tmp/probe_t47_backup_fail.mjs`**：**未删除，也未被引用为证据来源**（依 `DEC-022`）；正式复核须由测试 agent 在 `book_lang.mjs` 内固化为断言。
+6. **`roots_ru.json` 四条 `origin` 订正（§8.9）**：仍待主管落库（自 T43 起未变）。
+
+**变更记录（追加）**：2026-09-16 **T40/T43 修订** —— AC-13⑦ · 红线第 9 条 · AC-16⑥ 改写 · AC-17 状态更新 · D16~D21 刷新 · **§8.8 全篇重扫（index.ts 1215→1249→1268）** · **§8.9 新增（`roots_ru.json` origin 订正登记 4 条）** · §9.1 状态刷新 · **§9.7 新增（撤回记录 + 与主管表的 2 处不一致 + 新发现 `index.ts:701`）**。
+
+**变更记录（追加）**：2026-09-16 **T45/T47 修订（裁决二十一）** —— **AC-12⑨ 改写为四条判定式**（① 备份用 `VACUUM INTO` 无 `busy` 分支 · ② 后置校验失败即抛错、消息含 `复合主键` · ③ 残留 `book_new` 清除后**有界**重试一次 · ④ 备份断言改为**逻辑内容等价**并保留**反向字节断言**；T41/T43 原文按 `DEC-014` 保留留痕）· **块 A 断言要求同步**（A25/A26/A28 口径反转 ＋ 新增「无法自愈 ⇒ 抛错」断言 ＋ 块 E 连带清单）· **§8.8 第四次刷新**（`packages/core/src/db/index.ts` **1268 → 1331 行 / 55,263 B**；回落规则 = 函数之后 **+63** / 函数体内 **+30**；12 处符号实测吻合；旧锚点 `wal_checkpoint` / `copyFileSync` **作废**）· **§9.1 AC-12 行刷新**（⑨ 改为 T45 口径）· **§9.7 新增 F/G**（T45 影响面逐条 ＋ T47 未落盘登记）。
+
+---

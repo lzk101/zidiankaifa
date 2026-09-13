@@ -65,11 +65,13 @@ export default function ClipboardPopup({
 
   const toggleBook = async () => {
     if (!detail) return;
+    // v0.10.0：按 (word, lang) 操作 —— 弹窗里的词条语言由 i18n 决定，缺省英语
+    const lang = detail.i18n?.lang ?? 'en';
     try {
       if (detail.inBook) {
-        await getBackend().bookRemove(detail.word);
+        await getBackend().bookRemove(detail.word, lang);
       } else {
-        await getBackend().bookAdd(detail.word);
+        await getBackend().bookAdd(detail.word, [], lang);
       }
     } catch {
       // 忽略

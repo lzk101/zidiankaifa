@@ -1,0 +1,12 @@
+# 行尾归一 —— 目的：避免「脚本重写数据文件」产生整文件级 diff 噪声
+#
+# 背景（v0.9.0 实测）：`packages/data-pipeline/roots_ru.json` 只新增 9 条词素，
+# 但 `git diff --numstat` 报出 5304 增 / 5188 删（≈ 整文件按行重写）。
+# 逐条按 (kind, morpheme) 比对确认：真实改动 = 9 条新增 / 0 删除 / 0 字段改动
+# ⇒ 该 10,492 行全部是 **行尾翻转噪声**，会显著放大「逐条复核来源链接」的成本。
+# 根因：Node 脚本（`scripts/apply_v9_morphemes*.mjs`）写 JSON 时不显式指定行尾，
+# 与仓库既有行尾不一致，而仓库此前**没有 .gitattributes**，无任何归一规则。
+#
+# 处置：仅对「会被数据管线脚本重写」的 JSON 显式锁 LF —— 最小范围，避免波及已跟踪文本文件。
+*.json          text eol=lf
+*.json.bak*     -text
