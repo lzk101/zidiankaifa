@@ -110,6 +110,13 @@ pnpm --filter @zidiankaifa/desktop build
 ```
 （`scripts/build_web_nospawn.mjs` 是为此写的内联配置绕行脚本，能过配置阶段，但**仍会**在 `vite:build-html` 处失败，故保留作诊断用。）
 
+**⚠ goal（长期目标）工具的边界（已实测，勿重复试探）**
+- `update_goal` 的 `edit` / `pause` / `resume` **只允许在人类回合（direct human turn）执行**；
+  在目标轮（goal_round）内调用报 `Error: this goal operation requires a direct human turn on a top-level agent`。
+- **经 `ask_user_question` 获得的用户选项答复不算人类回合**——试过，同样被拒。
+- ⇒ 需要改 goal 口径时，**让用户亲自发一条普通消息**，不要重试工具调用。
+- `complete` / `blocked` 在自动续跑轮内是允许的；`blocked` 另要求同一阻塞条件持续 ≥3 轮。
+
 **Playwright / 浏览器**
 - 搜索框是 React 受控组件：`browser_fill` **必须先填空字符串再填值**，否则值被回滚。
 - 页面有两个 `.search-input`（header + main），用 `css=.search-input >> nth=1`。
