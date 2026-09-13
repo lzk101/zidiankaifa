@@ -28,3 +28,14 @@ packages/data-pipeline/_ru_etym_stats.json
 data/db/*_backup*.json
 
 _serve_static.mjs
+
+# ---- 临时工作目录（结构性防误提交）----
+# 背景：v0.8.0 发布时 `git add scripts/` 与 `git add .board/` 曾把临时探针一并暂存
+# （.board/_tmp/ 下 11 个文件已误提交进 4c89272，后由 55f8745 移除）。
+# 项目惯例是**工作区保留、不入 git**（与上面的 _serve_static.mjs 同模式）。
+_tmp/
+.tmp/
+# agent 工具产生的随机临时目录，形如
+#   scripts/.probe_t20_prefixfamily.mjs.82276.57378a70-aa46-....tmpdir/
+*.tmpdir/
+
