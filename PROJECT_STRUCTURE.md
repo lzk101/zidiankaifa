@@ -2,7 +2,7 @@
 
 > **本文件是「文件放哪儿、能不能改、是死是活」的唯一指针。**
 > 权威数值不在这里（在 `.board/BASELINE.md` §4 与 `docs/交接文档.md` §5），环境坑不在这里（在 `AGENTS.md` §3）。
-> 整理时间：`2026-09-16` · 对应版本 **v0.10.0** · HEAD **`041c6e7`**（+ `7a5c653` / `04deb37` / `c6dcbdd`）· 15 个 tag
+> 整理时间：`2026-09-16`（T55 后订正）· 对应版本 **v0.10.0** · HEAD **`2a796c9`**（T55 结构快检裁决；此前 `05788be` / `224ce73` / `d558aa0`）· 15 个 tag
 > 维护纪律：**结构变更（新增顶层目录、移动文件、改归属）必须同步本文件；行数/计数类数字以实测为准并写明口径。**
 
 ---
@@ -16,9 +16,9 @@ zidiankaifa/
 │                   docs/（交接文档 · 需求总结 · release-*.md）· .board/（多 agent 台账）
 ├── 💻 代码 ─────── packages/core（数据层） · packages/data-pipeline（数据管线）
 │                   apps/web（React 前端） · apps/desktop（Electron） · apps/sync-server（同步服务）
-├── 🔧 工具 ─────── scripts/（158 个只读探针/实验台，**不是产品代码**）· _serve_static.mjs（UI 验证）
+├── 🔧 工具 ─────── scripts/（**135** 个只读探针/实验台，**不是产品代码**）· _serve_static.mjs（UI 验证）
 ├── 📦 数据 ─────── data/raw（源数据 2.93 GB）· data/db/dict.db（**494 MB，冻结，不入 git**）
-└── 🗑 产物/缓存 ── dist-release/（安装包 5.49 GB ⛔ 已越额度）· node_modules · .pnpm-store · .electron-cache · .eb-cache
+└── 🗑 产物/缓存 ── dist-release/（安装包 **0.652 GiB / 8 文件 ✅ 额度内** —— T55 已清 12 个历史版本）· node_modules · .pnpm-store · .electron-cache · .eb-cache
 ```
 
 **三条最容易被新人踩错的**：
@@ -39,14 +39,14 @@ zidiankaifa/
 | `apps/web/` | **产品代码** | ✅ 26 文件 | 开发 agent | React 18 + TS + Vite，**手写 CSS**（无 UI 库） |
 | `apps/desktop/` | **产品代码** | ✅ 7 文件 | 开发 agent | Electron 壳 + 词库升级/迁移 + 自动更新 |
 | `apps/sync-server/` | **产品代码** | ✅ 5 文件 | 开发 agent | Node http，端口 4570；读 `dist`，**不热更新** |
-| `scripts/` | **只读工具 + 历史留痕** | ✅ 133 文件 | 各角色自建、只读他人 | 见 §3 —— **产品代码不在这里** |
-| `.board/` | **多 agent 台账** | ✅ 9 文件 | **按文件分角色** | 见 §4 |
+| `scripts/` | **只读工具 + 历史留痕** | ✅ **135** 文件 | 各角色自建、只读他人 | 见 §3 —— **产品代码不在这里**；**无任何 tracked 子目录文件 ⇒ 顶层 ≡ 递归** |
+| `.board/` | **多 agent 台账** | ✅ **14** 文件（**顶层 9 个 `.md`** + `roles/` 3 + `structure/` 2） | **按文件分角色** | 见 §4 |
 | `docs/` | **人读权威文档** | ✅ 7 文件 | 需求管理 agent | 见 §5 |
-| `data/` | **数据与产物** | 仅 `.gitkeep` | —— | 见 §7（3.8 GB，全部 gitignore） |
-| `dist-release/` | **打包产物** | ❌ gitignored | —— | 见 §8（4.7 GB 历史安装包） |
+| `data/` | **数据与产物** | 仅 `.gitkeep` | —— | 见 §7（3.67 GB，全部 gitignore） |
+| `dist-release/` | **打包产物** | ❌ gitignored | —— | 见 §8（**0.652 GiB / 8 文件** —— T55 已清 12 个历史版本 ＋ `win-unpacked/`） |
 | `node_modules/` `.pnpm-store/` `.electron-cache/` `.eb-cache/` | 依赖与缓存 | ❌ | —— | 可删可重建 |
 
-**已核验的入库计数**（`2026-09-16` 实测）：`git ls-files` 共 **245** 个文件 = `scripts/` **133** + `packages/` 43 + `apps/` 38 + `.board/` 9 + `docs/` 7 + 根目录 15。
+**已核验的入库计数**（`2026-09-16` 实测，T55 后）：`git ls-files` 共 **253** 个文件 = `scripts/` **135** + `packages/` 43 + `apps/` 38 + `.board/` **14** + `docs/` 7 + `data/` 1（`.gitkeep`）+ 根目录 15。
 
 **门禁现状**（结构整理后复跑确认）：`pnpm --filter @zidiankaifa/core test` → **core 621 通过 / 0 失败 exit 0**；`pnpm --filter @zidiankaifa/desktop test` → **22 通过 / 0 失败 exit 0** ⇒ 合计 **643 / 0**。
 
@@ -78,7 +78,7 @@ zidiankaifa/
 
 ---
 
-## 3. `scripts/` — 133 个文件的性质与保留策略
+## 3. `scripts/` — **135** 个文件的性质与保留策略
 
 > **定位：全部是只读工具/历史留痕，不是产品代码。** 产品逻辑一律在 `packages/` 与 `apps/`。
 > 命名前缀原本用于区分作者与阶段 —— 但**发生过一次编号返工**（`T35` 重号），故**按前缀分类只作导航，不作权威**。
@@ -91,7 +91,7 @@ zidiankaifa/
 | `exp_*` | 29 | 开发 agent | 实验台（复刻引擎 + 机制判别） | 保留 |
 | `out_*` | 10 | 各 agent | **输出快照**（`.txt`/`.json`，约 0.9 MB） | 保留（报告引用它们） |
 | `apply_*` | 2 | 主管 | 一次性落库脚本（v0.9.0 词素） | **不得重跑**（已落库，重跑会重复写入） |
-| 无前缀 | 2 | 主管 | **活跃工具** ↓ | 长期维护 |
+| 无前缀 | **4** | 主管 | **活跃工具** ↓（T55 新增 `audit_text_health.mjs` · `fix_readme_l144_corruption.mjs`） | 长期维护 |
 
 **两个活跃工具（唯一需要维护的）**：
 - `scripts/check_v10_ui_contract.mjs` — UI 文本级契约检查（**53 通过 / 0 失败**；`REQ.md` AC-16/AC-17 的机械判定入口。块 F 为条件式：`book_lang.mjs` 未加链时只 warn）
@@ -114,17 +114,21 @@ zidiankaifa/
 
 ---
 
-## 4. `.board/` — 多 agent 文件中枢（9 个文件 · 约 0.9 MB）
+## 4. `.board/` — 多 agent 文件中枢（**顶层 9 个 `.md`** · tracked **14** 文件 · 约 1.0 MB）
 
 | 文件 | 行数 | **独占写者** | 内容 |
 |---|---|---|---|
-| `BASELINE.md` | 87 | **主管** | 冻结基线：HEAD/测试/词库指纹 + **三把尺子口径表 §4** |
-| `TASKS.md` | 951 | **主管** | 调度板：任务派单、阶段门、熔断记录、裁决索引 |
-| `BOARD.md` | 2432 | **主管**（各 agent 只能**追加自己的小节**，R6） | 议题板：历代裁决（裁决一…二十一） |
+| `BASELINE.md` | 111 | **主管** | 冻结基线：HEAD/测试/词库指纹 + **三把尺子口径表 §4** + §7 结构预算（T55 订正） |
+| `TASKS.md` | 1109 | **主管** | 调度板：任务派单、阶段门、熔断记录、裁决索引（§11.9/§11.10 = T55 裁决） |
+| `BOARD.md` | 2508 | **主管**（各 agent 只能**追加自己的小节**，R6） | 议题板：历代裁决（裁决一…二十一）＋ 结构 agent 区 |
 | `REQ.md` | 1336 | **需求管理 agent** | 需求与验收标准（`REQ-V9-001`/`REQ-V10-001`；§8 = v0.10.0 的 AC-12…AC-19 / DoD / 不做清单 / 红线 / 行号对照） |
 | `DECISIONS.md` | 672 | **需求管理 agent** | 决策台账 `DEC-001 … DEC-027` |
 | `EVIDENCE.md` | 2451 | **测试 agent** | 独立验证证据链（§1–§45） |
 | `CHANGELOG.md` | 179 | **需求管理 agent** | 迭代变更记录 |
+| `STRUCTURE.md` | 321 | **结构管理 agent** | 结构台账：九项体检实测 · 清理记录 · 越线提请（T55 首轮快检 §0–§15） |
+| `agents.md` | 199 | **结构管理 agent** | **agent 登记册**：受保护名单 4 · 临时 agent 回收判定 · 异常分类 · 处置建议（委任书 §14） |
+| `roles/*.md` | dev 71 / test 89 / **structure 261** | 各自 | 三份委任书；**structure-agent.md §14 = agent 结构管理** |
+| `structure/*.mjs` | 2 个只读工具 | **结构管理 agent** | `classify_mece.mjs`（§7 档位 MECE 校验）· `scan_dead_refs.mjs`（死引用扫描）；**须在仓库根运行** |
 | `roles/dev-agent.md` | 5.1 KB | 开发 agent | 开发委任书（独占写 `src/`，**不可改测试断言**） |
 | `roles/test-agent.md` | 5.6 KB | 测试 agent | 测试委任书（**绝不改 `src/`**） |
 | `inbox/` | 空 | —— | 预留 |
@@ -185,11 +189,11 @@ zidiankaifa/
 
 ---
 
-## 8. 产物与缓存（**合计约 7.5 GB**，均可安全删除 / 重建，全部 gitignore）
+## 8. 产物与缓存（**T55 清理后约 1.9 GB**，均可安全删除 / 重建，全部 gitignore）
 
 | 路径 | 体量 | 可否删 | 备注 |
 |---|---|---|---|
-| `dist-release/` | **5.49 GB / 121 文件** | ⚠ **见下** | 构成：**顶层 44 个**（v0.2.0–v0.10.0 的 `nsis` + `portable` 安装包 + `.blockmap` + 当前 `latest.yml`）= **4.70 GB**；**`win-unpacked/` 77 文件 = 0.79 GB**（electron-builder 的免安装展开目录，可直接删） |
+| `dist-release/` | **0.652 GiB / 8 文件** ✅ **额度内** | ✅ 已按 §3.1② 清理完毕 | **T55 已删**：12 个历史版本（v0.2.0/0.2.1/0.3.0/0.4.0–0.4.4/0.5.0/0.6.0/0.7.0/0.7.1）各 3 件套 = **36 文件 / 4,345,641,661 B** ＋ `win-unpacked/` **77 文件 / 853,615,479 B** ⇒ 5,899,319,384 B → **700,062,244 B**（实测逐字节一致）。**保留 8 件**：v0.10.0 三件套 ＋ v0.9.0 三件套 ＋ `latest.yml` ＋ `builder-debug.yml` —— 依据：**自动更新走 GitHub Release 的 `latest.yml`，不读本地 `dist-release/`**（`apps/desktop/package.json:67-73` `publish.provider=github`），全部历史 exe 已在 `https://github.com/lzk101/zidiankaifa/releases` |
 | `node_modules/` | 0.45 GB | ✅ `pnpm install` 重建 | |
 | `.pnpm-store/` | 0.65 GB | ✅ | pnpm 内容寻址存储（`.gitignore` 已覆盖） |
 | `.electron-cache/` | 0.12 GB | ✅ | electron 二进制缓存；重打包会重新下载（打包三件套见 `AGENTS.md` §3） |
@@ -239,7 +243,7 @@ zidiankaifa/
 
 **与既有字节普查的分工**：字节健康（控制字符 / 行中 CR / CR+BEL 同行）由 `scripts/audit_text_health.mjs` 覆盖（§3 已登记），结构 agent **复用不重复实现**；它负责的是结构维度（文件数 / 体量 / 额度 / 分类 MECE / 引用完整性）。
 
-**§8 的一条已知越线**：`dist-release/` 实测 **5.49 GB（递归 121 文件）** vs 额度 1.5 GB。已核实自动更新走 GitHub Release 的 `latest.yml`（`apps/desktop/package.json:67-73` `publish.provider=github`），**不读本地目录** ⇒ 历史包可安全清理，清理清单由结构 agent 首轮产出后报主管核准。
+**§8 的一条历史越线 —— ✅ T55 已消解**：`dist-release/` 曾实测 **5.49 GB（递归 121 文件）** vs 额度 1.5 GB；T55 已按 §3.1② 清理历史包，**现为 0.652 GiB / 8 文件（额度内）**。已核实自动更新走 GitHub Release 的 `latest.yml`（`apps/desktop/package.json:67-73` `publish.provider=github`），**不读本地目录** ⇒ 历史包可安全清理，清理清单由结构 agent 首轮产出后报主管核准。
 
 ---
 
@@ -251,6 +255,7 @@ zidiankaifa/
 | 2026-09-16 | 清理 `.tmp/` · `.pip-tmp/` · `.gh-config/` · `.board/_tmp/` · `scripts/_tmp/`（含 1925 文件 / 88 MB 的临时 dist 副本）· `.board/._append16.tmp.md.*.tmpdir/`（全部 gitignored，**未触及任何已跟踪文件**） | 同上 |
 | 2026-09-16 | **修复 README.md:144 字节损坏**：该行原含 `CR(U+000D) + BEL(U+0007)` 混入（西里尔词被按错误码位写入），已还原为 `корни(476) / аффиксы(403)`；修复脚本 `scripts/fix_readme_l144_corruption.mjs`（保留，可复核） | 同上（普查中意外发现） |
 | 2026-09-16 | 订正 README 过期数字：词素库 `909（468/441）` → **918（468/450）**；测试 `204 项` → **643 项**；Roadmap 补 v0.10.0 竣工条目、原「v0.10.0 计划」改为 **v0.11.0 计划**；§目录结构 补 `.board`/`docs`/`scripts`/`dist-release` 并指向本文件 | 同上 |
+| 2026-09-16（**T55 事实性订正**） | 本文件 9 处数字与实测不符，全部按实测订正（**仅事实，未改架构与归属**）：① `scripts/` **158 → 135**（§0 图 · §1 表 · §3 标题；且 `scripts/` **无任何 tracked 子目录文件 ⇒ 顶层 ≡ 递归**）② 已跟踪 **245 → 253** = `scripts/` 135 + `packages/` 43 + `apps/` 38 + `.board/` 14 + `docs/` 7 + `data/` 1 + 根 15 ③ `.board/` **9 个文件 → 顶层 9 个 `.md`（tracked 14**，含 `roles/` 3 · `structure/` 2）④ `.board/` 行数 **BASELINE 87→111 · TASKS 951→1109 · BOARD 2432→2508** ⑤ `dist-release/` **5.49 GB/121 文件 → 0.652 GiB/8 文件**（T55 已按 §3.1② 清 36 个历史包 ＋ `win-unpacked/`，实测 5,899,319,384 → 700,062,244 B）⑥ §3 前缀表 **无前缀 2 → 4** ⑦ 新增台账行：`STRUCTURE.md` 321 · `agents.md` 199 · `roles/structure-agent.md` 261 · `structure/*.mjs` 2 ⑧ HEAD `041c6e7` → **`2a796c9`** ⑨ §8 越线标注改为「✅ 已消解」 | 结构 agent T55 首轮快检 + 主管 `2a796c9` 授权订正 |
 | 2026-09-16 | 新增只读普查脚本 `scripts/audit_text_health.mjs`（控制字符 + 旧口径残留抽查） | 同上 |
 | 2026-09-16 | 门禁复跑确认：**core 621/0 + desktop 22/0 = 643/0**（结构整理零影响） | 同上 |
 | 2026-09-16 | 裁定根目录 4 个废弃文档**保留原位**（不迁 `docs/archive/`），理由见 §6 | 同上 |
