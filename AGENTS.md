@@ -16,8 +16,9 @@
 | 同步服务 | `apps/sync-server/src/index.ts` | Node http，端口 4570 |
 | 词库 | `data/db/dict.db` | ~494MB，**不入 git**（.gitignore） |
 
-**测试**：`pnpm --filter @zidiankaifa/core test` → 跑 `test/regress.mjs` + `test/lexicon.mjs` + `test/related.mjs` + `test/ru_morph.mjs` + `test/ru_morph_d1fix.mjs`（需本地 `data/db/dict.db`）。
-`ru_morph_defects.mjs`（缺陷台账，**留红即待办**）与 `ru_morph_goals.mjs`（迭代目标，允许 exit 2）**不接入** `pnpm test`，手动跑。
+**测试**：`pnpm --filter @zidiankaifa/core test` → 跑 `test/regress.mjs`(99) + `test/lexicon.mjs`(67) + `test/related.mjs`(38) + `test/ru_morph.mjs`(60) + `test/ru_morph_d1fix.mjs`(194) + `test/ru_morph_d1guard.mjs`(26)（需本地 `data/db/dict.db`）→ **core 484 / 0**；`apps/desktop/test/dbmigrate.test.mjs`(22) ⇒ **门禁 506 通过 / 0 失败**（v0.8.0 + V9-3 后）。
+⚠ **断言计数陷阱**：`ru_morph.mjs` 打印「回归护栏（…）：60 通过 / 0 失败」，**无「结果：」前缀**，用 `Select-String '结果：'` 会漏掉这 60 条。
+`ru_morph_defects.mjs`（缺陷台账，**留红即待办**；现 23 通过 / 33 失败 exit 1 = D2 3 + D4 6 + V9-2 24）与 `ru_morph_goals.mjs`（迭代目标，0/2 exit 2）**不接入** `pnpm test`，手动跑。
 
 ---
 
@@ -62,6 +63,13 @@
 - PowerShell 里 SQL 的 `COUNT(*)` 会被展开报错，用 `COUNT(1)`。
 - 中文路径/`@` 开头目录用 `-LiteralPath` 或先 `cd`。
 - `node:sqlite` 的 `DatabaseSync.prepare().all()` 返回**行对象**，不是数组。
+- ⚠ **`Measure-Object -Line` 不数空行**（本项目已第二次踩同类计数陷阱，第一次是漏数无「结果：」前缀的断言块）：
+  `.board/EVIDENCE.md` 被它数成 **1072** 行，真值 **1429** 行。**行数一律用换行符计数**：
+  ```powershell
+  $raw = [System.IO.File]::ReadAllText('<file>')
+  ($raw.ToCharArray() | Where-Object { $_ -eq [char]10 }).Count
+  ```
+  （`Get-Content -Raw` + `-split "\`n"` 里的反引号会中断 pwsh 解析，**勿用**。）
 
 **打包**（三件套必须同时给）
 ```powershell
