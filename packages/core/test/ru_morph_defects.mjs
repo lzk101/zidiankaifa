@@ -123,9 +123,9 @@ console.log('--- D3. 尺子 R 质量 KPI 报告（防止靠「跳过词根」冲
 
   let hit = 0;
   let deepSkip = 0; // 空洞 ≥3 字符 = 整个词根被跳过
-  let skip2 = 0; // 空洞 ≥2 字符（主管独立复核口径：175 词 / 72%）
-  let zeroHole = 0; // 零空洞（主管独立复核口径：37 词 / 4.7%）
-  let le1Hole = 0; // 空洞 ≤1（主管独立复核口径：69 词 / 8.7%）
+  let skip2 = 0; // 空洞 ≥2 字符（= 171 词 / 21.6%；⚠ 原记 175 为**过期值**，2026-09-16 复算订正）
+  let zeroHole = 0; // 零空洞（= 37 词 / 4.7%）
+  let le1Hole = 0; // 空洞 ≤1（= 67 词 / 8.5%；⚠ 原记 69 为**过期值**，2026-09-16 复算订正）
   for (const w of ruWords) {
     const parts = breakdownWord(db, w, 'ru');
     if (!parts.length) continue;
@@ -169,8 +169,15 @@ console.log('--- D3. 尺子 R 质量 KPI 报告（防止靠「跳过词根」冲
     `劣化 +${delta}：覆盖率可能是靠「跳过词根」刷出来的`,
   );
 
-  // 交叉核对主管独立复核的数字（probe_ru_gap_audit2.mjs），仅打印差异，不判红。
-  const XCHK = [['空洞≥2', skip2, 175], ['空洞≥3', deepSkip, 134], ['零空洞', zeroHole, 37], ['空洞≤1', le1Hole, 69]];
+  // 交叉核对独立复算的数字，仅打印差异，不判红。
+  // ⚠ 2026-09-16 账目订正：空洞≥2 对照值 175→**171**、空洞≤1 对照值 69→**67**。
+  //   原 175/69 属**过期值**，来源已如实记为「不明」（后置过滤法模拟旧行为只得 170/67，
+  //   因旧口径下 N 型词的 parts[0].start 由 1 变 0、并非整词缺失，后置过滤对 gapExplain 不等价）。
+  //   复算方式：`scripts/probe_t20_kpi_recount.mjs` 用**三种互相独立的方法**
+  //   （游程求和 / 算术法 词长−Σ片段长 / 位掩码法）逐词复算，791 词 0 分歧。
+  //   校验：238 个有拆解词中 空洞≥2=171、空洞≤1=67 ⇒ 171+67=238 **恰好分割** ✔
+  //   （≥3=134、零空洞=37 原本就正确，未改。）
+  const XCHK = [['空洞≥2', skip2, 171], ['空洞≥3', deepSkip, 134], ['零空洞', zeroHole, 37], ['空洞≤1', le1Hole, 67]];
   console.log('  与主管独立复核（第二实现）交叉核对：');
   for (const [name, mine, boss] of XCHK) {
     console.log(`    ${name.padEnd(8)} 我 ${String(mine).padStart(3)}  主管 ${String(boss).padStart(3)}  ${mine === boss ? '✅ 一致' : `⚠ 差 ${mine - boss}`}`);
