@@ -126,25 +126,47 @@ interface SuggestRow {
 /* ---------------- 打开 ---------------- */
 
 export function openDatabase(path: string): DatabaseSync {
-  const db = new DatabaseSync(path);
-  db.exec(SCHEMA_SQL);
-  // 迁移顺序不可颠倒：先 ADD COLUMN lang（老库没有该列），再升级为 (word, lang) 复合主键
-  migrateBookLang(db);
-  migrateBookCompositeKey(db);
-  // ★★ T48（采纳需求 agent T47 异议 1）：后置校验**必须放在这里**，不能放在 `migrateBookCompositeKey` 内。
+  // ★★ T61（P1）：本函数**任一步骤抛错时，必须先把刚建立的连接关掉再抛**。
   //
-  // 为什么：`migrateBookCompositeKey` 内部有**两条位于 try 内的早期 `return`**，会绕过该函数末尾的任何校验：
-  //   ① `:207` 取不到主库文件路径（如内存/共享库）⇒ `return`
-  //   ② `:236` 备份写不出（`SQLITE_FULL` 磁盘满 / `EACCES` 只读）⇒ `return`
-  // 这两条路径下 `book` 仍是 `PRIMARY KEY (word)`，而 `upsertBook` 用 `ON CONFLICT(word, lang)`
-  // ⇒ **4/4 写入全部抛** `ON CONFLICT clause does not match any PRIMARY KEY or UNIQUE constraint`，
-  //   而 `bookList`/`bookListAll` 正常 ⇒ 回到「能打开、列表正常、但一条也加不进去」的静默故障
-  //   （受控实验 scripts/_tmp/probe_sup_degraded_write2.mjs，夹具由 BOOK_COLUMNS_SQL 派生）。
-  // 放在本函数出口处，才对**所有**返回路径生效（含上述两条早期 return）。
-  assertBookCompositeOrThrow(db);
-  migrateAddColumn(db, 'word_etymology', 'lang', "ALTER TABLE word_etymology ADD COLUMN lang TEXT NOT NULL DEFAULT 'en'");
-  migrateAddColumn(db, 'morphemes', 'lang', "ALTER TABLE morphemes ADD COLUMN lang TEXT NOT NULL DEFAULT 'en'");
-  return db;
+  // 为什么：本函数在成功路径 `return db` 之前要先建连接，而中间有 3 条可能抛错的路径
+  // （`assertBookCompositeOrThrow`、两个 `migrateAddColumn`，以及 `db.exec(SCHEMA_SQL)`）。
+  // 原实现只有成功路径返回 ⇒ 抛错时这个 `DatabaseSync` **既不返回也不关闭**，调用方拿不到它、
+  // 也就无法关闭它。后果是**同一进程内**该库的 `.db` / `-wal` / `-shm` 三件套被锁到进程退出
+  // （实测 T60：`rename` = EBUSY、`unlink` = EPERM、目录 `rmSync` = EPERM；句柄生命周期 = 进程生命周期，
+  // 延迟重试 3 次 250/500/750 ms 仍 EPERM ⇒ 退避/重试无效）。
+  // 暴露面：长驻进程内**反复打开失败库**（潜在）；桌面端两个入口在抛错后立即 `dialog.showErrorBox` +
+  // `app.exit(1)`，进程即将退出 ⇒ 该路径上不可观测（故定级 P1，不是 P0，也不是用户数据风险）。
+  const db = new DatabaseSync(path);
+  try {
+    db.exec(SCHEMA_SQL);
+    // 迁移顺序不可颠倒：先 ADD COLUMN lang（老库没有该列），再升级为 (word, lang) 复合主键
+    migrateBookLang(db);
+    migrateBookCompositeKey(db);
+    // ★★ T48（采纳需求 agent T47 异议 1）：后置校验**必须放在这里**，不能放在 `migrateBookCompositeKey` 内。
+    //
+    // 为什么：`migrateBookCompositeKey` 内部有**两条位于 try 内的早期 `return`**，会绕过该函数末尾的任何校验：
+    //   ① `:207` 取不到主库文件路径（如内存/共享库）⇒ `return`
+    //   ② `:236` 备份写不出（`SQLITE_FULL` 磁盘满 / `EACCES` 只读）⇒ `return`
+    // 这两条路径下 `book` 仍是 `PRIMARY KEY (word)`，而 `upsertBook` 用 `ON CONFLICT(word, lang)`
+    // ⇒ **4/4 写入全部抛** `ON CONFLICT clause does not match any PRIMARY KEY or UNIQUE constraint`，
+    //   而 `bookList`/`bookListAll` 正常 ⇒ 回到「能打开、列表正常、但一条也加不进去」的静默故障
+    //   （受控实验 scripts/_tmp/probe_sup_degraded_write2.mjs，夹具由 BOOK_COLUMNS_SQL 派生）。
+    // 放在本函数出口处，才对**所有**返回路径生效（含上述两条早期 return）。
+    assertBookCompositeOrThrow(db);
+    migrateAddColumn(db, 'word_etymology', 'lang', "ALTER TABLE word_etymology ADD COLUMN lang TEXT NOT NULL DEFAULT 'en'");
+    migrateAddColumn(db, 'morphemes', 'lang', "ALTER TABLE morphemes ADD COLUMN lang TEXT NOT NULL DEFAULT 'en'");
+    return db;
+  } catch (e) {
+    // ★ T61：抛错前回收连接。**原错误必须原样抛出** —— `assertBookCompositeOrThrow` 的中文提示
+    // 是用户可见的（`apps/desktop/src/main.mjs` 捕获后 `dialog.showErrorBox`），
+    // 故 close 自身抛错**不得**覆盖原错误（吞掉它并继续抛原错误）。
+    try {
+      db.close();
+    } catch {
+      /* 关闭失败不掩盖原错误 */
+    }
+    throw e;
+  }
 }
 
 /**
