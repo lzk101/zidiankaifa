@@ -16,6 +16,8 @@
 | 同步服务 | `apps/sync-server/src/index.ts` | Node http，端口 4570 |
 | 词库 | `data/db/dict.db` | ~494MB，**不入 git**（.gitignore） |
 
+📁 **逐目录性质 / 写权限 / `scripts/` 133 个文件的分类 / 产物与缓存处置 / 命名与结构约定 ⇒ 见根目录 `PROJECT_STRUCTURE.md`（结构主文档）。** 本文件只管环境事实与规范，结构指针以那份为准。
+
 **测试**：`pnpm --filter @zidiankaifa/core test` → 跑 `test/regress.mjs`(99) + `test/lexicon.mjs`(67) + `test/related.mjs`(38) + `test/ru_morph.mjs`(60) + `test/ru_morph_d1fix.mjs`(194) + `test/ru_morph_d1guard.mjs`(26) + `test/book_lang.mjs`(137)（需本地 `data/db/dict.db`）→ **core 621 / 0**；`apps/desktop/test/dbmigrate.test.mjs`(22) ⇒ **门禁 643 通过 / 0 失败**（v0.10.0 后）。
 ⚠ **`book_lang.mjs` 不读 `data/db/dict.db`**（全程临时合成库），测的是 `packages/core/dist/` 构建产物 ⇒ **改 `packages/core/src/db/**` 后必须先 `pnpm --filter @zidiankaifa/core build`**，否则测的是旧实现（铁律 3）。
 ⚠ **旧口径 506 = core 484 + desktop 22**，而 core 484 = 99+67+38+**60**+194+26 —— 旧账本一度**漏了 `ru_morph.mjs` 的 60**，系本项目第 5 次同类计数陷阱。
@@ -132,6 +134,16 @@ $env:ZIDIANKAIFA_DB='D:\lzk17\Documents\zidiankaifa\data\db\dict.db'; node apps/
 **Playwright / 浏览器**
 - 搜索框是 React 受控组件：`browser_fill` **必须先填空字符串再填值**，否则值被回滚。
 - 页面有两个 `.search-input`（header + main），用 `css=.search-input >> nth=1`。
+
+**⚠ 文本文件存在字节损坏风险（2026-09-16 实测，已修复一处）**
+- `README.md:144` 曾被写入 **U+000D CR + U+0007 BEL** 两个控制字符（原文应为西里尔词 `корни` / `аффиксы`，被按错误码位落盘），肉眼在编辑器里看不出来，只有逐码点才能发现。
+- **普查判据**（不要用「文件里有 CR 就算坏」——本项目多数文件是 CRLF，那是正常的）：
+  ① 出现 BEL `U+0007` / VT / FF / ESC 等非空白控制字符；
+  ② **行中** CR（CR 后面不是 LF）；
+  ③ CR 与 BEL 出现在同一行（已实测到的损坏形态）。
+- 现成工具：`node scripts/audit_text_health.mjs`（只读，全仓普查 + 旧口径数字残留抽查）。
+- **修复方式**：用**稳定拉丁锚点**（`indexOf('oots(476)')` 之类）定位并按**码点索引**整体替换，**不要**用含控制字符的字面量做 `replace`（会匹配失败）。范例：`scripts/fix_readme_l144_corruption.mjs`。
+
 
 ---
 
