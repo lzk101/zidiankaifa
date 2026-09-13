@@ -2450,3 +2450,62 @@ AC-5 用的是**全库**口径（20,214 / 18,762）。本项纯属**账目订正
 **（4）主管 §3 的类型陷阱我已固化为两条口径断言**（D24 boolean / D25 SQL 0/1，见 45.5）。我的 B7/B9/B11/B24/B25/C11 原本就一律用 `=== true/false`（`b.deleted !== 1` 类写法在**本文件内不存在**）⇒ 未踩该陷阱。
 
 **（5）核对 `deleted` 的映射源**：`rowToBook()`（`packages/core/src/db/index.ts:332-352`）第 `:350` 行 `deleted: r.deleted === 1` ⇒ 印证 D24/D25。
+
+---
+
+## §46 T60 证据链（`book_lang.mjs` 收尾 EPERM **根因修复**）—— 功能测试 agent（只追加）
+
+### 46.1 现象复现（与结构 agent T55 的实测 1:1 对齐）
+| 项 | 本轮实测 |
+| --- | --- |
+| 复现命令 | `node packages/core/test/book_lang.mjs`（仓库根） |
+| 断言 | **137 通过 / 0 失败**，**exit 0**（EPERM 属「全绿后才走到」的分支 ⇒ 历史上一直没被发现） |
+| 报错原文 | `临时库清理失败（不影响结论）：EPERM, Permission denied: \\?\D:\lzk17\Documents\zidiankaifa\scripts\_tmp\booklang_tmp\run-1NjPeN '\\?\D:\lzk17\Documents\zidiankaifa\scripts\_tmp\booklang_tmp\run-1NjPeN'` |
+| 单目录体量 | **54 文件 / 2,470,148 B**（与结构 agent 报告的 1:1 关系逐字一致 ✔） |
+| 目录内容 | 合成夹具：`a35_backup_accum_obs.db`(+`-wal`/`-shm`/3×`.bak-<ISO>`) · `a35_backup_fail_obs.db`(+sidecar) · `a5_old_with_lang.db`(+1×bak) · `b_isolation.db` · `c_sync.db` · `d_{lang,override,types}.db` · `e_busy/` · `e_prod/` · `e_remnant/` · `e_remnant_src/` · `e_vacuum_ctl/` · `e_variant/` · **`dist_variant/`**（13 文件） ⇒ **无断言输出、无快照 ⇒ 不含留红取证**（删它们不丢证据） |
+| 遗留目录数 | **主管交底「约 21 个」/ 本轮实测 = 0** —— 实测 `Test-Path scripts\_tmp` = **False**（整棵 `scripts/_tmp` 在本轮开始时**已不存在**，含我 T15–T36 的全部探针与旧 `booklang_tmp`）⇒ **无需清理**；本轮唯一的 1 个（`run-1NjPeN`）由 46.2 的探针删除 |
+
+### 46.2 判别实验（先实验、后改码；三份只读探针均在 `scripts/`）
+1. **`scripts/probe_t60_rm_forensics.mjs`**（新进程侧取证）：列全树 → `fs.rmSync(recursive,force)` 在**另一个进程**里对同一目录 **= OK（立即删除成功）** ⇒ **锁在本进程内**，**不是**杀软/Defender、**不是**「Windows 延迟释放」。附带实测：延迟重试 3 次（250/500/750 ms）在**原进程内**仍是 EPERM。
+2. **`scripts/probe_t60_handle_hook.mjs`**（`node --import` 预加载钩子；**只登记连接、逐字转发调用、不改行为**）：在本文件**自己的进程内**登记每个 `DatabaseSync` 实例 + 包装 `fs.rmSync` 拦截收尾调用。
+   - 收尾时刻实测：**137 条断言全绿之后仍有 6 个连接 `close` 调用次数 = 0（从未被关）**，全部由 `openDatabase()` 创建（`packages/core/dist/db/index.js:16`），调用点 = `book_lang.mjs` **1009 / 1033 / 1090 / 1128×3**；被锁条目 = 4 个临时库 × (`db`/`-wal`/`-shm`) = **12 个**（rename 探测 `EBUSY`）。
+   - 补 close 这 6 个句柄后：rename 探测 **12 被锁 → 0 被锁** ∧ `rmSync` **成功** ⇒ **修复方向可执行**（不是猜的）。
+3. **`scripts/probe_t60_leak_impact.mjs`**（把测试卫生问题升级为**用户可见后果**）：
+   - 控制组（正常 open/close）：对该库文件 `rename` = **OK**。
+   - 实验组（迁移无法完成 ⇒ `openDatabase()` 抛错、连接被泄漏）：**`rename` = `EBUSY`** ∧ **`unlink` = `EPERM`** ∧ 同进程 `rmSync(目录)` = `EPERM`（与 46.1 同构复现）。
+   - 新进程删除 = **OK**（再次证明锁随进程存在而存在、随进程退出而消失）。
+
+### 46.3 根因（结论）
+- **`openDatabase()` 在抛错路径上泄漏连接**：`packages/core/dist/db/index.js:16`（源 `packages/core/src/db/index.ts`）先 `new DatabaseSync(file)`，随后迁移无法完成时**抛错，且不关闭该连接**。
+- **正是本文件断言的那几条路径**：`A30/A31/A33` 的期望值恰恰是「`openDatabase()` **必须抛错**」（`post.error !== null` ∧ `post.value === null`），加上登记项 ③/④（`a35_backup_fail_obs` / `a35_backup_accum_obs` ×3）⇒ 共 **6 次抛错 = 6 个泄漏连接**。
+- **为什么原 `opened` 表收不到它们**：调用形态是 `captureWarns(() => openDatabase(x))`，抛错时 `r.value === null` ⇒ `if (r.value) opened.push(r.value)` **被跳过**；连接对象**从未交给测试侧**（不可达）⇒ 收尾只能看着 `rmSync` 报 EPERM，并被原有 `catch` 打印成「不影响结论」。
+- **产品影响（实测的那部分）**：同一进程内，只要该库有一次失败的 `openDatabase()`，其 `.db`/`-wal`/`-shm` 就**不能改名、不能删除**直到进程退出 ⇒ 任何「抛错后仍要动这个文件」的流程（AGENTS.md 铁律 5 的桌面端换库改名 `dict.db → dict.db.bak-<ts>`、安装器覆写、用户手动删库）都可能失败。**该推论是否已在实际桌面端流程中触发，我未测 ⇒ 不作结论，交主管/开发 agent 判定。**
+
+### 46.4 修复（`packages/core/test/book_lang.mjs`，两处 hunk；**未改任何断言的期望值**）
+| 位置 | 内容 |
+| --- | --- |
+| `:717-770` | 新增「**连接登记表**」：`connSeen`(`:741`) / `connClosed`(`:742`) + 包装 `DatabaseSync.prototype` 的 `exec`/`prepare`（登记）与 `close`（登记 ＋ **仅真关成功才记账**）；`reclaimLeakedConnections()`(`:762`) 返回 `{leaked, reclaimed}`。**唯一新增行为 = 把 `this` 放进 Set**，其余逐字转发；`close` 抛错照旧抛出（`opened` 的 finally 语义不变） |
+| `:1772-1796` | 收尾分支：先 `reclaimLeakedConnections()` 回收被测实现**漏关**的连接（`:1774`），再 `fs.rmSync(RUN, …)`（成功即打印 `临时库已清理`）；顺手在**空**时收掉 `TMP_ROOT`（`:1778-1783`）；`rmSync` 仍失败时打印 `残留目录` ＋ `漏关/补关` 计数（**不静默**）；`leaked > 0` 时打印 `⚠ 收尾回收：…漏关连接 N 个…`（`:1789-1795`） |
+- **没有新增/删除/改期望任何断言**：断言数 **137 不变**（`A42 + B26 + C18 + D25 + E26`），`KNOWN_GAPS` 仍 **3 条**，退出码语义 **0=全绿 / 1=有失败 不变**（依派单：如需改成红断言须主管先裁决 ⇒ 本轮只打印 ⚠）。
+- **为什么这不是「掩盖」**：我**没有**加 `maxRetries`/退避 —— 实测那对本缺陷**完全无效**（句柄生命周期 = 进程生命周期，延迟重试 3 次仍 EPERM）。修复方式是**关闭真正的泄漏句柄**（补 close 6/6 ⇒ `rmSync` 立即成功），即**消除锁的成因**；并把「被测实现漏关了几个」如实打印（而不是让 `catch` 继续吞）。`fs.rmSync` 的 `force/recursive` 保持原样。
+
+### 46.5 验证（修复后实测）
+| 验证项 | 结果 |
+| --- | --- |
+| `cd <仓库根>; node packages/core/test/book_lang.mjs` | **137 通过 / 0 失败** · `临时库已清理：scripts\_tmp\booklang_tmp\run-ASYjTP` · **EXIT=0** · **复跑后 run-* = 0** |
+| `cd packages/core; node test/book_lang.mjs` | **137 通过 / 0 失败** · `临时库已清理：…run-1XODlM` · **EXIT=0** · **复跑后 run-* = 0**（两 cwd 块计数行逐字一致 ✔ 铁律 6） |
+| `pnpm --filter @zidiankaifa/core test` | 99+67+38+**60**+194+26+**137** = **621 通过 / 0 失败** · **EXIT=0** · `临时库已清理` · **run-* = 0** |
+| `pnpm --filter @zidiankaifa/desktop test` | **22 通过 / 0 失败** · EXIT=0 ⇒ 门禁合计 **643 / 0**（与 AGENTS.md 一致） |
+| 残留终态 | `scripts\_tmp` 下**全部条目 = 0**（`booklang_tmp` 被空目录回收删除；`scripts/_tmp` 本身保留为共享 scratch root） |
+| ⚠ 打印 | 每次运行都打印 `收尾回收：被测实现**漏关连接 6 个**（补关成功 6 个）` —— **该数字是缺陷现存量的自证**；实现侧修好后应变为 0（届时不再打印） |
+
+### 46.6 `.gitignore` 覆盖确认（回执项）
+`git check-ignore -v scripts/_tmp/booklang_tmp/x` → **`.gitignore:42:_tmp/`** 命中原样 ⇒ `scripts/_tmp/**`（含 `booklang_tmp`）**已被忽略**，无需新增规则（加规则属结构 agent 写域，我未改）。
+
+### 46.7 未验证 / 未做（如实声明）
+1. **未修 `packages/core/src/**`**（红线）⇒ **泄漏本身仍在**，本文件只是**兜底回收**。建议派单开发 agent 在 `openDatabase()` 的抛错路径加 `try { … } catch (e) { db.close(); throw e; }`（或 `try/finally`）从根消除；修好后本文件会打印「漏关连接 **0** 个」。
+2. 未在**真实杀软实时扫描**环境复测（本机判别实验已排除杀软：新进程可立即删除）。
+3. 未测**并发两个 `book_lang.mjs` 实例**（空目录回收有 guard：非空则抛并吞掉，理论安全，未实测）。
+4. 未普查**其他测试文件/runtime** 是否也有同类泄漏（本轮只定位到本文件的 6 个）。
+5. 未做任何 git 写操作 ⇒ `packages/core/test/book_lang.mjs` **仍为未跟踪**（`?? `），发布前需 `git add <明确路径>`。
+6. 未改 `packages/core/package.json`、其余 6 个门禁测试文件、`packages/core/src/**`、`data/db/dict.db`（**全程未打开生产库**）。

@@ -714,6 +714,83 @@ const opened = []; // 需要 close 的连接
 /** ⚠ T46 实测发现的未闭环缺陷（**非断言**，末段汇总打印；判定权在主管） */
 const KNOWN_GAPS = [];
 
+/* ================================================================== *
+ * T60 修复：**连接登记表**（只登记、不改行为）—— 收尾 EPERM 的根因对策
+ *
+ * 缺陷现象（结构 agent T55 结构快检发现，主管派单 T60）：
+ *   收尾 `fs.rmSync(RUN, { recursive: true, force: true })` 在 Windows 报
+ *   `EPERM, Permission denied: \\?\…\scripts\_tmp\booklang_tmp\run-<随机>`
+ *   ⇒ **每跑一次门禁就残留一个 `run-*`**（实测 54 文件 / 2,470,148 B），与结构体检
+ *   「临时残留 = 0」互斥（跑绿与体检只能保一个）。
+ *
+ * 根因（判别实验 `scripts/probe_t60_rm_forensics.mjs` + `scripts/probe_t60_handle_hook.mjs`，实测）：
+ *   ① 新进程立刻能删该目录 ⇒ 锁**在本进程内**，不是杀软、也不是「Windows 延迟释放」
+ *      （⇒ `maxRetries`/退避**无用**，实测延迟重试 3 次仍 EPERM）。
+ *   ② `--import` 钩子在**本文件自己的进程内**登记每一个 `DatabaseSync` 实例后实测：
+ *      收尾时**有 6 个连接从未被 close**（`close` 调用次数 = 0），全部由 `openDatabase()`
+ *      创建（`packages/core/dist/db/index.js:16`），调用点 = 本文件 1009 / 1033 / 1090 / 1128×3；
+ *      被锁条目 = 4 个临时库 × (`db` / `-wal` / `-shm`) = **12 个**（rename 探测 EBUSY）。
+ *   ③ 补 close 这 6 个句柄后：rename 探测 12 被锁 → **0 被锁** ∧ `rmSync` **成功**。
+ *   ⇒ `openDatabase()` 在**抛错路径**上（A30/A31/A33 断言的正是「迁移无法完成 ⇒ 必须抛错」）
+ *     先 `new DatabaseSync(file)`、再抛错 —— **该连接既不返回、也不关闭**。
+ *     测试侧因此**永远拿不到它**（`captureWarns()` 的 `value === null` ⇒ `if (r.value)` 跳过 push）
+ *     ⇒ 原来的 `opened` 表按构造就收不到它，故「清理失败但不影响结论」一直静默。
+ *
+ * ★★ 缺陷归属（主管 T60 追加裁决 A，2026-09-14）：**根因不在本测试文件**。
+ *   根因 = **被测实现 `openDatabase()` 的抛错路径**（源 `packages/core/src/db/index.ts` ⇒ 产物 `packages/core/dist/db/index.js:14-34`）：
+ *   `const db = new DatabaseSync(path)`（`:15`）之后，`db.exec(SCHEMA_SQL)`（`:16`）/ `migrateBookLang`（`:18`）/
+ *   `migrateBookCompositeKey`（`:19`）/ **`assertBookCompositeOrThrow`（`:30`，v0.10.0 新增的「响亮失败」防线）** /
+ *   `migrateAddColumn`（`:31-32`）**任一抛错**都直接冒泡出函数 ⇒ 该连接既不返回、也不关闭（`:33` 只在成功路径）。
+ *   ⇒ 本文件**无权重写 `packages/core/src/**`**；下方 `reclaimLeakedConnections()` 是**当前唯一的止血手段**，
+ *     **不是**根因修复，**不得**因「根因在 src」而删除。真正修复 = 抛错前 `db.close()`：
+ *     `try { … } catch (e) { db.close(); throw e; }` ⇒ **已登记为 v0.11.0 候选 `V11-OPENDB-LEAK`**
+ *     （正式立项由主管写 `REQ.md` / `TASKS.md`；本文件只作登记，见 `.board/EVIDENCE.md` §47）。
+ *
+ * ★ 影响级别（主管 T60 追加裁决 C）：**P1，不是 P0 —— 当前无用户可见后果**（不得升级表述为「用户数据风险」）。
+ *   桌面端两个入口都是「`openDatabase()` 抛错 ⇒ `dialog.showErrorBox` + `app.exit(1)`」⇒ **进程随即退出**，
+ *   泄漏句柄在**该路径上不可观测**（实测：进程退出后另一进程可立即删除，见 `scripts/probe_t60_rm_forensics.mjs`）；
+ *   浏览器端走 `apps/web/src/api.ts` 的 localStorage 路径，**不碰 SQLite**。
+ *   ⇒ 真正会暴露的是「**长驻进程内反复打开失败库**」（反复重试 / 未来把 core 用进常驻服务）—— 属**未来风险（潜在）**。
+ *   本仓库**当前**唯一可观测后果 = 本条注释开头那段：收尾 `EPERM` ⇒ 残留 `run-*` 目录（与结构体检互斥）。
+ *
+ * 登记方式：只打印 ⚠ 行（含**实测泄漏数**）+ 收尾 warn（**不新增断言、不改退出码语义** —— 断言数须保持 137）。
+ *   主管裁决 B：src 未修好前写红会让**门禁链永久红**（参照 `ru_morph_defects.mjs` 必须隔离在链外的教训）⇒ 维持 `0`/`1` 语义。
+ * ================================================================== */
+const connSeen = new Set(); // 本进程内出现过的**所有** SQLite 连接
+const connClosed = new Set(); // 其中**确实 close 成功**的
+{
+  const P = DatabaseSync.prototype;
+  for (const m of ['exec', 'prepare']) {
+    const orig = P[m];
+    if (typeof orig !== 'function') continue;
+    P[m] = function patched(...args) {
+      connSeen.add(this); // ★ 唯一新增行为：登记引用；其余逐字转发
+      return orig.apply(this, args);
+    };
+  }
+  const origClose = P.close;
+  P.close = function patchedClose(...args) {
+    connSeen.add(this);
+    const out = origClose.apply(this, args); // 抛错照旧抛出（`opened` 的 finally 语义不变）
+    connClosed.add(this);
+    return out;
+  };
+}
+/** 收尾回收被测实现**漏关**的连接。返回 { leaked, reclaimed } —— **只用于打印**（不参与断言/退出码） */
+function reclaimLeakedConnections() {
+  const leaked = [...connSeen].filter((db) => !connClosed.has(db));
+  let reclaimed = 0;
+  for (const db of leaked) {
+    try {
+      db.close();
+      reclaimed += 1;
+    } catch {
+      /* 仍关不掉 ⇒ 由随后的 rmSync warn 兜底，不静默 */
+    }
+  }
+  return { leaked: leaked.length, reclaimed };
+}
+
 console.log('='.repeat(96));
 console.log('book_lang.mjs —— 生词本语言分离判别集（AC-12 / AC-13 / AC-14 / AC-16 存储侧）');
 console.log(`被测产物：packages/core/dist/** · 临时库目录：${path.relative(REPO_ROOT, RUN)}`);
@@ -1711,11 +1788,28 @@ if (allFails.length) {
   for (const f of allFails) console.log(`  - ${f}`);
   console.log(`临时库保留（取证）：${RUN}`);
 } else {
+  /* T60：先回收**被测实现漏关**的连接，再删目录 —— 否则 Windows 下必报 EPERM（见上文「连接登记表」） */
+  const { leaked, reclaimed } = reclaimLeakedConnections();
   try {
     fs.rmSync(RUN, { recursive: true, force: true });
     console.log(`临时库已清理：${path.relative(REPO_ROOT, RUN)}`);
+    /* 顺手收掉空的 TMP_ROOT（结构体检把 `scripts/_tmp/**` 记为临时残留；只在**空**时删 ⇒ 与并发运行安全） */
+    try {
+      if (fs.readdirSync(TMP_ROOT).length === 0) fs.rmdirSync(TMP_ROOT);
+    } catch {
+      /* 不存在/非空/被并发占用 ⇒ 无害，忽略 */
+    }
   } catch (e) {
     console.log(`临时库清理失败（不影响结论）：${e.message}`);
+    console.log(`  残留目录：${RUN}`);
+    console.log(`  本次漏关连接 ${leaked} 个 / 补关成功 ${reclaimed} 个 ⇒ 若仍为 EPERM/EBUSY，说明有句柄连兜底 close 也关不掉（须人工取证）`);
+  }
+  if (leaked > 0) {
+    console.log(
+      `  ⚠ 收尾回收：被测实现**漏关连接 ${leaked} 个**（补关成功 ${reclaimed} 个）—— ` +
+        '`openDatabase()` 在抛错路径（A30/A31/A33 的「迁移无法完成」形态）创建连接后抛错、**未关闭该连接**；' +
+        '本文件只能兜底回收（不新增断言：断言数须保持 137，退出码语义不变，判定权在主管）',
+    );
   }
 }
 /* ⚠ T46 实测发现的**未闭环缺陷**（**非断言**：本文件不留红，判定权在主管）。
