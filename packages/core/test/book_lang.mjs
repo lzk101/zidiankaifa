@@ -1784,7 +1784,8 @@ const totalMs = Date.now() - tStart;
 console.log('\n' + '='.repeat(96));
 console.log(`结果：${totalPass} 通过 / ${allFails.length} 失败（共 ${totalPass + allFails.length} 条断言）`);
 if (allFails.length) {
-  console.log('失败项：');
+  // ★ T79：标签即口径 —— 明确「失败项」的条数 = 上方「失败」计数，且**不含**下方的 ⚠ 登记台账
+  console.log(`失败项（共 ${allFails.length} 条 = 上方「${totalPass} 通过 / ${allFails.length} 失败」中的失败数；**下方 ⚠ 登记台账不计入**）：`);
   for (const f of allFails) console.log(`  - ${f}`);
   console.log(`临时库保留（取证）：${RUN}`);
 } else {

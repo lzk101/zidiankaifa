@@ -147,46 +147,33 @@ head('§3 同文件并发（「libsql 同步 → node:sqlite 照旧读」的可�
 
 /* ------------------------------------------------------------------ *
  * §4 embedded replica：file: 本地文件 + syncUrl 远端
+ *   ★ 必须隔离子进程：该路径会加载 libsql 原生扩展（hyper-rustls），实测在受限沙箱下
+ *     触发 **Rust panic 直接杀进程**（exit -1073740791 = 0xC0000409），不可捕获。
  * ------------------------------------------------------------------ */
 head('§4 embedded replica（file: + syncUrl）语义实测 —— 「零改造路径」的核心');
 {
-  const p = path.join(TMP, 'replica.db').replace(/\\/g, '/');
-  let client = null;
-  const construction = await step("§4a createClient({url:'file:…', syncUrl:'libsql://…', authToken}) 构造是否接受", () => {
-    client = createClient({
-      url: `file:${p}`,
-      syncUrl: 'libsql://probe-t67-does-not-exist.turso.io',
-      authToken: 'dummy-token-for-probe',
-    });
-    return `构造成功（client 已建，未同步）· typeof sync = ${typeof client.sync}`;
-  });
-  if (!construction?.__error) {
-    await step('§4b replica 模式下**建表**（写操作）', async () => {
-      await client.execute('CREATE TABLE t (id INTEGER PRIMARY KEY, v TEXT)');
-      return '建表成功';
-    });
-    await step('§4c replica 模式下 INSERT（写操作，未 sync、远端不可达）', async () => {
-      await client.execute("INSERT INTO t (v) VALUES ('write-1')");
-      return 'insert 成功';
-    });
-    const syncErr = await step('§4d client.sync()（拉远端）', async () => {
-      await client.sync();
-      return 'sync 成功';
-    });
-    if (syncErr?.__error) {
-      const e = syncErr.__error;
-      line(`    报错细节：name=${e?.name} code=${e?.code} cause=${e?.cause?.message ?? '（无）'}`);
-      info('⇒ 该报错为**网络/凭据不可达**（本地无 Turso 库），证明 sync() 是真实存在的远端操作（≠ 本地 no-op）');
-    }
-    await step('§4e sync 失败后本地 SELECT（本地副本是否仍可读）', async () => {
-      const r = await client.execute('SELECT COUNT(1) AS n FROM t');
-      return `rows=${JSON.stringify(r.rows)}`;
-    });
-    const st = fs.existsSync(path.join(TMP, 'replica.db')) ? fs.statSync(path.join(TMP, 'replica.db')).size : null;
-    info(`replica 本地文件大小 = ${st} B（存在? ${st !== null}）`);
-    await client.close();
+  const { spawnSync } = await import('node:child_process');
+  const child = path.join(__dirname, 'probe_t67_libsql_replica.mjs');
+  const caFile = path.join(ROOT, '.tmp', 'ca-from-node.pem');
+  if (!fs.existsSync(caFile)) {
+    const { rootCertificates } = await import('node:tls');
+    fs.writeFileSync(caFile, rootCertificates.join('\n') + '\n');
   }
-  info('说明：本地无 Turso 凭据 ⇒ 无法实测「写入转发到主库」「跨设备同步」两条；见回执「未验证项」');
+  const variants = [
+    { name: '变体①无 SSL_CERT_FILE（平台证书库）', url: 'libsql://probe-t67-does-not-exist.turso.io', env: {} },
+    { name: '变体②带 SSL_CERT_FILE（绕过平台证书库）', url: 'libsql://probe-t67-does-not-exist.turso.io', env: { SSL_CERT_FILE: caFile } },
+  ];
+  for (const v of variants) {
+    line();
+    line(`  ── ${v.name} ──`);
+    // ⚠ 沙箱禁止「管道 stdio 的 spawn」（AGENTS.md §3）⇒ 只能 stdio:'inherit'（子进程直接写父进程终端）
+    const r = spawnSync(process.execPath, [child, v.url], {
+      env: { ...process.env, ...v.env },
+      stdio: 'inherit',
+    });
+    line(`  ← 子进程退出码 = ${r.status}${r.error ? ` · spawn 错误=${r.error.code ?? r.error.message}` : ''}（-1073740791 = 原生崩溃）`);
+  }
+  info('说明：本地无 Turso 凭据 ⇒ 「真实跨设备同步」未实测；但「写入被转发到主库」已由 §4b 的 WriteDelegation 报错证实');
 }
 
 /* ------------------------------------------------------------------ *

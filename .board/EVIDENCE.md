@@ -2597,3 +2597,91 @@ AC-5 用的是**全库**口径（20,214 / 18,762）。本项纯属**账目订正
 ### 48.6 只读自证与未验证项
 - **`data/db/dict.db` 未被修改**（探针 §6 实测）：size **518,242,304 B → 518,242,304 B（相等）** · mtime **`2026-09-13T15:13:53.350Z` → 同一值（相等）**；全程 `new DatabaseSync(DB, { readOnly: true })`，**未调用 `openDatabase()`**（避免迁移写库）。
 - **未验证**：并发/空闲状态的隔离复测（离散度来源未定）· `src` 侧「候选结构缓存化」原型的真实加速比（未做，属另一轮）· 其他机器/CPU 的绝对值 · 主管参考值 8,971 ms 的复现条件（本机 5+2 次均未复现 8,971 ms）。
+
+---
+
+## §50 T77：**HTTP 边界 DTO 契约测试** 新建 + 修前/修后对照（功能测试 agent · 只追加）
+
+### 50.1 结论（一句话）与交付物
+- **结论**：`V11-SYNC-DTO` 已被新契约测试**确定性抓住** —— **修前 9 通过 / 7 失败（exit 1）→ 修后 19 通过 / 0 失败（exit 0）**，两种 cwd 一致；**新增独立文件，未改任何既有计数**（core 断言账本仍 621，本文件不在门禁链内）。
+- **交付物**：`scripts/check_sync_dto_contract.mjs`（永久契约测试，与 `scripts/check_v10_ui_contract.mjs` 同族）· 临时库 `scripts/_tmp/t77_sync_dto/run-<随机>/{dict.db,sync.db}`（**每次运行自清**，残留 0）。
+- **复现命令**（任意 cwd）：
+  ```
+  node scripts/check_sync_dto_contract.mjs          # 仓库根 ⇒ 19/0 exit 0
+  node ../../scripts/check_sync_dto_contract.mjs    # cwd=packages/core ⇒ 19/0 exit 0
+  ```
+
+### 50.2 结构盲区根因（**逐条核实过，非转述**）
+| 层 | 事实（实测行号） | 缺口 |
+| --- | --- | --- |
+| core 单元层 | `packages/core/test/book_lang.mjs:1376-1398` C 组 4 处**直接调** `syncMerge(db, [newBookItem(…)])`，条目由 `newBookItem()` **手工构造的 camelCase** | **绕过 HTTP**：DTO 形状由测试自己保证 |
+| 服务端自测 | `apps/sync-server/scripts/smoke.mjs` **直接调函数**（不经 REST） | 同上 |
+| 「协议不变」断言 | `book_lang.mjs:1411-1428` C14–C18 全是**源码字符串包含判断**（`syncSrc.includes("p === '/api/v1/sync'")` 等） | 只校验**字面量在不在**，**不校验 DTO 形状**（且脆弱：见 §50.5） |
+⇒ **core 断言用 `BookItem`(camelCase)、服务端曾发 DB 行(snake_case)，两层各自自洽，交界处无人测** —— 本项目第 8 条陷阱「断言口径与被测对象类型不符」的同一族。
+
+### 50.3 修前运行（真实「修复前」状态，原始输出关键行）
+```
+ⓘ 首条原始形状 = {"word":"книга","lang":"ru","added_at":1000,"updated_at":3000,"status":"new","note":null,"tags":"[]","review_count":0,"last_reviewed_at":null,"deleted":0}
+✔ A1 返回 items 为数组 [len=2]        ✘ A2 含 snake_case 键（4 个全中）
+✘ A3 addedAt/updatedAt 为 number [addedAt=undefined updatedAt=undefined]
+✘ A4 reviewCount 为 number [reviewCount=undefined]      ✔ A5 word/lang 为 string
+✘ E1 按 updatedAt 降序 [2 条无 updatedAt 字段 ⇒ 顺序不可判]
+✘ D1 deleted 为 boolean [实际 typeof=number value=0]   ✘ D2 tags 为数组 [实际 typeof=string value="[]"]   ✔ D3
+✔ B1 原样回喂 ⇒ 200      ✔ B2 回喂后逐字段相等
+✘ B3 ★ 「GET 形状 + 仅改时间戳」回喂 ⇒ status=200 pushed=0 · 服务端该条 updated_at=3000（期望 4000）
+✔ B4 [status=500]（按当时 v1 判据「不得 200」通过）  ✔ C1 pushed=1  ✔ C2 pushed=0  ✔ C3 [status=500]
+sync-dto 契约：9 通过 / 7 失败        → exit 1
+--- server.log --- TypeError: Provided value cannot be bound to SQLite parameter 3.
+    at upsertBook (packages/core/dist/db/index.js:1069:37) ← syncMerge (…:1173:13) ← handle (apps/sync-server/dist/index.js:155:24)   code: 'ERR_INVALID_ARG_TYPE'
+```
+**★ 对主管复现描述的一处订正（有证据）**：主管写「把 GET 的输出原样回喂给 POST ⇒ HTTP 500」——**不完全成立**：
+- **回喂已存在词**（「原样回喂」的字面形态）⇒ **HTTP 200 且 `pushed=0`**：`updatedAt` 为 `undefined` ⇒ last-write-wins 比较为假 ⇒ **静默丢弃**（比 500 更隐蔽）。见 B1/B2 绿 + **B3 红**。
+- **500 只在「词在服务端不存在」或「缺必需字段」时发生**（`upsertBook` 绑定 `addedAt=undefined`）—— 见 **B4/C3 [status=500]** 与上面原始崩栈。
+⇒ 故我把两件事**分开**断言：B4/C3 测崩栈，**B3 ★** 测「跨端更新是否真的发生」（修前红 = 真缺陷）。
+
+### 50.4 修后运行（T75 已落地 + rebuild）
+```
+ⓘ 首条原始形状 = {"word":"книга","lang":"ru","addedAt":1000,"updatedAt":3000,"status":"new","note":null,"tags":[],"reviewCount":0,"lastReviewedAt":null,"deleted":false}
+✔ A1 ✔ A2 ✔ A3 ✔ A4 ✔ A5 ✔ E1[updatedAt 序列=[3000,2000]] ✔ D1(boolean) ✔ D2(array) ✔ D3
+✔ B1 ✔ B2 ✔ B3 ★[pushed=1 · 服务端 updatedAt=4000（期望 4000）] ✔ B4[200 pushed=1 skipped=0]
+✔ C1[pushed=1] ✔ C2[pushed=0] ✔ C3[200 pushed=0 skipped=1]        ✔ F1 ✔ F2 ✔ F3（登记·非阻塞）
+sync-dto 契约：19 通过 / 0 失败   → exit 0（仓库根 与 packages/core 两 cwd 均 19/0）
+冻结库未被修改 = true（size 518242304 · mtime 2026-09-13T15:13:53.350Z）· 临时目录已清理
+```
+**修后策略（读源码确认）**：`apps/sync-server/src/index.ts:110-147 toBookItem()` 在**边界**归一化（camelCase + 历史 snake_case 别名都接受）；缺 word / 缺时间戳 ⇒ 丢弃并计 `skipped`（`:280-283`），响应体**回传 `skipped`**（`:290`）⇒ 不再 500，且历史 snake_case 载荷**仍被正确接受**（B4 `pushed=1` 即证）。
+
+### 50.5 🚨 **T75 把既有门禁打红了（P0，需主管处置；我未改测试文件）**
+| 项 | 实测 |
+| --- | --- |
+| `pnpm --filter @zidiankaifa/core test` | **620 通过 / 1 失败 · exit 1**（原 621/0） |
+| 唯一失败项 | **`C17 入参契约不变：body.items 数组（Array.isArray(body.items)）`** |
+| 判据位置 | `packages/core/test/book_lang.mjs:1427-1428`：`syncSrc.includes('Array.isArray(body.items)')` |
+| 根因 | T75 把 `const items = Array.isArray(body.items) ? body.items : []` 换成 `const { items, skipped } = normalizeIncomingItems(body.items)`（`src:280`）⇒ **该字面量不复存在** ⇒ **假红** |
+| 性质判定 | **契约本身未被破坏**（`body.items` 仍必须是数组，只是改由 helper 校验）⇒ 这是**文本级代理断言**在「行为等价的重构」下失效，与已登记的「源码字符串包含判断当契约」同族；**T77 的存在理由正是它不校验行为** |
+| 处置建议（二选一，均属他人写域） | ① 开发 agent 保留该字面量（例如在 `normalizeIncomingItems` 调用点仍写 `Array.isArray(body.items)`）；**或** ② 把 C17 从「源码字符串」升级为**行为断言**（POST `body.items` 非数组 ⇒ 不得 500）—— `scripts/check_sync_dto_contract.mjs` 已覆盖该行为面，可直接引用 |
+| 我为何不改 | T77 派单明令 **不得改 `packages/core/test/**`**；且 137 条是冻结账本 ⇒ **仅报不动** |
+
+### 50.6 我的两处自我订正（诚实留痕）
+1. **★ 虚假声明已撤回**：我曾在 B4 登记里写「被丢弃条目**不计入响应体** ⇒ 客户端 ok:true 而数据静默丢弃」——**错**。实测响应体**含 `skipped`**（`src:290`；B4/C3 的 `skipped=` 就是读出来的）⇒ **不是静默丢弃**，客户端可检测。已在脚本内改为「✔ 该担心已实测排除；残余仅『只报数量、不报是哪几条』」。
+2. **B4/C3 判定语义中途修正（有理由）**：v1 写成「必须被拒（不得 200）」，在修后实现（丢弃+200）下会**永久红**；观察到 T75 的落地策略后改为「**不得 500 崩栈**」（修前 500 红 ⇒ 修后 200 绿，具备鉴别力），并在输出里写明选择理由。⇒ **修前那 7 条红在最终判据下会变成 9 条（7 + B4 + C3）** —— 此句是**推断，非实测**（修前构建已不存在，无法复跑最终脚本）。
+
+### 50.7 实测发现的**第二个**缺陷：`V11-NOTE-NULL`（已被开发 agent 修掉；本测试留为回归守卫）
+- **实测**：`20:03`（T75 首版 dist，我用 `SYNC_SERVER_ENTRY` 指向其副本时）POST `note: null` ⇒ GET 回读 **字符串 `"undefined"`**（当次首条形状逐字为 `"note":"undefined"`）。
+- **根因（源码级）**：`apps/sync-server/src/index.ts:108 firstDefined = (...vals) => vals.find(v => v !== undefined && v !== null)` **会滤掉 null** ⇒ `:135 firstDefined(r.note, null)` 在 `payload.note === null` 时返回 **undefined**（兜底 `null` 永不生效）⇒ `:142 noteRaw === null ? null : String(noteRaw)` 落到 `String(undefined)` = `"undefined"` ⇒ **污染该行**；且 GET→POST 回环会把 `null` 变脏（**回环幂等性被破坏**）。
+- **结局**：开发 agent 于 **20:05:52(src)/20:06:20(dist)** 修掉，其注释**逐字印证本诊断**（`src:136-138`：`不能写成 noteRaw === null ? null : String(noteRaw) —— 缺字段时 noteRaw 是 undefined`）。
+- **本测试的处置**：`F1/F2/F3` 组**默认非阻塞**（`BLOCK_ON_F_GROUP = false`），理由 = 若算红，本脚本在 T75 修好后**仍 exit 1**，会掩盖「DTO 已修好」这一结论；它是**另一个**缺陷。主管要它阻塞 ⇒ 改一个常量即可。
+
+### 50.8 设计要点（供复核）
+- **只读性**：**绝不打开 `data/db/dict.db`**（服务端 `openDatabase()` 会跑迁移 = 写库）；`ZIDIANKAIFA_DB` 与 `ZIDIANKAFA_SYNC_DB` **都指向临时库**；端点只碰临时 sync 库的 `book` 表。**每次运行末自动复核冻结库 size+mtime 一致**。
+- **端口**：空闲探测（`net.listen(0)`）取随机端口，**不用 4570**。
+- **就绪**：轮询 `/health`（≤15 s），**不 sleep 猜**；失败时打印 server.log 前 20 行。
+- **stdio**：`spawn(..., { stdio: ['ignore', logFd, logFd] })` = **文件重定向（非管道）** ⇒ 规避受限沙箱下带管道 stdio 的 `spawn EPERM`。
+- **收尾**：`finally` 里 `kill()`（先 SIGTERM，1 s 后 SIGKILL）→ 关日志 fd → 失败时打印 server.log 尾 15 行 → `rmSync(RUN)`；**清理失败打印而非静默吞掉**。
+- **入口可覆盖**：`SYNC_SERVER_ENTRY=<path>`（对着变体/旧构建跑对照时用）。
+
+### 50.9 未验证 / 存疑
+1. **未在真实客户端（桌面端/浏览器）上验证**：本测试只打 HTTP 边界，不含 UI 的 localStorage/渲染路径。
+2. **未做双客户端真并发**（两设备同时推）。
+3. **其它端点**（`book-groups` / `related` / `lookup` / `lexicon`）的 DTO 形状**未纳入**本文件（本轮按派单只覆盖 `book` + `sync`）。
+4. **`C17` 假红的最终处置未定**（属主管/开发写域）；门禁当前 **exit 1**，**发布前必须解决**。
+5. 修前/修后**不是同一版断言集**（B4/C3 语义中途修正）⇒ §50.3 的 7 红是**当时判据**下的真实数字；最终判据下的修前推断值（9 红）**未实测**。

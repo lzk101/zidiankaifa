@@ -2632,3 +2632,107 @@ book   200 count=3
 6. 计数陷阱**第 11 次**（**未重蹈、仅登记**）：`git ls-files -z | Measure-Object` 得到 **1**（`-z` 输出是以空字符分隔的**单一字符串**）⇒ **计数禁用 `-z`**；**分组统计才用 `-z`**。
 7. **已跟踪文件数 = 221 / 300**（余量 **79**）· `scripts/` = **101 / 165**。⚠ 若把 `apps/mobile/android/` 全量入库（约 68 文件）⇒ 将逼近 300 预算上限（预计 **~289**），**发版前须由结构 agent 出账**。
 
+## [开发编程 agent] T67（libsql 判别片段）+ T74 公网鉴权判别实验（只读，无实现）
+
+> 口径：下列数字均为**本机实测**；推断处标【推断】。探针：`scripts/probe_t67_libsql.mjs`（§1-3/§5-6，§4 隔离子进程调 `scripts/probe_t67_libsql_replica.mjs`）· `scripts/probe_t74_user_scope.mjs` · 日志 `.tmp/out_t67_libsql.txt` · `.tmp/out_t74_userscope.txt`。
+
+### 一、T67 实验 B「零改造路径」判别（**本轮最有价值的一条**）
+
+环境：`@libsql/client@0.18.0` 装到 `.tmp/libsql-probe`（workspace 内，**未改任何已跟踪文件**）。⚠ 新增环境坑：`npm` 默认缓存在 workspace 外被沙箱拒（`npm error code EPERM … npm-cache\_cacache\tmp`）⇒ 必须 `--cache=<workspace>\.tmp\npm-cache`。
+
+| 判别项 | 实测 |
+|---|---|
+| API 形态 | 实例方法仅 `execute / batch / transaction / executeMultiple / migrate / sync / reconnect / close`；**无 `prepare`/`exec`**；`execute()` 返回 **Promise** |
+| 文件格式互操作 | ✔ **双向通**：libsql 产出文件头 = `SQLite format 3\0`，`node:sqlite` 可读；`node:sqlite` 的 WAL 库 libsql 亦可读 |
+| 同文件并发 | ✔ libsql 持连接（未 close）时 `node:sqlite` 可只读/可写打开，**双向可见**对方刚写的数据（§3a-3d） |
+| **embedded replica**（`file:` + `syncUrl`） | ⚠ 构造即加载原生扩展：受限沙箱下 **`hyper-rustls-0.25.0\src\config.rs:32:62` panic → `could not load platform certs: Os { code: 5, kind: PermissionDenied }`**，子进程退出码 **3221226505（0xC0000409）** |
+| 同上（用 `SSL_CERT_FILE`＝`node:tls` rootCertificates 生成的 120 张 CA） | 构造成功；**未 sync 前 CREATE/INSERT ⇒ `WriteDelegation(status: NotFound…)`（写被转发到远程主库）**；未 sync 前 SELECT ⇒ `SQLITE_ERROR: no such table: t`；`client.sync()` ⇒ `Replication(PrimaryHandshakeTimeout)`；本地副本仅 4096 B |
+| core SQL 形状在 libsql 本地模式 | `ON CONFLICT(word,lang) DO UPDATE` ✔ · `PRAGMA table_info` ✔ · `batch([...],'write')` ✔ · `VACUUM INTO` ✔ · **`BEGIN IMMEDIATE`/`COMMIT` 经 `execute()` ✗ ⇒ `LibsqlError: SQLITE_ERROR: cannot commit - no transaction is active`** |
+| 改造面（静态扫 `packages/core/src/db/index.ts` + `lexicon.ts`） | `db.prepare(` **44** · `.get()` 24 · `.all()` 20 · `.run()` 1 · `db.exec(` 15 · `db: DatabaseSync` 形参的导出函数 **25** · 源码 `async` **0** 次 |
+
+**结论（判别，非意见）**：
+1. **「用 `@libsql/client` embedded replica 顶替 `dict.db` 打开方式、core 一行不改」= 不成立**，两条**独立**原因：① **同步 vs 异步**（core 全走同步 `DatabaseSync` API，libsql 无 `prepare/exec` 对等物）；② **replica 的本地写不是写，而是转发主库**（`WriteDelegation`）⇒ 本地副本不能作可写源。
+2. **成立的受限形态**：**Turso 只承载用户数据（book/sync），`dict.db` 保持只读冻结不上云**；core 25 个导出函数中的词库读取面**完全不用动**，需异步化/改造的只有 book 一族 **8 个**（`packages/core/src/db/index.ts:1259-1405`：bookGet/bookList/bookListAll/bookAdd/bookRemove/bookUpdate/syncMerge/groupBookByMorpheme）。
+3. 附带：libsql 事务控制只能用 `client.transaction()`/`batch()`，**不能照搬** core 的 `BEGIN IMMEDIATE`（`:341-354` 迁移路径依赖它）。
+4. ⚠ 运维风险：replica 路径失败模式是**杀进程的原生 panic**（不可捕获）；`SSL_CERT_FILE` 能绕开说明根因是环境（沙箱拒访平台证书库）而非 libsql 本身，但长驻服务用该路径**必须有进程级重启兜底**。
+5. T67 实验 A（Capacitor）已委派后台子 agent，**其报告截至本行未送达** ⇒ 无结论（不臆造）。
+
+### 二、T74 复核：主管三条「发布阻断级事实」——**三条全部属实**（逐条证据）
+
+1. **客户端从不发送凭证** ✔：`apps/web/src/api.ts:160-170 restFetch()` 只设 `{'Content-Type':'application/json'}`；全仓 `apps/**` 内 `Authorization` 仅 **2** 次且都在服务端自身（`apps/sync-server/src/index.ts:12` 文档注释 · `:53` CORS 允许头）⇒ **无任何调用方会带令牌**。
+2. **鉴权 fail-open** ✔ 逐字复核：`apps/sync-server/src/index.ts:83-87`（`:84 if (!TOKEN) return true;` · `:86 return h === \`Bearer ${TOKEN}\``）；`:93-96` OPTIONS 先返回，`:97-99` 其余全过 `authOk`。
+3. **`/api/v1/book` 无用户维度** ✔：`:174-176`（原文 `syncDb.prepare('SELECT * FROM book ORDER BY updated_at DESC').all()`，本轮 T75 已修为 `bookListAll(syncDb)`）；`:195-201` POST/PUT `/sync|/book` 直接 `syncMerge(syncDb, items)`。
+   ⇒ 「不存在既安全又可用配置」成立：**不设 `ZIDIANKAFA_SYNC_TOKEN` ⇒ 公网可读写全库；设了 ⇒ 全体客户端 401**。
+
+### 三、实验 A：鉴权通道盘点（入口 × 凭证能力 × 缺口）
+
+| 入口 | `文件:行` | 凭证能力 | 现状/缺口 |
+|---|---|---|---|
+| Web（浏览器/PWA） | `apps/web/src/api.ts:160-170` | ✔ 可加头 | **未带头**；存储先例 `localStorage`（`:34 SYNC_URL_KEY`） |
+| Android 壳（Capacitor） | 同 `api.ts`；`getSyncUrl()` `:56-62`（覆盖优先级 localStorage > `:33 NATIVE_ANDROID_SYNC_URL='http://10.0.2.2:4570'` > `:32 DEFAULT_SYNC_URL='http://localhost:4570'`） | ✔ 同浏览器 | **同缺口**；APK 内 `localStorage` 非安全存储 |
+| 桌面主进程 | `apps/desktop/src/main.mjs:167-188`（`sync:now`，`:174 fetch(url+'/api/v1/sync')`，`:176` 仅 Content-Type） | ✔ Node fetch 可加头 | **未带头**；可存 `safeStorage`/用户数据目录 |
+| 桌面渲染层 | `apps/web/src/api.ts:352-371 electronBackend`（`syncNow: () => api.syncNow()` → IPC） | ✖ 不直连 | **无需凭证**（机密留主进程） |
+| `apps/sync-server` 自身 | 全文无 `fetch(` | — | **无出站请求** |
+| `apps/mobile` | `apps/` 只有 `desktop/ sync-server/ web/` | — | **该包不存在**（手机端逻辑目前全在 `apps/web` + `api.ts`） |
+
+⇒ 缺口单一：**三个调用点都不带头 + 无任何凭证发放/存储路径**。
+
+### 四、实验 B：用户维度改造最小面（含**临时库实测**）
+
+**1) `book` 表既有 SQL 全量（`packages/core/src/db/index.ts`）与是否受影响**：
+
+| 行 | 语句 | 受 `user_id` 影响 |
+|---|---|---|
+| `:197` | `ALTER TABLE book ADD COLUMN lang …`（迁移先例） | 加 `user_id` **可照抄此形态** |
+| `:335` | `SELECT COUNT(1) FROM book` | 否（计数） |
+| `:341` | `CREATE TABLE book_new`（= `BOOK_TABLE_SQL`） | **必改**（新表含 `user_id` 且进主键） |
+| `:343-347` | `INSERT OR REPLACE INTO book_new (…) SELECT … FROM book` | **必改**（列清单 + `COALESCE(user_id,'local')`） |
+| `:349/:352/:353/:354` | 行数核对 / `DROP` / `RENAME` / 重建 `idx_book_updated` | 否 |
+| `:786` | `SELECT 1 FROM book WHERE word=? AND lang=? AND deleted=0` | **必改**（+`AND user_id=?`） |
+| `:845` | `SELECT 1 FROM book WHERE word=? AND lang='en' AND deleted=0` | **必改** |
+| `:1213` | `BOOK_INSERT`（`INSERT INTO book (…)`） | **必改**（加列） |
+| `:1225` | `SELECT lang FROM book WHERE word=? ORDER BY deleted ASC, updated_at DESC LIMIT 1` | **必改**（`existingLangForWord` 会跨用户推断语言） |
+| `:1235` | `ON CONFLICT(word, lang) DO UPDATE` | **必改** ⇒ `ON CONFLICT(user_id, word, lang)` |
+| `:1261` `bookGet` · `:1275/:1277` `bookList` · `:1284` `bookListAll` · `:1365` `syncMerge` 冲突查询 | — | **必改**（`bookListAll` 不限定 `user_id` = 跨用户泄露，实测见 §3e） |
+
+服务端：`apps/sync-server/src/index.ts:254`（`GET /book`）· `:263`（`GET /book-groups`→`bookList`）· `:279-292`（POST/PUT→`syncMerge`）—— **三处都需带 `user_id`**。
+
+**2) 建表与索引**：`packages/core/src/db/schema.ts:6-16 BOOK_COLUMNS_SQL`（唯一来源）· `:23-25 BOOK_TABLE_SQL`（`PRIMARY KEY (word, lang)`）· `:111-125 SCHEMA_SQL` 内**同名副本**（⚠ 加列必须两处同步，否则结构漂移）· `:125 CREATE INDEX IF NOT EXISTS idx_book_updated`。
+⚠ **铁律已实测复现**：把用**新列**的索引写进 `SCHEMA_SQL` ⇒ 老库启动 **`Error: no such column: user_id`**（`probe_t74_user_scope.mjs` §2）⇒ 新列索引必须**单独 `try/catch`** 建。
+
+**3) ★ 迁移形态判别：主键必须包含 `user_id`** —— 形态 =「`ALTER TABLE book ADD COLUMN user_id TEXT NOT NULL DEFAULT 'local'`（老行归 local，照抄 `:197` 先例）」+「复合主键重建（照抄 `migrateBookCompositeKey` 四步），主键 `(user_id, word, lang)`」。**临时库实测**：
+- §1 现主键 `(word, lang)` 下两用户写同词同语言 ⇒ **只剩 1 行**（后写覆盖先写）；
+- §4 **只 `ALTER` 加列不改主键 ⇒ 同样只剩 1 行** ⇒ 只加列**不满足**多用户；
+- §3 两步迁移后：主键实测 `["user_id","word","lang"]` · **行数保真 2→2** · alice/bob 同词同语言**各一行共存** · 同用户重复写为「更新」；
+- §3e 过滤实测：`WHERE user_id='alice'` 得 1 条 vs **不过滤得 3 条** ⇒ 每条 book 读取都必须带 `user_id`。
+- 复现命令：`node scripts/probe_t74_user_scope.mjs`（输出 `.tmp/out_t74_userscope.txt`）。
+
+### 五、实验 C：凭证形态判别
+
+| 形态 | 改动面（`文件:行`） | 客户端 | 判定 |
+|---|---|---|---|
+| **① 用户级 bearer token（推荐）** | 服务端 `apps/sync-server/src/index.ts:83-87 authOk` 换用户级校验 + `users`/`tokens` 表与发放/撤销路由（~120-200 行）；`cors()` `:51` **可不动**（`Authorization` 已在 `:53` 允许头内） | 3 处加头：`apps/web/src/api.ts:160-170`（一处改受益全部 REST）· `apps/desktop/src/main.mjs:174-178`；存储 = web/capacitor `localStorage`、桌面 `safeStorage` | **✅ 推荐**：与现有 `Authorization: Bearer` 天然对齐、无 CORS 改动、无 cookie 语义风险、可撤销 |
+| ② 签名会话 cookie | 服务端 `cors()` **必改**：`:51 Access-Control-Allow-Origin: *` 与凭证型请求不兼容（须回显 Origin + `Access-Control-Allow-Credentials: true`，`*` 不能与 credentials 并用） | `api.ts:160-170` 加 `credentials:'include'` + 登录页 | ⚠ 局域网明文下基本不可行（`SameSite=None` 按规范须 `Secure`【推断·据规范】，现网是 `http://…:4570`）；Capacitor 侧 `https://localhost`→`http://10.0.2.2` 属 **mixed content** ⇒ **未验证** |
+| ③ 邮箱/密码自助注册 | ① 全部 + 口令哈希依赖 + 找回流程 + 邮件服务 + 更严限流 | 登录/注册 UI | ❌ v0.11.0 过重 |
+
+**Capacitor WebView 能否带 cookie**：**未验证**（本机无 Android 工具链/真机；只能给规范级推断 ⇒ 如实标注，不臆造）。
+
+### 六、实验 D：限流与查询白名单成本
+
+1. **查询白名单：已满足，无需新增** —— 服务端只暴露 **13 条固定路由**，入参全部经**参数绑定**进入 core；`apps/sync-server/src/index.ts` 内**无**「把请求字符串拼进 SQL」的位置（`${}` 仅用于日志/404 文案；`packages/core/src/db/lexicon.ts:88` 的 `${table}` 来自 `kind` 白名单非任意值）⇒ 客户端**无法**提交任意 SQL。
+2. **限流：当前完全没有**（全文无 `rate`/`429`/`throttle`）⇒ 新增面 = 内存令牌桶 **~30-40 行**；**建议就地加在 `apps/sync-server/src/index.ts`（现 217 行）内**，不新建文件；仅多实例部署才需外置。
+3. **鉴权 + 用户维度改造点清单（带 `文件:行`）**：
+   - `apps/sync-server/src/index.ts:40`（`TOKEN` 语义→用户表）· `:83-87`（`authOk`→用户级校验）· `:97-99`（中间件位）· `:254`/`:263`/`:279-292`（三处 book 读写带 `user_id`）
+   - `packages/core/src/db/schema.ts:6-25`（两处 DDL 加 `user_id` 进主键）· `:111-125`（`SCHEMA_SQL` 副本同步；新列索引**不得**写入 `SCHEMA_SQL`）
+   - `packages/core/src/db/index.ts:154+`（新增 `migrateBookUserScope()`，紧随 `migrateBookCompositeKey`）+ `:786`/`:845`/`:1213`/`:1225`/`:1235`/`:1261`/`:1275`/`:1277`/`:1284`/`:1365`（book 语句带 `user_id`）
+   - 客户端：`apps/web/src/api.ts:160-170`（token 头）· `apps/desktop/src/main.mjs:174-178`（token 头）· `apps/web/src/components/SettingsPanel.tsx`（令牌录入 UI，`getSyncUrl/setSyncUrl` 先例见 `apps/web/src/api.ts:52-62`）
+   - ⚠ **跨写域提示**：core 侧改动会给 `packages/core/test/book_lang.mjs` 的 137 条断言带来**契约级冲击**（book 函数签名/主键变化）⇒ 须先由测试 agent 出断言口径 + 主管立项；**本轮未动**。
+
+### 七、未验证项（本轮）
+
+1. T67 实验 A（Capacitor：`webDir`/`cap add android`/`apps/mobile` 归属）**报告未送达** ⇒ 无结论。
+2. Turso 真实连接与跨设备同步未测（本地无凭据）；「写被转发主库」已由 `WriteDelegation` 报错证实，**成功路径**未验证。
+3. Capacitor WebView cookie 行为未实测（无真机/模拟器）。
+4. 多用户改造只到「临时库可跑」；**未评估** `book_lang.mjs` 137 条断言的冲击面（需测试 agent 参与）。
+5. 未测 `data/db/dict.db` 的 book 表真实行数/体积（避免触碰 `data/**`）。
+
