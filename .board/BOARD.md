@@ -2553,3 +2553,82 @@ V9 相对 V0：**消除 12**（11 个 суч- 词 + `однако`）· **新增
 ### 六、★ 裁决五：脚本保留 `scripts/_tmp/`（不提升、不重跑）
 `scripts/_tmp/out_t24d_diff.txt`（保留）：**75,622 bytes = 73.8 KB · 1,081 行（换行符计数）**，内容 = **P1（суч-/суд-/стат-/домин-）全库逐词差分**：可拆 33300(+138) · 口径A −19 · 口径B −27 · 判据① 33571(+142) · loses 1（`экстатический`）+ gains 139 逐词（如 `аэростат: [] → аэро-@0-4 стат-@4-8`）。同目录 `out_t24g_diff.txt`（477 KB，更全）。
 
+---
+
+## [主管] v0.11.0 手机端起步 —— 环境打通与 Android 端首次实机验证（本轮）
+
+> **时点**：v0.11.0 立项当轮 · HEAD `d529b48`（本轮提交前）· **全部数字为主管亲自实测**，非转述。
+
+### 一、★★★ 结论先行：手机端已在真实 Android 上跑通并查出真实词条
+| 验证层级 | 证据 | 结果 |
+| --- | --- | --- |
+| **编译** | `gradlew.bat assembleDebug` | **BUILD SUCCESSFUL in 1m 23s**（93 tasks）· 产物 `apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk` = **4,201,212 B** |
+| **包静态核验** | `aapt2 dump badging` ＋ 解包查条目 | 包名 `com.lzk101.zidiankaifa` · `minSdk 24 / targetSdk 36 / compileSdk 36` · 应用名 **「电子辞典」** · `INTERNET` 权限 · web 资源**确在包内**（`assets/public/assets/index-B7StHI5k.js` = 199,747 B） |
+| **安装运行** | `adb install -r` ＋ `am start` | `Success` ⇒ `topResumedActivity=ActivityRecord{... com.lzk101.zidiankaifa/.MainActivity}` |
+| **界面** | `adb shell screencap` ＋ 视觉识别 | 完整可用界面：`📖 我的电子辞典` · 搜索框 · `自动/英语/俄语` · 五面板 **`查词` `生词本` `词根词缀` `词根分类` `设置`** · 无白屏 / 无 WebView 报错 |
+| **网络链路** | 模拟器内 `nc 10.0.2.2 4570` | `HTTP/1.1 200 OK` ＋ 完整 CORS 头 ⇒ **手机 → 电脑的网络可达** |
+| **★ 页面级端到端** | **CDP `Runtime.evaluate`**（见 §四） | `/health` **200** · `/api/v1/lookup?word=hello&lang=en` **200 / 46 ms** 返回真实词条 · `/api/v1/book` **200 / 3 条** |
+| **UI 实证** | `adb shell input text hello` ＋ 回车 ＋ 截图 | 屏上显示 **`hello` / `ha'laʊ` / `柯林斯 ★★★` / `牛津 ★` / `语料频次 第2319位` / `中考 高考` / `n. an expression of greeting` / `int. 喂；哈罗`** |
+
+**⇒ 手机端查的是真实 494 MB 词库**，不是 mock、不是离线占位。手机端作为**瘦客户端**经网络查询跑在**电脑**上的同步服务 —— 这正是用户要的「手机端和电脑端互通」的地基。
+
+### 二、本机 Android 工具链（用户授权主管安装；装前全空）
+装前实测：`JAVA_HOME` / `ANDROID_HOME` **均为空**，`java` / `gradle` / `adb` **全未安装**。
+落点 = **仓库根 `.android-toolchain/`**（已写入 `.gitignore`，**绝不入 git**）：
+
+| 组件 | 实测值 |
+| --- | --- |
+| **JDK 21** Temurin 21.0.12.1+1 | `OpenJDK21U-jdk_x64_windows_hotspot_21.0.12.1_1.zip` = **205,073,461 B**（6 s） |
+| JDK 17 Temurin 17.0.20.1+1 | 190,817,615 B（7 s）—— **已保留但不再用于 Android 构建** |
+| commandline-tools | `commandlinetools-win-15859902_latest.zip` = **155,655,386 B** |
+| SDK 组件 | `platform-tools`（adb **1.0.41 / 37.0.1**）· `platforms;android-35` · `platforms;android-36` · `build-tools;35.0.1`（Gradle 又自动补装 `35.0.0`）· `emulator` ＋ `system-images;android-35;google_apis;x86_64` |
+| Gradle | 发行包 **8.14.3**（`gradle-wrapper.properties` 指定）· AGP **8.13.0** · `GRADLE_USER_HOME` 隔离在工具链内 |
+| 磁盘 | D 可用 **340,655,833,088 B（317 GiB）** |
+
+### 三、★★ 两个硬版本事实（踩过才知道，务必落盘）
+1. **Capacitor 8 要求 JDK 21，不是 17。**
+   首次构建**失败**：`Execution failed for task ':capacitor-android:compileDebugJavaWithJavac'` → `Java compilation initialization error` → `无效的源发行版：21`。
+   **根因（读源码钉死，非推断）**：`node_modules/.pnpm/@capacitor+android@8.5.2/node_modules/@capacitor/android/capacitor/build.gradle` 写死
+   `sourceCompatibility JavaVersion.VERSION_21` / `targetCompatibility JavaVersion.VERSION_21`。改用 **JDK 21** 后 **BUILD SUCCESSFUL**。
+   备选方案（**未采用、留档**）：降到 Capacitor 7（最新 **7.6.9**）配 JDK 17。
+2. **`uiautomator dump` 拿不到 WebView 内容**（实测 dump 仅 **2,524 B**、6 个原生节点、WebView 是不透明节点）⇒ **手机端 UI 验证不能靠无障碍树**，必须走截图或 CDP（见 §四）。
+
+### 四、★★ 新环境事实：手机端页面级验证的可行通道 = Chrome DevTools Protocol
+Capacitor 配置 `android.webContentsDebuggingEnabled: true` ⇒ 可 `adb forward tcp:9222 localabstract:webview_devtools_remote_<pid>` 后用 CDP `Runtime.evaluate` **在真实页面里执行 JS**。
+本轮用它一次取回多项事实（**最强证据形式：在设备上跑、由页面自己回答**）：
+```
+hasCapacitor=true · platform="android" · isNative=true · origin="https://localhost"
+savedSyncUrl=null · candidate="http://10.0.2.2:4570"        ← 本次代码改动生效
+health 200 {ok:true, words:770611, sync:"zidiankaifa-sync-server", version:"0.10.0"} 540ms
+lookup 200 46ms word=hello keys=[word,phonetic,definition,translation,pos,collins,oxford,tag,bnc,frq,exchange,audio]
+book   200 count=3
+```
+探针：`scripts/_tmp/probe_t71_mobile_cdp.mjs`（⚠ 在 `_tmp` 下，依 `DEC-022` **不得作为证据来源**；正式证据须另固化到非 `_tmp` 路径）。
+
+### 五、本轮代码改动
+1. **`apps/web/src/api.ts`** —— 新增 `isNativeShell()` / `isAndroidShell()`，`getSyncUrl()` 缺省值按运行时分三态：
+   **浏览器/桌面 = `http://localhost:4570`** · **Android 原生 = `http://10.0.2.2:4570`（模拟器访问宿主机的固定别名）** · 用户 `localStorage['zidian-sync-url']` 覆盖优先。
+   **理由**：原实现写死 `localhost`，而 WebView 里的 `localhost` 指**手机自己** ⇒ 手机端**开箱即坏**。已实测 Vite 打包**未摇掉** Capacitor 引用（产物内 `Capacitor`×2 / `isNativePlatform`×2 / `getPlatform`×1 / `10.0.2.2`×1）。
+2. **`apps/mobile/`**（新，**第 4 个 workspace 包**，`apps/*` 已在 `pnpm-workspace.yaml` 内）：
+   `package.json`（`@capacitor/{core,android,cli}` **8.5.2**）· `capacitor.config.json`（`appId=com.lzk101.zidiankaifa` · `webDir="../web/dist"` · `androidScheme=https` · `allowMixedContent=true`）· `android/` 原生工程（`cap add android` 生成 **68 文件 / 520,321 B**，**入 git** 以保证构建可复现）。
+3. **`apps/mobile/android/app/src/main/res/xml/network_security_config.xml`**（新）＋ `AndroidManifest.xml` 加 `android:networkSecurityConfig` 与 `android:usesCleartextTraffic="true"`。
+   **理由**：Android 9（API 28）起**默认禁明文 HTTP** ⇒ 手机连电脑的局域网 `http://` 会被系统直接拒绝；且 WebView 页源是 `https://localhost`，向 `http://` 请求还会叠加 **mixed content** 拦截。取向**不是一律放行**：`base-config cleartextTrafficPermitted="false"` 为基线（云端强制 HTTPS），仅对**私网段 + `10.0.2.2` + `localhost`** 开例外。
+4. **`apps/mobile/android/app/build.gradle`** —— `versionCode 1 / versionName "1.0"`（`cap add` 占位值）改为 **1100 / "0.11.0"**，与项目版本体系同源；`apps/mobile/package.json` 版本同步为 **0.11.0**。
+5. **`.gitignore`** —— 新增 `.android-toolchain/`（工具链，数百 MB 二进制）与 `apps/mobile/android/{build,app/build,.gradle,local.properties,capacitor-cordova-android-plugins}`。**原则：原生工程入 git，构建产物与本机绝对路径不入 git。**
+
+### 六、回归门禁（改动后实测，全绿）
+- core **621 通过 / 0 失败 exit 0**（分块 99+67+38+60+194+26+137）
+- desktop **22 通过 / 0 失败 exit 0** ⇒ **门禁合计 643 / 0**
+- `scripts/check_v10_ui_contract.mjs` **60 通过 / 0 失败 exit 0**
+- `pnpm --filter @zidiankaifa/web build` exit 0（`index-DNSekuqg.js` 200,086 B / gzip 63.36 kB）
+- ⚠ 本轮 `pnpm install --no-frozen-lockfile` **重建了 `node_modules`**（pnpm 检测到需重建而无 TTY 中止 ⇒ 须 `CI=true`；新增 3 个依赖 ⇒ 必须 `--no-frozen-lockfile`）⇒ 上列门禁**就是重建后的复跑结果**，故有效。
+
+### 七、未闭环（转下一阶段）
+1. **iOS 编译物理不可行**（须 macOS + Xcode）⇒ v0.11.0 只交付 **Android**；需求文档须**如实标注**，不得写成「未做」。
+2. **★ 离线查词（用户选定「内置高频词子集」）存在技术障碍**：`@capacitor-community/sqlite` 的 **`SQLiteDBConnection` 全部方法皆为 `Promise`**（读 `definitions.ts` 实测：`open/close/execute/query/run/beginTransaction` 均返回 Promise；两个类 `SQLiteConnection:1340` / `SQLiteDBConnection:1952` **无任何同步变体**）⇒ 与 `packages/core` 依赖的 **`node:sqlite` `DatabaseSync` 同步 API 不兼容**，core 的 `breakdownWord`/`lookupWord` **不能直接复用**。⇒ 需专门设计（异步适配层 / 预生成只读子集＋索引 / 独立轻量查词实现），**属待裁事项**。
+3. **真机（非模拟器）未验证**：本机**无 USB 连接设备**，ADB 无线调试**未测**（真机需与电脑同局域网并在「设置 → 同步服务器地址」填电脑局域网 IP）。⇒ **不得宣称「真机可用」**。
+4. **云端（Turso）侧零实施**：本轮只打通「手机 ↔ 电脑局域网」；`TASKS.md` §12.8 待裁 1/2（用户数据库位 · 冲突解决）**仍待裁**。
+5. **用户数据（生词本 / 词根分组 / 偏好）跨端互通未实现**：现为「生词本在 `localStorage`（移动端）＋ 服务端 `syncDb` 各一份」的双路径，**缺推送时机与拉取时机**。
+6. 计数陷阱**第 11 次**（**未重蹈、仅登记**）：`git ls-files -z | Measure-Object` 得到 **1**（`-z` 输出是以空字符分隔的**单一字符串**）⇒ **计数禁用 `-z`**；**分组统计才用 `-z`**。
+7. **已跟踪文件数 = 221 / 300**（余量 **79**）· `scripts/` = **101 / 165**。⚠ 若把 `apps/mobile/android/` 全量入库（约 68 文件）⇒ 将逼近 300 预算上限（预计 **~289**），**发版前须由结构 agent 出账**。
+

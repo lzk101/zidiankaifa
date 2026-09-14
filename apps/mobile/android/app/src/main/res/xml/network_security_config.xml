@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  网络安全配置（v0.11.0 手机端）
+
+  为什么需要它：
+    - Android 9（API 28）起，**默认禁止明文 HTTP**（`cleartextTrafficPermitted` 默认 false）。
+    - 手机端要连「电脑上的同步服务」走的是局域网 `http://<局域网IP>:4570`，属明文 HTTP，
+      不加本配置会被系统直接拒绝（`CLEARTEXT communication to ... not permitted by network security policy`）。
+    - Capacitor 的 WebView 自身页源是 `https://localhost`，向 `http://` 发请求还会叠加
+      **mixed content** 拦截 ⇒ 同时需要在 `capacitor.config.json` 置 `android.allowMixedContent: true`。
+
+  安全取向（不是「一律放行明文」）：
+    - `cleartextTrafficPermitted="false"` 是**基线**：公网域名（云端 API）**强制 HTTPS**。
+    - 仅对**私网网段**与**本机/模拟器别名**放行明文。这些地址在公网不可路由，
+      且本项目云端部署后走 HTTPS，故放行它们不扩大公网攻击面。
+    - ⚠ 明文只在「同一局域网内自用」场景可接受；**一旦把同步服务暴露到公网，必须用 HTTPS**。
+
+  ⚠ 本文件属 `apps/mobile/android/` 原生工程（入 git）；改动后须重新 `cap sync` + 编译才生效。
+-->
+<network-security-config>
+    <!-- 基线：一切未列出的目标一律禁止明文 -->
+    <base-config cleartextTrafficPermitted="false" />
+
+    <!-- 例外：仅私网与开发本机 -->
+    <domain-config cleartextTrafficPermitted="true">
+        <!-- 模拟器访问宿主机的固定别名（Android Emulator 专用：10.0.2.2 = 宿主机 127.0.0.1） -->
+        <domain includeSubdomains="false">10.0.2.2</domain>
+        <!-- Android 真机连电脑的常见局域网网段 -->
+        <domain includeSubdomains="false">192.168.0.0</domain>
+        <domain includeSubdomains="false">192.168.1.0</domain>
+        <domain includeSubdomains="false">192.168.2.0</domain>
+        <domain includeSubdomains="false">192.168.3.0</domain>
+        <domain includeSubdomains="false">192.168.4.0</domain>
+        <domain includeSubdomains="false">10.0.0.0</domain>
+        <domain includeSubdomains="false">172.16.0.0</domain>
+        <domain includeSubdomains="false">127.0.0.1</domain>
+        <domain includeSubdomains="false">localhost</domain>
+    </domain-config>
+</network-security-config>

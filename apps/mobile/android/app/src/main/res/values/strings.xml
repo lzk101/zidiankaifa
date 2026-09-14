@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">电子辞典</string>
+    <string name="title_activity_main">电子辞典</string>
+    <string name="package_name">com.lzk101.zidiankaifa</string>
+    <string name="custom_url_scheme">com.lzk101.zidiankaifa</string>
+</resources>

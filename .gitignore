@@ -54,3 +54,30 @@ _tmp/
 _board_commit*
 _commit*.txt
 
+# ---- v0.11.0 手机端本地工具链（结构性防误提交）----
+# 背景：Android 构建需要 JDK + Android SDK，但本机原先 JAVA_HOME / ANDROID_HOME 均为空
+#   （java / gradle / adb 全未安装）。用户授权后就地安装到仓库内，**绝不入 git**：
+#   .android-toolchain/jdk/     Temurin JDK 17.0.20.1+1（解压后约 300 MB）
+#   .android-toolchain/sdk/     Android SDK（platform-tools + platforms + build-tools）
+#   .android-toolchain/dl/      原始 zip 安装包（jdk17.zip 190 MB / cmdline-tools.zip 155 MB）
+#   .android-toolchain/gradle/  Gradle user home（android 工程首次构建会拉 Gradle 发行包与依赖）
+# 放在仓库内是为了让 JAVA_HOME / ANDROID_HOME 有确定落点、每次构建可复现
+# （依 AGENTS.md 铁律 4：环境事实必须落盘，不能只留在上下文里）。
+# ⚠ 单个文件上限 20 MB、已跟踪文件 ≤300 的预算都不该被这些二进制拖累 ⇒ 必须忽略。
+.android-toolchain/
+# Gradle 构建产物与缓存（若沿用默认 GRADLE_USER_HOME=%USERPROFILE%\.gradle 则不会出现在此，仍结构性堵住）
+.gradle-cache/
+
+# ---- v0.11.0 手机端 Android 工程（Capacitor）----
+# 原则：**原生工程入 git**（保证 android/ 的 Gradle 配置、Manifest、图标、签名配置可追溯、可复现），
+#   **构建产物与本机路径不入 git** —— 这是 Capacitor 官方模板自带的 .gitignore 划分。
+# 实测（`cap add android` 后）：android/ 共 68 文件 / 520,321 B，其中绝大多数是需入库的工程文件。
+apps/mobile/android/build/
+apps/mobile/android/app/build/
+apps/mobile/android/.gradle/
+apps/mobile/android/capacitor-cordova-android-plugins/
+apps/mobile/android/local.properties
+# Capacitor 每次 `cap sync` 重新生成，属产物；但**副本入 git 便于 diff 出「web 产物是否同步」**
+# （若不入 git，android 工程在 clone 后会缺少 web 资源而无法直接编译）
+# ⇒ 选择**入库**：apps/mobile/android/app/src/main/assets/public/**
+

@@ -1,0 +1,12 @@
+{
+  "appId": "com.lzk101.zidiankaifa",
+  "appName": "电子辞典",
+  "webDir": "../web/dist",
+  "android": {
+    "allowMixedContent": true,
+    "webContentsDebuggingEnabled": true
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}

@@ -1243,6 +1243,102 @@ if (cp.busy !== 0) {
 | **agent 结构精简** | **物理「精简 agent 数量」在本工具层做不到** —— `list_agents` 12 条子代理**全 `ready`**、`interrupt_agent` 对 `ready` 者**是无操作**。⇒ 只能做 **台账压缩 · 口径收敛 · 抑制新增**（结构 agent 的 T62-B 方案未产出）。 |
 | `docs/legacy/` 后置 | `check_requirements.py` 归档后**写目标转移到 `docs/legacy/`**（不再碰权威 `docs/需求总结.md`），但**废弃横幅仍会被重写**；**风险随移回根目录立即复原**。 |
 
+---
+
+# ★★★ §12 · v0.11.0 立项 —— 手机端 + 端云互通（主管，本轮）
+
+> **本节是 v0.11.0 唯一的立项依据。** 范围重大调整：原定的「正确性梯队」（`а-` 前缀缺失 / D2 通用空洞上限 / `термостат` 取舍 / `roots_ru.json` 四条 `origin` 订正）**整体推后到 v0.12.0**。
+> 本节的**数字与结论全部为实测或联网取证**，凡非实测者一律标注「推断」。
+
+## §12.1 · 用户原话与拍板（权威依据）
+> 用户原话：「**下一版本先做手机端，以及手机端和电脑端的互通**」
+
+| 问题 | 用户选择 | 备注 |
+| --- | --- | --- |
+| 手机端形态 | **Capacitor 包成真 App** | 未选 PWA、未选 RN/Flutter 重写 |
+| 互通底座 | **云服务商 BaaS** | |
+| 互通范围（多选） | **生词本双向同步** ＋ **词根分类/分组同步** ＋ **搜索历史/界面偏好** | **不含**「学习进度与复习记录」 |
+| v0.11.0 内容 | **手机端做进 v0.11.0**，正确性梯队推后 v0.12.0 | ⇒ 原 §11.13.7 的 v0.11.0 待办**改挂 v0.12.0** |
+| 云底座最终 | **Turso（libSQL）** | 主管否决 Supabase，理由见 §12.3 |
+| Android 工具链 | **授权主管安装** JDK + Android SDK | 本机原先 `JAVA_HOME`/`ANDROID_HOME` 皆空 |
+| 离线查词 | **内置高频词子集** | 既非全量内置，也非纯在线 |
+
+## §12.2 · 架构（本迭代基准）
+```
+[手机 App (Capacitor)]  ─┐
+[Web 浏览器 (现有)]      ─┼─→ HTTPS ─→ [云端 API 薄层: 鉴权/限流/白名单] ─→ [Turso 云 SQLite]
+[桌面端 (Electron)]      ─┘                                              ├─ dict.db 主体（518,242,304 B，零改造直传）
+                                                                         └─ 用户数据（生词本/偏好/历史）
+[手机本地] ← 内置高频词子集（离线查词 + 离线生词本队列）
+          ↑ 联网时双向同步（生词本 · 词根分组 · 搜索历史/偏好）
+```
+
+**三层数据分层**（写 REQ 时必须区分，不可混为「同步一切」）：
+| 层 | 内容 | 同步性质 |
+| --- | --- | --- |
+| **共享只读层** | 词典本体：`words_i18n` / `morphemes` / `roots` / `affixes` / `word_etymology` … | 云上**一份**，三端读同一份，**不产生用户写入** |
+| **用户私有读写层** | `book`（生词本，`(word, lang)` 复合主键）＋ 词根分组 ＋ 偏好/历史 | **需双向同步**（冲突解决见 §12.8 待裁） |
+| **离线层** | 高频词子集（读）＋ 本地生词本队列（写） | 联网后上浮，**不丢不重** |
+
+## §12.3 · 云底座选型（实测与取证）
+**Turso 额度**（逐字取自 `https://turso.tech/pricing` 的 schema.org 结构化数据；**抓取时点 = 本轮**）：
+> **Free $0/month**：`Databases: 100 · Storage: 5GB · Monthly Rows Read: 500 Million · Monthly Rows Written: 10 Million · Monthly Syncs: 3GB · Point-In-Time Restore: 1 day`
+> **Developer $4.99/month**：`Unlimited · 9GB ＋ $0.75/GB · 2.5 Billion …`
+> ⚠ **超限即停服**（原文）：「Once you exceed the limit on any single metric (storage, rows read, rows written, or syncs), your databases are blocked, even if the other metrics are still well under quota」—— free plan **没有「超额继续」**。
+
+- **`data/db/dict.db` = 518,242,304 B（494.2 MiB）** ⇒ 装进 5 GB 有 **约 10 倍余量** ⇒ **存储不是瓶颈**；**rows read 才是**（free 层 5 亿行/月）。
+- 客户端库：**`@libsql/client` 0.18.0**（`npm view` 实测可解析），`exports` **含 `browser`/`deno`/`workerd`/`edge-light`** 入口 ⇒ 浏览器/Capacitor 端可直接用，**不必手写 libSQL HTTP 协议**。
+- **★ 否决 Supabase 的理由（硬的）**：其免费层 Postgres **500 MB**，而词库 **518.2 MB > 500 MB** ⇒ **装不下词典**；且需把 SQLite 转 Postgres（表结构、`rowid` 语义、FTS 全文索引全部重做）⇒ 正是本项目历史上被反复否决的「重造轮子」。
+- **★ 选 Turso 的正面理由**：**SQLite 同格式** ⇒ `dict.db` **零改造直传**，`rowid % 97` 尺子 R、`morphemes`/`roots`/`affixes` 倒排表**全部原样可用**。
+
+## §12.4 · ★ 安全红线（已定，不可挑战）
+**客户端绝不直连 Turso；Turso token 只存服务端环境变量。**
+理由：Capacitor 产出的 **APK 可解包**，token 一旦进客户端产物即等于**整库 + 全量用户数据泄露**。
+⇒ 云上**必须有一层薄 API**（可改造现有 `apps/sync-server` 形态）：
+1. Turso token **只在服务端**（env 注入，**不进任何客户端产物**）
+2. 客户端只持有**用户级会话凭证**（可撤销、有作用域）
+3. 服务端做**鉴权 + 限流 + 查询白名单**（只暴露既有 13 条路由语义，**不接受任意 SQL 透传**）
+4. 附带收益：**rows read 额度由服务端统一管控**，可超限前熔断，避免 free plan 被一个坏查询打到「整库停服」
+
+## §12.5 · 可复用资产（已核验，互通不是从零开始）
+- **`apps/sync-server/src/index.ts`（8061 B）已有 13 条 REST 路由** ＋ `:93` `OPTIONS` CORS 预检：`/health`（`:104`）· `/api/v1/lookup`（`:113`）· `/suggest`（`:119`）· `/breakdown`（`:126`）· `/lexicon`（`:133`）· `/lexicon/entry`（`:150`）· `/lexicon/stats`（`:157`）· `/words`（`:162`）· `/book`（`:174`，POST/PUT `:195`）· `/book-groups`（`:182`）· `/related`（`:189`）· `/sync`（`:195`）
+- **`apps/web/src/api.ts` 已有 `rest` / `electron` 双后端抽象** ⇒ 手机端接 REST 是**复用**既有接口层
+- **web 端已有移动化底子**：`apps/web/index.html:5` `viewport-fit=cover` · `:6` `theme-color`；`apps/web/src/styles.css` 断点 `:1324`/`:1869`/`:2357`（`max-width:760px`）· `:2056`（`860px`）· `:192`（`780px`）
+
+## §12.6 · Android 工具链（用户授权，主管自装）
+**装前实测（全空）**：`ANDROID_HOME` / `JAVA_HOME` **均为空**；`java` / `gradle` / `adb` **全部未安装**。⇒ `npx cap add android` 能生成工程，但 **Gradle 编 APK 必失败**。
+**落点 = 仓库根 `.android-toolchain/`**（已写入 `.gitignore`，**绝不入 git**）：
+
+| 组件 | 实测值 |
+| --- | --- |
+| Temurin **JDK 17.0.20.1+1** | `OpenJDK17U-jdk_x64_windows_hotspot_17.0.20.1_1.zip` = **190,817,615 B**（下载 7 s）⇒ 解压 `jdk/jdk-17.0.20.1+1`，`java -version` 实测 `17.0.20.1 2026-08-18` |
+| Android **commandline-tools** | `commandlinetools-win-15859902_latest.zip` = **155,655,386 B**（官方页面实时抓取的最新版号）⇒ `sdk/cmdline-tools/latest` |
+| `platform-tools` · `platforms;android-35` · `platforms;android-36` · `build-tools;35.0.1` | 安装中（**最新基础平台 = android-36，无 37**） |
+| Gradle 代理 | `gradle/gradle.properties` 写死 `systemProp.http(s).proxyHost=127.0.0.1` / `Port=7897`（**Gradle 不读系统代理**，不写则 `google()`/`mavenCentral()` 全超时） |
+
+其他：磁盘 D 可用 **340,655,833,088 B（317 GiB）**；代理**仅 `127.0.0.1:7897`（Clash）开放**（7890/10809/1080 实测关闭）。
+> ⚠ **iOS 编译必须 macOS + Xcode，Windows 上物理做不到** ⇒ 手机端 v0.11.0 只交付 **Android**；iOS 须在需求文档中**如实标注**，不得写成「未做」。
+
+## §12.7 · 派单（三单并行，均已发出）
+| 单号 | 承派 | 范围 | 硬约束 |
+| --- | --- | --- | --- |
+| **T66** | 需求 agent `4ce66e63` | `.board/REQ.md` 新增 **§REQ-V11-001**：架构总述 · **AC-20…AC-26** · DoD · 不做清单 · 三条红线 | **取代其未执行的 T65**；只改 REQ/DECISIONS/CHANGELOG |
+| **T67** | 开发 agent `6c6cedb8` | **只判别实验不写实现**。A：Capacitor `webDir`/`apps/web/dist` 兼容性与 base URL 改造点清单 · B（**最有价值**）：`node:sqlite` → `@libsql/client` 差异面与**是否存在「零改造」路径**（embedded replica / `file:` 本地模式）· C：词频列探查与「高频」判据 | 探针前缀 `probe_t67_`；不写 `.board/REQ.md`/`DECISIONS.md` |
+| **T68** | 测试 agent `7ff57407` | **高频词子集的断言级实测**：词频列有无 · N ∈ {5k,10k,20k,50k} 的**体积-覆盖率曲线**（对**尺子 R 791 词**、口径 A 101,512、英语词条）· 子集自包含性与**静默降级**清单 · `rowid % 97` 子集可复现性 | 探针前缀 `probe_t68_`；**只读冻结库**；不改 `src` |
+> ⚠ **同题不重派**：T67-C 与 T68 都涉及「高频词」，但**分工写死** —— T67 只出**判据与方法**，T68 出**断言级实测数字**，避免同题两份互相冲突的结论。
+
+## §12.8 · ★ 待裁事项（挂账，落 REQ 前须有结论）
+| # | 事项 | 为什么必须裁 |
+| --- | --- | --- |
+| 1 | **云端用户数据的库位**：与 `dict.db` 同库 / 独立用户库 | **直接决定 Turso 成本模型**——同库则词典本体与用户数据**共用 rows read 额度**；独立库则**用户读写不影响词典额度**，且可单独回滚 |
+| 2 | **跨端同步的冲突解决**：是否沿用 `apps/sync-server` 现有的 **last-write-wins** | 生词本含**墓碑（`deleted`）**；本项目墓碑曾因**经 API 层从 `0/1` 映射为 boolean** 造成**假红与假绿同源**（`AGENTS.md` §3 第 8 条）⇒ 必须写死口径 |
+| 3 | **Capacitor 工程落点**：`apps/mobile`（第 4 个 workspace 包）还是根级 | 影响 `pnpm-workspace.yaml`、`packages/core` 复用方式、已跟踪文件计数预算（当前 **219**/300） |
+| 4 | **离线子集的 N 与内容** | 待 T68 曲线出来再定；**不得先定体积后补依据** |
+
+## §12.9 · 未闭环转 v0.12.0（原 v0.11.0 待办，整体顺延）
+原 §11.13.7 未闭环项**不消失、不改口径**，顺延为 v0.12.0：`V11-OPENDB-LEAK`（**T61 已修复并入库 `2c908e8`**，此项实际已闭环）· `а-` 前缀缺失 · D2 通用空洞上限 · `термостат` 取舍 · `roots_ru.json` 四条 `origin` 订正 · 结构 agent 席位口径 · `docs/legacy/` 后置风险。
+> ⚠ **T65（需求 agent 的 v0.11.0 正确性 DEC 派单）已被 T66 取代**，若需求 agent 已产生部分落盘，须**如实登记写到哪**（依 `DEC-014`，已落盘史实句不得回改，只标状态）。
+
 
 
 

@@ -15,16 +15,50 @@ import type {
 } from '@zidiankaifa/core';
 import { groupBookByMorphemeData, isCyrillic } from '@zidiankaifa/core';
 
+/**
+ * 默认同步服务地址。
+ *
+ * v0.11.0（手机端）：三端语义不同，不能再写死一个 localhost。
+ *  - **浏览器 / 桌面端**：同步服务就跑在本机 ⇒ `http://localhost:4570` 正确。
+ *  - **Android（Capacitor）**：WebView 里的 `localhost` 指**手机自己**，而同步服务跑在
+ *    **电脑**上 ⇒ 必须换成电脑的地址。其中：
+ *      · Android 模拟器访问「宿主机」有固定别名 **`10.0.2.2`**（等价于宿主机的 127.0.0.1）；
+ *      · 真机则需要填电脑的**局域网 IP**（如 `http://192.168.1.5:4570`），
+ *        用户可在「设置 → 同步服务器地址」里覆盖；本函数只负责给出**可用的缺省值**。
+ *  - ⚠ 云端 API 上线后，此缺省值应改为云端 HTTPS 地址（**不要**把 Turso token 放进来）。
+ *
+ * 运行时覆盖优先级：`localStorage` 的 `zidian-sync-url` > 本缺省值。
+ */
 const DEFAULT_SYNC_URL = 'http://localhost:4570';
+const NATIVE_ANDROID_SYNC_URL = 'http://10.0.2.2:4570';
 const SYNC_URL_KEY = 'zidian-sync-url';
 const BOOK_LOCAL_KEY = 'zidian-book-local';
+
+/** 是否运行在 Capacitor 原生壳（Android/iOS）里 —— 与浏览器、Electron 都不同。 */
+function isNativeShell(): boolean {
+  if (typeof window === 'undefined') return false;
+  // Capacitor 注入的全局对象；`isNativePlatform()` 在 Web 构建里也可用（返回 false）
+  const cap = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor;
+  return typeof cap?.isNativePlatform === 'function' ? cap.isNativePlatform() : false;
+}
+
+/** 是否为 Android 原生壳（模拟器走 `10.0.2.2` 别名）。 */
+function isAndroidShell(): boolean {
+  if (!isNativeShell()) return false;
+  const cap = (window as unknown as { Capacitor?: { getPlatform?: () => string } }).Capacitor;
+  return cap?.getPlatform?.() === 'android';
+}
 
 export function setSyncUrl(u: string): void {
   localStorage.setItem(SYNC_URL_KEY, u);
 }
 
 export function getSyncUrl(): string {
-  return localStorage.getItem(SYNC_URL_KEY) || DEFAULT_SYNC_URL;
+  const saved = localStorage.getItem(SYNC_URL_KEY);
+  if (saved) return saved;
+  // 原生 Android：缺省指向宿主机（模拟器别名）；真机请用户在设置里改成电脑局域网 IP
+  if (isAndroidShell()) return NATIVE_ANDROID_SYNC_URL;
+  return DEFAULT_SYNC_URL;
 }
 
 /* ---------------- 本地生词本（浏览器 / PWA 模式） ----------------

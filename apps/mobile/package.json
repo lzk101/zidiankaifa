@@ -1,0 +1,21 @@
+{
+  "name": "@zidiankaifa/mobile",
+  "version": "0.11.0",
+  "private": true,
+  "description": "电子辞典手机端（Capacitor 壳）—— 复用 apps/web 的构建产物，原生工程在 android/（v0.11.0 起）",
+  "type": "module",
+  "scripts": {
+    "sync": "cap sync android",
+    "copy": "cap copy android",
+    "open": "cap open android",
+    "apk": "cd android && gradlew.bat assembleDebug",
+    "apk:release": "cd android && gradlew.bat assembleRelease"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.5.2",
+    "@capacitor/core": "8.5.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.2"
+  }
+}
