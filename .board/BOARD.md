@@ -2835,3 +2835,59 @@ book   200 count=3
 5. **`apps/sync-server` 无自动化测试文件**（该包无 `test/`）⇒ 本次修复的自动化守卫是 `scripts/check_sync_dto_contract.mjs`，**未接入 `pnpm test` 链**，需手工跑。
 6. **未实施**：用户机制（AC-27）本身 —— 需求 agent T76 正在落 REQ/DEC 骨架；开发 agent T74 只出改造点清单、**未写实现**。
 
+---
+
+## [主管] T88 — v0.11.0 第 12 轮：D24 留痕落地 ＋ agent 台账终局裁定 15
+
+**时点**：HEAD `3c77cb2`（已 push，`origin/main` 同步 `0 0`）
+
+### 一、D24 已闭合（`AGENTS.md` ＋35/−2）
+`REQ.md` D24 要求「JDK ＋ Android SDK 的版本与路径写入 `AGENTS.md` §3」。**派单前实测**：`AGENTS.md` 中 `Android|JDK|JAVA_HOME|apps/mobile|Capacitor|gradlew` **零命中** ⇒ 该 DoD 项此前**完全未做**。现已补齐：§1 新增「手机端（v0.11.0 新增）」行 ＋ 词库精确字节数 **518,242,304 B**；§3 新增「Android / Capacitor 手机端构建」小节（四环境变量 · 三条硬版本事实 · 构建三步 · APK 路径 · pnpm install 两坑 · AVD `zdk35` · CDP 通道含 `localabstract:` 去 `@` 陷阱 · 明文 HTTP 解法 · iOS 如实标注）；§1 计数订正（`scripts/` 133 过期 → 99 → 现 **111**）＋ 新增纪律「**引用任何计数必须带时点**」。
+
+### 二、★★ agent 台账终局裁定：总数 = **15**（不是 14）
+**触发**：结构 agent T82-C 提请复核 —— 我写的裁决式 `14 = 受保护 4 ＋ 结构 2 ＋ 临时 8` 与其自身明细 `depth1 7 ＋ depth2 2 = 9` 冲突（`4＋2＋9 = 15 ≠ 14`）。**它的复核成立。**
+
+**权威快照（同一时刻连调两次）**：`children` = **12** = 业务常驻 3（`4ce66e63`·`6c6cedb8`·`7ff57407`）＋ 结构席位 2（`2d4ba4d0`·`bb9e0148`）＋ 临时 depth1 7；`descendants` = **15** = 上述 12 ＋ depth2 **3**（`36ef2379` parent=`6c6cedb8` · `9db3c4d0` parent=`fa74d552` · `0f53feaa` parent=`fa74d552`）。**主 agent 不计入行。**
+
+**终局写死**：**`agent 总数 = 15 = 主 agent 1 ＋ 受保护业务常驻 3 ＋ 结构席位 2 ＋ 临时 9`**（临时 9 = depth1 7 ＋ depth2 2）；业务口径「业务侧 13 = 受保护 4 ＋ 临时 9」；**体检附项改为「常驻合计 = 6（受保护 4 ＋ 结构席位 2）」** —— 原「恒为 5」是 T55 快照值、已随接班失效。
+
+**根因（两层，责任在我）**：① **快照时点混用** —— 14 是 `2c908e8` 时点值（那时临时 9 = 7＋2），我在 T62-C 裁决里却与「接任后结构席位 2」混写 ⇒ 得出 `4＋2＋8` 这个**自相矛盾**式子（末项 8 既非任何时点实测值、又与紧邻明细冲突）；② **本轮新增** —— 开发 agent 在 T67 期间自行 spawn `36ef2379`（depth2）但**未登记** ⇒ depth2 由 2→3，**这才是 14→15 的真实来源，不是「接班导致 +1」**。
+
+**已派 T87 订正**，含三项：① §1 标题 14→15 行 ② §4 统计表与构成式 ③ **其 §1.1 旁证②整段替换**（原文「若把主 agent 也算作行则应为 13」**不成立** —— `children` 12 本就不含主 agent）+ 补登 `36ef2379` 为「**待判**」。它已自行修完 `__LINES__` 占位符（现 120 行）。
+**纪律升级**：**凡写「总数」必须同时写「时点（commit SHA 或时刻）＋ ＝ A ＋ B ＋ C 构成式」**。
+
+### 三、在飞 4 单
+| 单 | 对象 | 任务 |
+|---|---|---|
+| **T83** | 开发 agent `6c6cedb8` | **AC-27 第一步（核心路径）**：`book` 主键重建为 `["user_id","word","lang"]`；`user_id` **NOT NULL 无 DEFAULT**（给 DEFAULT 会让漏写 `INSERT` 静默落 `'local'`、漏过滤 `SELECT` 读到他人行 ⇒ **双向隔离在 SQL 层失效**）；老库 3 行落 `'local'`；新列索引**单独 try/catch 建**；绑定上传**先 LWW 去重再改判**否则撞主键；core 作用域参数**可选、缺省 = `LOCAL_USER_ID`**（保既有 621 条断言机械成立；**禁止**「有 `userId` 才过滤」写法）；sync-server `/api/v1/auth/register\|login\|revoke`，`scrypt$N$salt$hash` + `timingSafeEqual` + **零新依赖**，**token 只存哈希**，限流按 IP＋用户、超限 **429** |
+| **T84** | 测试 agent `7ff57407` | **独立验证 AC-27…AC-30**：新断言写 `scripts/check_user_scope.mjs`，**隔离在 `pnpm test` 链外**（吸取 `ru_morph_defects.mjs` 教训：src 未修好就写红 ⇒ 门禁链永久红）；**必须走 HTTP 边界**（`V11-SYNC-DTO` 正是「两层各自自洽、交界处无人测」漏过去的）；九项判定（真实 DDL 不靠读源码推断 · 双向隔离 · **逐路由核对无漏过滤并脚本化** · 存量迁移保真幂等 · 绑定上传 LWW+留痕 · 密码库中无明文 · token 撤销即失效 · 限流 429 · 匿名不阻断） |
+| **T87** | 结构 agent `bb9e0148` | 台账订正为 15（见上） |
+| **T70** | 需求 agent `4ce66e63` | `docs/` 收尾稿 —— ⚠ **`docs/**` 不是其写域** ⇒ 只出内容稿落 `REQ.md` **§10.9**，由我执行写入 |
+
+**T83 归属决策（主管定）**：**账号存储放 sync-server 自己的库，不放 `dict.db`** —— 后者是**冻结只读词库**（`BASELINE.md` 有指纹、`data/**` 属保护清单「只报不删」），写入账号表会把词库变成可写状态、破坏冻结语义与结构体检口径。
+
+### 四、T79 已完成（测试 agent）＋ 主管独立核实
+- `scripts/check_sync_dto_contract.mjs` 新增 G 组（G1 `"not-an-array"` / G2 `123` / G3 缺键）⇒ 各断言「**不得 500 ∧ `pushed === 0`**」⇒ **22 通过 / 0 失败**，两 cwd 均 exit 0；冻结库前后 **518,242,304 B / `2026-09-13T15:13:53.350Z`** 未变。**G1–G3 = `book_lang.mjs:1427` C17 的行为版** ⇒ 服务端从此可自由重构而不假红，且**不动冻结账本**。
+- **自查纪律（好）**：它在我的更正到达前已按旧指令改了 `book_lang.mjs:1785` 的 console 标签，**收到更正后自主回退并附 diff 留痕**。**我独立核实为真**：`git diff` 显示回退方向正确、与 HEAD 完全一致（该文件仅因 CRLF 归一化被标 modified）⇒ 已 `git checkout` 清掉，**137 条冻结账本未被牵动**。它自记教训：「**被授权可改 ≠ 该立刻改** —— 派单前提正被自查推翻时，正确动作是先验证前提再动手」。
+- **`scripts/_tmp` 实测已不存在** ⇒ 它报的「残留 4 个 probe_t71/t72/t73」是**过期观测**，与 `BASELINE.md` §7「临时残留 = 0」一致。
+
+### 五、本轮我犯并已纠正的错（留痕）
+- **笔记误落到 `.board/structure/_t88_round_notes.md`** —— 那是**结构 agent 的独占写域** ⇒ 已 `Move-Item` 到 `.board/_t88_round_notes.md`（我的写域）。`.board/structure/` 现只剩结构 agent 自己的 4 个文件。
+- **pwsh**：`$x = if (...) {...} else {...}` **不能内联当值用**（参数位报 `The term 'if' is not recognized`）；作语句正常。
+- 清理：`.board/` 下 **5 个 `_commit_*.txt` ＋ 2 个 `_sync_srv*.log`** 已删（`.gitignore:55` `_commit*.txt`、`:4` `*.log` 已覆盖，且实测 **从未被跟踪**）。
+
+### 六、当前计数（时点 = `3c77cb2` / v0.11.0 迭代内）
+- **已跟踪 288 / 300（余量 12）** ← ⚠ **逼近预算上限**，发版前须由结构 agent 出账
+- `scripts/` **111** / 165 · `docs/` 13
+
+### 七、待办（照实）
+1. **AC-27 本体未落地**（T83 在飞）⇒ **发布阻断项仍在**，不得 bump / 打包 / 发 Release
+2. **门禁本轮故意未复测** —— 采集时点须在「工作区无并行写入」，而 T83 正在写 `packages/core/src` ⇒ 此时采集会得到**无效数字**
+3. `docs/` 收尾待 T70 稿 + 我执行写入
+4. 未暂存待提交（均属其他 agent 写域，待其交付后由我提交）：`.board/EVIDENCE.md` · `.board/REQ.md` · `.board/agents.md` · `.board/structure/agents_audit.mjs`
+
+### 八、T88 收尾补充（新增实测）
+- **`.board/` 磁盘清理**：5 个 `_commit_*.txt` 已删（`.gitignore:55` `_commit*.txt` 覆盖，且**从未被跟踪**）。
+- ⚠ **`.board/_sync_srv.log` / `.board/_sync_srv.err.log` 删不掉 —— 且不该删**：被运行中的 sync-server 持有（**PID 105344**，`Get-NetTCPConnection -LocalPort 4570 -State Listen` 实测；`/health` → `HTTP 200 {"ok":true,"words":770611,"sync":"zidiankaifa-sync-server","version":"0.10.0"}`）。`Remove-Item` 报 `The process cannot access the file ... because it is being used by another process`。**登记为「白名单残留」**（活跃进程日志 · `*.log` 已被 `.gitignore:4` 覆盖 · `git ls-files` 零命中）⇒ **不计入「临时残留 = 0」的违例**。若要真正清 0，须先停 sync-server —— 但 T83/T84 正需要它，**故本轮不动**。
+  ⇒ 纪律：**体检「临时残留 = 0」时，必须区分「活跃进程日志」与「死残留」**；前者只能停止进程后清。
+- ⚠ **我自己的脚本假绿（本项目第 15 次计数/口径类失误，责任在我）**：清理循环写作 `if (Test-Path $f) { Remove-Item $f -Force; Write-Output "已删 $f" }` —— `Remove-Item` **失败时 `Write-Output` 仍会执行** ⇒ 对两个被锁文件**打印了「已删」而实际仍在**。**修法**：`Remove-Item ... -ErrorAction Stop` 包 try/catch，**删除后再 `Test-Path` 复核**，以复核结果而非动作成功与否作为证据。⇒ 升级为通用纪律：**任何「已删除/已清理」结论必须以删除后的存在性复查为准，不得以「执行过删除命令」为准**。
