@@ -57,10 +57,14 @@ _commit*.txt
 # ---- v0.11.0 手机端本地工具链（结构性防误提交）----
 # 背景：Android 构建需要 JDK + Android SDK，但本机原先 JAVA_HOME / ANDROID_HOME 均为空
 #   （java / gradle / adb 全未安装）。用户授权后就地安装到仓库内，**绝不入 git**：
-#   .android-toolchain/jdk/     Temurin JDK 17.0.20.1+1（解压后约 300 MB）
+#   .android-toolchain/jdk/jdk-21.0.12.1+1/  Temurin JDK 21（★实际用于 Android 构建）
+#   .android-toolchain/jdk/jdk-17.0.20.1+1/   Temurin JDK 17（保留但**不再用于 Android 构建**）
 #   .android-toolchain/sdk/     Android SDK（platform-tools + platforms + build-tools）
-#   .android-toolchain/dl/      原始 zip 安装包（jdk17.zip 190 MB / cmdline-tools.zip 155 MB）
-#   .android-toolchain/gradle/  Gradle user home（android 工程首次构建会拉 Gradle 发行包与依赖）
+#   .android-toolchain/dl/      原始 zip 安装包（jdk21.zip 205 MB / jdk17.zip 190 MB / cmdline-tools.zip 155 MB）
+#   .android-toolchain/gradle/  Gradle user home（android 工程首次构建会拉 Gradle 发行包与依赖，实测 461 MB）
+# ⚠ **必须是 JDK 21，不是 17**：@capacitor/android@8.5.2 的 capacitor/build.gradle 写死
+#   sourceCompatibility / targetCompatibility = JavaVersion.VERSION_21，用 17 构建会失败于
+#   `:capacitor-android:compileDebugJavaWithJavac` → `无效的源发行版：21`。（Capacitor 7 才配 JDK 17。）
 # 放在仓库内是为了让 JAVA_HOME / ANDROID_HOME 有确定落点、每次构建可复现
 # （依 AGENTS.md 铁律 4：环境事实必须落盘，不能只留在上下文里）。
 # ⚠ 单个文件上限 20 MB、已跟踪文件 ≤300 的预算都不该被这些二进制拖累 ⇒ 必须忽略。
@@ -77,7 +81,11 @@ apps/mobile/android/app/build/
 apps/mobile/android/.gradle/
 apps/mobile/android/capacitor-cordova-android-plugins/
 apps/mobile/android/local.properties
-# Capacitor 每次 `cap sync` 重新生成，属产物；但**副本入 git 便于 diff 出「web 产物是否同步」**
-# （若不入 git，android 工程在 clone 后会缺少 web 资源而无法直接编译）
-# ⇒ 选择**入库**：apps/mobile/android/app/src/main/assets/public/**
+# ★ web 产物副本**不入库**（apps/mobile/android/app/src/main/assets/public/**）
+#   实际生效的规则在 Capacitor 官方模板自带文件 `apps/mobile/android/.gitignore:96`
+#   （其注释为 "Copied web assets"）——本文件不再重复声明，避免两处口径打架。
+#   理由：该目录由 `cap sync` 每次从 apps/web/dist 整体复制生成，**与 web 产物是同一份东西**；
+#   入库会造出「同一个 index-<hash>.js 有两个来源」的口径分裂（本项目已因同类口径问题踩坑 11 次）。
+#   ⇒ 完整构建链（clone 之后）：pnpm install → pnpm --filter @zidiankaifa/web build
+#     → pnpm --filter @zidiankaifa/mobile sync → android 工程 gradlew assembleDebug
 
