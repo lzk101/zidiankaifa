@@ -14,9 +14,11 @@
 | Web 前端 | `apps/web/src/` | React18+TS+Vite，**手写 CSS**（无 UI 库）；`api.ts` 双后端(rest/electron) |
 | 桌面端 | `apps/desktop/src/` | `main.mjs`(主进程+IPC) / `preload.mjs` / `updater.mjs` |
 | 同步服务 | `apps/sync-server/src/index.ts` | Node http，端口 4570 |
-| 词库 | `data/db/dict.db` | ~494MB，**不入 git**（.gitignore） |
+| **手机端**（v0.11.0 新增） | `apps/mobile/` | **Capacitor 8.5.2** 真 App；`capacitor.config.json`（`webDir` = `../web/dist`）＋ `android/` 原生工程；包名 `com.lzk101.zidiankaifa` |
+| 词库 | `data/db/dict.db` | ~494MB（**518,242,304 B**），**不入 git**（.gitignore）· 冻结库，`BASELINE.md` 有指纹 |
 
-📁 **逐目录性质 / 写权限 / `scripts/` 133 个文件的分类 / 产物与缓存处置 / 命名与结构约定 ⇒ 见根目录 `PROJECT_STRUCTURE.md`（结构主文档）。** 本文件只管环境事实与规范，结构指针以那份为准。
+📁 **逐目录性质 / 写权限 / `scripts/` 的文件分类 / 产物与缓存处置 / 命名与结构约定 ⇒ 见根目录 `PROJECT_STRUCTURE.md`（结构主文档）。** 本文件只管环境事实与规范，结构指针以那份为准。
+⚠ **引用任何计数必须带时点**（commit SHA 或「本迭代」）。本文档曾把 `scripts/` 写成 **133** —— 实际已随 T62 清理降至 **99**，v0.11.0 期间因新探针回升至 **111**。这正是本项目反复发生的**计数陷阱**：**不改总数就写成「N 个文件」**。**现测（v0.11.0 迭代内，`e20f512` 之后）：已跟踪合计 288 / 300 · `scripts/` 111 / 165 · `docs/` 13。**
 
 🧹 **结构治理（每迭代必做）**：本项目有**第 4 个常驻 agent = 项目结构管理 agent**（委任书 `.board/roles/structure-agent.md`），**每次版本发布 + push 之后**做一次结构体检与清理。
 - **额度**（冻结于 `.board/BASELINE.md` §7）：已跟踪文件 ≤ **300** · `scripts/` ≤ **165** · `scripts/` 顶层 ≤ **35** · `dist-release/` ≤ **1.5 GB** · `data/` ≤ **4.5 GB**（只报不删）· 缓存合计 ≤ **1.2 GB** · 临时残留 **0** · 单文件 ≤ **20 MB**
@@ -109,6 +111,37 @@ node _serve_static.mjs 5180          # 静态托管 apps/web/dist
 $env:ZIDIANKAIFA_DB='D:\lzk17\Documents\zidiankaifa\data\db\dict.db'; node apps/sync-server/dist/index.js
 ```
 `pnpm --filter @zidiankaifa/web dev` 在受限沙箱下会 `spawn EPERM`；用上面的静态方案替代。
+
+**Android / Capacitor 手机端构建（v0.11.0 实测；工具链已装，勿重新勘察）**
+- **工具链落点 = 仓库根 `.android-toolchain/`（已入 `.gitignore`，绝不入 git）**，**不在系统 PATH** ⇒ 每次构建都必须显式设四个环境变量：
+  ```powershell
+  $base = 'D:\lzk17\Documents\zidiankaifa\.android-toolchain'
+  $env:JAVA_HOME        = "$base\jdk\jdk-21.0.12.1+1"   # ★ 必须 JDK 21
+  $env:ANDROID_HOME     = "$base\sdk"
+  $env:ANDROID_SDK_ROOT = "$base\sdk"
+  $env:GRADLE_USER_HOME = "$base\gradle"                # 隔离，避免污染用户 ~/.gradle
+  ```
+- **★ 三条硬版本事实（都踩过）**：
+  1. **Capacitor 8 要求 JDK 21，不是 17**。用 17 会在 `:capacitor-android:compileDebugJavaWithJavac` 报 **`无效的源发行版：21`** —— 根因是 `@capacitor/android/capacitor/build.gradle` **写死** `JavaVersion.VERSION_21`。备选方案（未采用）= 降到 Capacitor 7.6.9 配 JDK 17。
+  2. **Gradle 不读系统代理**。`:7897`（Clash）必须写进 `.android-toolchain/gradle/gradle.properties` 的 `systemProp.http(s).proxyHost` / `Port`，否则 `google()` / `mavenCentral()` 全超时。
+  3. **`uiautomator dump` 拿不到 WebView 内容**（实测 dump 仅 2,524 B、6 个原生节点，WebView 是不透明节点）⇒ 手机端 UI 验证**必须走截图或 CDP**，不能靠无障碍树。
+- **构建三步**（顺序不可换）：
+  ```powershell
+  pnpm --filter @zidiankaifa/web build            # ① 产出 apps/web/dist
+  pnpm --filter @zidiankaifa/mobile sync          # ② cap sync：拷 web 资源 → android/app/src/main/assets/public
+  cd apps\mobile\android; .\gradlew.bat assembleDebug   # ③ 需上面四个环境变量
+  ```
+  **APK 产物 = `apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk`**（实测约 4.27 MB）。
+- ⚠ **`cap add` / `cap sync` 会把 `apps/web/dist` 拷进 `android/app/src/main/assets/public`**，而 `apps/mobile/android/.gitignore:96` **有意排除**该目录（Capacitor 官方注释 "Copied web assets"）⇒ **web 资源不入 git，由 `cap sync` 在构建时注入**。⇒ 干净 clone 后**必须先跑 ①②**，否则 Gradle 打出的 APK 是空壳。
+- **`pnpm install` 在本仓有两个坑**：无 TTY 时须 `CI=true`（否则 `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`）；改依赖后须 `--no-frozen-lockfile`（否则 `ERR_PNPM_OUTDATED_LOCKFILE`）。
+- **模拟器**：AVD 名 **`zdk35`**（Pixel 6 / Android 15 / `google_apis;x86_64`）；`ANDROID_AVD_HOME` 指向 `.android-toolchain/avd`。冷启动约 1 分钟到 `sys.boot_completed=1`。模拟器访问宿主机用固定别名 **`10.0.2.2`**。
+- **★ 手机端页面级验证通道 = Chrome DevTools Protocol**（`capacitor.config.json` 开了 `webContentsDebuggingEnabled: true`）：
+  ```powershell
+  adb forward tcp:9222 localabstract:webview_devtools_remote_<pid>   # ⚠ socket 名去掉前导 @
+  ```
+  ⚠ **`localabstract:` 后不能带 `@`** —— 拼成 `@webview_devtools_remote_<pid>` 时 **`adb forward` 会回显成功（假绿）但连不上**，表现为 `curl exit 52` / `UND_ERR_SOCKET`。然后走 CDP `Runtime.evaluate`（`awaitPromise: true` + `returnByValue: true`）**在真实页面内执行 JS**。应用每次重启 `webview_devtools_remote_<pid>` 的 pid 都会变 ⇒ **每次都要重取 socket 重做 forward**，且 forward 建立后 HTTP 端点**非立即可用**，须轮询重试。
+- **Android 9+ 默认禁明文 HTTP**，而 WebView 页源是 `https://localhost` ⇒ 向 `http://` 请求叠加 mixed content 拦截。解法已落地：`android/app/src/main/res/xml/network_security_config.xml`（基线 `cleartextTrafficPermitted="false"`，仅对私网段 + `10.0.2.2` + `localhost` 开例外）＋ `AndroidManifest.xml` 引用它。
+- **iOS 在 Windows 上物理无法编译**（必须 macOS + Xcode）⇒ 只能出工程，如实标注，勿承诺。
 
 **⚠ `pnpm --filter @zidiankaifa/web build` 与 `desktop build` 在受限沙箱下会被阻塞 —— 但策略放宽后可用（v0.9.0 实测修正）**
 - **受限沙箱（workspace-write）下确实无法完成**：沙箱禁止带**管道 stdio** 的 spawn（`spawn EPERM`），
