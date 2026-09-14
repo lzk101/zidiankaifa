@@ -2736,3 +2736,102 @@ book   200 count=3
 4. 多用户改造只到「临时库可跑」；**未评估** `book_lang.mjs` 137 条断言的冲击面（需测试 agent 参与）。
 5. 未测 `data/db/dict.db` 的 book 表真实行数/体积（避免触碰 `data/**`）。
 
+---
+
+# [主管] v0.11.0 手机端 ↔ 电脑端 互通实测闭环 + V11-SYNC-DTO 修复（HEAD `d8a2382`）
+
+> 本节由**主管**写入（写域允许）。所有数字均为**实测**；未验证项照实登记在 §九。
+
+## 一、用户指令与拍板（本轮）
+- 用户原话：「**可以添加用户机制，不同用户单词本不同**」（承前「下一版本先做手机端，以及手机端和电脑端的互通」）
+- 用户三问拍板（**均为用户直接选择**）：① 账号机制 = **本地优先：匿名即可用，绑定账号后才云同步** ② 凭证 = **邮箱 + 密码** ③ 存量数据 = **本地生词本绑定账号后上传为「我的」**
+- ⇒ 这条正是需求 agent 在 T69 存疑清单第 2 条点出的「**「用户是谁」未定案**」，也是 `DEC-031 / AC-27` **发布阻断项**的正解方向
+
+## 二、★ 里程碑：手机端 ↔ 电脑端 双向互通实测成立
+**通道**：Capacitor WebView（`webContentsDebuggingEnabled: true`）→ `adb forward tcp:9222 localabstract:webview_devtools_remote_<pid>` → CDP `Runtime.evaluate`（`awaitPromise: true` + `returnByValue: true`）在**真实页面内**执行 fetch。**不是模拟、不是单测**。
+
+**环境事实（实测）**：模拟器 `emulator-5554` 在跑（`emulator` PID 114228 / `qemu-system-x86_64` PID 114556）· 应用 `com.lzk101.zidiankaifa` 已安装且 `topResumedActivity=.../.MainActivity` · 服务端 PID 105344 监听 4570
+**页面事实（实测）**：`origin=https://localhost` · `title="我的电子辞典"` · `hasCapacitor=true` · `platform=android` · `isNative=true` · `savedSyncUrl=null` · `bookLang=ru` · `viewport=[412,842]`
+
+### 2.1 手机 → 电脑（探针 `scripts/probe_t81_mobile_sync_e2e.mjs`）
+| 项 | 实测值 |
+|---|---|
+| 手机端 base | `http://10.0.2.2:4570`（`getSyncUrl()` 的 Android 缺省；`savedSyncUrl=null` ⇒ 走缺省） |
+| `/health` | **200** `{ok:true,words:770611,sync:"zidiankaifa-sync-server",version:"0.10.0"}` |
+| 推送前 book | **3** 行：`telephone[en] test[en] test[ru]` |
+| `POST /api/v1/sync` | **200** `pushed=1` `pulled=4` `skipped=0` |
+| **电脑端 `data/sync-data/sync.db` 回读** | **4 行，`t81phone` 在库** —— `{"word":"t81phone","lang":"en","status":"learning","note":"T81 手机端写入","updated_at":1789390325058,"deleted":0}` |
+| 字段保真 | `note` 中文 + `tags:["手机端"]` **数组**完整往返（未被字符串化） |
+
+### 2.2 电脑 → 手机（探针 `scripts/probe_t81_desktop_to_mobile.mjs`）
+| 项 | 实测值 |
+|---|---|
+| 电脑端写入 | `POST` ⇒ **200** `pushed=1` `pulled=5`；book `4 → 5` 行（含 `t81desktop`） |
+| **手机端拉取** | **200** `pushed=0` `pulled=5`，`words` 含 `t81desktop[en]` ⇒ **`看到电脑端新词 = true`** |
+| 字段保真 | `{status:"mastered", note:"T81 电脑端写入", tags:["电脑端"], reviewCount:3}` **逐项一致** |
+| 清理 | 手机端写墓碑 ⇒ **200** `pushed=2`；PC 侧 `DELETE` ⇒ book **3 行**，`telephone[en] test[en] test[ru]` |
+
+⇒ **双向互通成立**，且**字段类型未被边界破坏**（数组仍是数组、中文未乱码、`reviewCount` 数值保真）。
+⚠ **本节不得被误读为「多用户已实现」**：当前服务端**无任何用户维度**（`SELECT * FROM book` 无 `WHERE`），上述互通是**单人多设备**语义。
+
+## 三、★ `V11-SYNC-DTO` 缺陷与修复（已提交 `d8a2382`）
+**缺陷**：`GET /api/v1/book` 返回**原始 DB 行（snake_case）**，`POST /api/v1/sync` 期望 **`BookItem`（camelCase）**。
+**受控单变量对照（同一 payload 只改字段名大小写，主管亲跑）**：
+| 形状 | 修前 | 修后（真 4570 实例） |
+|---|---|---|
+| `snake_case` + `added_at/updated_at`（**GET 实际返回的形状**） | **500** | **200** |
+| `camelCase` + `addedAt/updatedAt`（`apps/web/src/api.ts:228-234` 客户端实际发的） | 200 | 200 |
+| 缺时间戳 / 仅 `{word}` | 500 | **200** |
+| 空 `items` | 200 | 200 |
+**修前服务端错误原文**：`TypeError: Provided value cannot be bound to SQLite parameter 3.` → `at upsertBook (packages/core/dist/db/index.js:1069:37)` → `at syncMerge (…:1173:13)` → `at handle (apps/sync-server/dist/index.js:155:24)`，`code: 'ERR_INVALID_ARG_TYPE'`
+**机制**：裸 SQL 返回 snake_case ⇒ `packages/core/src/db/index.ts:1368` `it.updatedAt > cur.updated_at` **恒假（静默漏推，比 500 更隐蔽）** ⇒ `:1374/:1375` `addedAt`/`updatedAt` 均 `undefined` ⇒ `upsertBook` 绑定失败
+**修法（修在边界，不修在核心）**：`apps/sync-server/src/index.ts:255` 改用已导出的 `bookListAll(syncDb)`（`packages/core/src/db/index.ts:1283`，内含 `rowToBook`、含墓碑、排序同序）+ 入站 DTO 规范化 `normalizeIncomingItems`（`:91-164`）。`syncMerge`/`upsertBook`/`packages/core/src/**` **一行未动**（开发 agent 执行）
+**独立复核（主管亲跑，真 4570 实例 + 真 sync 库）**：
+- 8/8 受控对照全 **200**（修前 5 条 500）
+- `GET` items[0] 字段名 = `word, lang, addedAt, updatedAt, status, note, tags, reviewCount, lastReviewedAt, deleted`（**10 个全 camelCase，snake_case 键 = 无**）
+- 原样回喂 ⇒ **200** `pushed=0`，**逐字段相等 = true**
+- 时间戳 +5000 再推 ⇒ **200** `pushed=1`，**跨端更新真的发生 = true**；同时间戳再推 ⇒ `pushed=0`（last-write-wins 生效）
+**为何穿过既有 643 条门禁（测试结构盲区）**：`packages/core/test/book_lang.mjs:1376-1399` C 组**直接调 `syncMerge`**（手工 camelCase 对象，绕过 HTTP）；`apps/sync-server/scripts/smoke.mjs:41` 同样**直接调函数**；`book_lang.mjs:1411-1414`「路由不变」是**读源码字符串包含判断**、不校验 DTO 形状 ⇒ **两层各自自洽，交界处无人测**（本项目第 8 条陷阱同族）。
+**已补测试**：`scripts/check_sync_dto_contract.mjs`（测试 agent 交付，371 行/21,316 B）—— **修前 9 通过/7 失败 exit 1 → 修后 22 通过/0 失败 exit 0**，两 cwd 一致，随机空闲端口、文件重定向 stdio、临时库自清、冻结库 size/mtime 前后一致。
+
+### 3.1 附带缺陷 `V11-NOTE-NULL`（已随同修复）
+`firstDefined` 同时滤掉 `undefined` 与 `null` ⇒ `note: null` 被存成**字符串 `"undefined"`**（GET→POST 回环亦会污染）。开发 agent 自捕获、测试 agent 独立证实，注释留在 `apps/sync-server/src/index.ts:126-128`。
+
+## 四、★ 门禁回归事故与处置（T75 → T78）
+**事故**：T75 首版把 `apps/sync-server/src/index.ts:280` 的 `Array.isArray(body.items)` 字面量换成 `normalizeIncomingItems(body.items)` ⇒ 撞红 `packages/core/test/book_lang.mjs:1427-1428` 的 `C17`（**源码字符串断言**）⇒ core **620 通过 / 1 失败 exit 1**（原 621/0）。测试 agent 独立发现并**只报不改**（正确执行写域红线）。
+**处置**：**改实现侧保留字面量，不改测试侧**。理由：`packages/core/test/**` 是测试 agent 写域、137/621 是**冻结账本**；且 `C14-C18` 整组是「AC-14⑤ sync-server 协议不改」的**文本级守卫**，其价值恰在于「实现里还看得见这个契约」。修复后 `:283` = `normalizeIncomingItems(Array.isArray(body.items) ? body.items : [])`（`dist:225` 同步）。
+**复跑结果**：`[C] 同步合并键（AC-14）：18 通过 / 0 失败` · `结果：137 通过 / 0 失败` · **`EXIT CODE = 0`** ⇒ **621/0 恢复**；desktop **22/0 exit 0** ⇒ **门禁合计 643/0**。
+
+## 五、同步服务端重启（消除「在跑旧代码」隐患）
+**发现**：4570 上常驻实例 = **孤儿进程**（PID 101448，`node apps/sync-server/dist/index.js`，启动 `19:21:53`），而缺陷实测在 `19:31`、新 `dist` 构建于 `20:23:53` ⇒ **该实例确定在跑 T75 之前的旧代码**。`job_list` **为空** ⇒ 持有它的后台作业已不存在，进程却仍存活。
+**处置**：`Stop-Process -Id 101448 -Force` ⇒ 端口释放 ⇒ 以新 `dist` 重启（**PID 105344**），日志改落 `.board/_sync_srv.log` / `.board/_sync_srv.err.log`（**避免落在已跟踪路径**）。启动日志：`listening on http://127.0.0.1:4570` · `dict db (770611 words)` · `sync db data/sync-data/sync.db` · `auth : 未启用`。
+⚠ **订正我自己**：本轮更早的交接摘要曾写「`.board/_sync_srv.log` 随 `9ba4bd3` 入库」——**不成立**，实测 `git ls-files` 未入库（已更正）。
+
+## 六、T74（开发 agent）关键判别结论 —— 三条阻断级事实**逐字属实**
+- **鉴权**：`apps/sync-server/src/index.ts:83-87 authOk` = `if (!TOKEN) return true;` 否则比对单个全局 `Bearer ${TOKEN}`；`apps/web/src/api.ts` **从不发 `Authorization` 头** ⇒ **不存在既安全又可用配置**
+- **主键必须含 `user_id`**（临时库实测）：现主键下两用户写同词同语言 ⇒ **只剩 1 行**；**只 `ALTER TABLE` 加列、不改主键 ⇒ 仍只剩 1 行** ⇒ **必须重建复合主键**。两步迁移实测主键 `["user_id","word","lang"]`、**行数保真 2→2**、alice/bob 各一行共存；`WHERE user_id='alice'` 得 **1** 条 vs 不过滤 **3** 条 ⇒ **每条 book 读取都必须带 `user_id`**
+- **索引陷阱（铁律级）**：把用**新列**的索引写进 `SCHEMA_SQL` ⇒ 老库启动抛 `Error: no such column: user_id`（表已存在 ⇒ `CREATE TABLE IF NOT EXISTS` 跳过 ⇒ 建索引时列不存在）⇒ **新列索引必须单独 `try/catch` 建**
+- **改造面**：**必改 11 处 book SQL + schema 2 处 DDL + 服务端 3 处**；**`bookListAll` 同时服务 `GET /book` 与 `POST /sync` 回包**（`packages/core/src/db/index.ts:1386`）⇒ **用户维度必须成套改，不能只改端点半边**
+- **查询白名单已满足**（只暴露 13 条固定路由、无字符串拼 SQL）⇒ **不要为白名单新写模块**；**限流当前为零** ⇒ 上公网第三块必做（~30-40 行，就地加在 `apps/sync-server/src/index.ts` 内）
+- **桌面端确实走 sync-server**，路径在**主进程**（`apps/desktop/src/main.mjs:167-188` 的 `sync:now`，`:174` 打 `/api/v1/sync`），渲染层走 IPC 不直连 ⇒ **令牌应存主进程而非渲染层 `localStorage`**
+- **未验证**：Capacitor WebView 下 cookie 可行性（无真机判据，仅规范级推断）⇒ 已写「未验证」并给出三项可执行验证清单
+
+## 七、T68（测试 agent）对「内置高频子集」的顶回 —— **部分采纳，方案暂不改**
+**采纳的事实**：① **俄语侧完全没有词频**（`words_i18n` 无任何词频列，`source` 全为 `"zh"`）⇒ 以「高频」命名**名不副实** ② 英文侧有真词频但**仅 45,443 词有排名**（`bnc≥1`）⇒ N=50k 在英文侧**不可达** ③ 长度判据（P1）**两侧中毒**（英文最短 25 词 = `0 1 2 …`）且与尺子 R 是**长度函数** ⇒ 用「短词」测 R 覆盖率是**同义反复**，不构成判据优劣的证据 ④ **子集/按 `rowid` 序重建都不能复现那把 791 尺子**（重建得 **829**、逐词不同）⇒ 子集上测覆盖率**必须换口径** ⑤ 体积代价：20k+20k = **132.46 MiB** 只覆盖 R **21.6%** / A **19.7%**；50k = **272.16 MiB** 而 R 仅 **44.1%**
+**不改方案的理由**：①「内置词库」是**用户已拍板**的四问之一 ⇒ 主管只能改**命名与判据依据**，不能单方取消该功能 ② 该曲线是 **ru N + en N 两侧合计**，而用户真正要的离线能力在**俄语侧** ⇒「en 侧是否也要塞 20k」**尚未判别**
+**处置**：把「俄语侧无词频 ⇒ 不得称『高频』」与「需第四源补俄语词频」列为 **v0.11.0 已知限制**，在 Release Notes 披露；另派单测「仅 ru 侧」曲线（待办）
+
+## 八、结构 agent 接班者自报的待办与三处错标（主管已核验其存在，**尚未处置**）
+- **错标 1**：`.board/agents.md` §1.2 结构常驻表把接任者写成「**待主管补登**」并仅记 `DSH_SESSION_ID` —— 但**主管早已补登**（接任者 = `bb9e0148-3e78-4d58-b5ce-700fce51fd48`）⇒ **该处过时**
+- **错标 2**：§4 写「总数 **14** = 受保护 4 ＋ 结构 1 ＋ 临时 9」，§1.2 又写「接班后物理条数将 **15** = 受保护 4 ＋ 结构 **2** ＋ 临时 9」并留「**需主管裁决 1 项**」⇒ **与现状不符**：主管实测 `list_agents scope=descendants` = **15 行**，正确构成式 = **`15 = 主 agent 1 + 受保护业务常驻 3 + 结构席位 2 + 临时 9`**（临时 9 = depth1 7 + depth2 2）。**「14」是 T55 快照的过期值**；**「待裁 1 项」应归零**（前任 `2d4ba4d0` 现为 `[ready]`；席位 1→2 与临时 9→8 曾互为镜像，总数不变；「14→15」这个**数不存在**）
+- **错标 3**：§9.6 第 1 项称 `PROJECT_STRUCTURE.md` 事实性过时 4 处（`scripts/` 仍写 135 实为 **99**、`.board/` 仍写 14 实为 **15**、`docs/` 仍写 7 实为 **13**、体检⑩ 仍写「恒为 4」应改「**常驻合计恒为 5 = 受保护 4 ＋ 结构 1**」、HEAD 仍记 `2a796c9`）—— 该 agent 在 T62-B **未实际改动**该文件
+- ⚠ 三者均属**结构 agent 写域**（`.board/agents.md` / `PROJECT_STRUCTURE.md`），主管**只登记不代改**；且该文件在 Windows 上等同于 `.board/AGENTS.md`、**会被 harness 注入到 `.board` 下所有 agent 上下文** ⇒ 修改措辞须克制
+
+## 九、待办与未验证项（照实登记）
+1. **goal 未改口径**：当前 goal `goal-a653766a-957d-4852-855e-c2e5a7be86cf` 仍为 v0.10.0 口径；`update_goal` 的 `edit`/`pause`/`resume` **只在直接人类回合生效**，且**用户的「继续」已在本轮被消耗** ⇒ 需用户**再发一条普通消息**（或明确授权）才能改。改后须紧接 `resume` 并传 `edit` 返回的新 `revision`。
+2. **`docs/` 尚未记录 v0.11.0 改向**（需求 agent T69 存疑第 3 条）：下一会话读 `docs/` 仍会以为 v0.11.0 是「正确性梯队」。
+3. **`V11-SYNC-DTO` 修复只验到 HTTP 边界 + 真机页面**：**未验桌面端 Electron 实机**走 `apps/desktop/src/main.mjs:174` 那条路径（同端点、同形状，但未实测）。
+4. **`_tmp` 残留已清 0**（`_tmp` / `scripts/_tmp` / `_t77_after_variant.txt` 均已删）—— `scripts/_tmp` 在 T60 根因修复后**恒 0** 成立。
+5. **`apps/sync-server` 无自动化测试文件**（该包无 `test/`）⇒ 本次修复的自动化守卫是 `scripts/check_sync_dto_contract.mjs`，**未接入 `pnpm test` 链**，需手工跑。
+6. **未实施**：用户机制（AC-27）本身 —— 需求 agent T76 正在落 REQ/DEC 骨架；开发 agent T74 只出改造点清单、**未写实现**。
+
