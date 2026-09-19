@@ -1,5 +1,39 @@
 apply plugin: 'com.android.application'
 
+// ─────────────────────────────────────────────────────────────────────────────
+// v0.11.0 release 签名（APPLICATION SIGNING KEY）
+//
+// ⚠ 此密钥是 App 的**永久身份**：一旦用户安装了用它签名的 APK，后续版本必须用同一密钥
+//    签名才能覆盖升级；换密钥 = 老用户必须卸载重装。**keystore 与口令须离线备份。**
+//
+// 凭证来源优先级（两处都刻意放在仓库根 .android-toolchain/ 内，已入 .gitignore：
+//   `apps/mobile/android/.toolchain/` 与根 `.android-toolchain/` 均被忽略）：
+//   ① `apps/mobile/android/.toolchain/keystore.properties`（仓库内、不入 git）
+//   ② 环境变量 `ZIDIANKAIFA_KEYSTORE` / `ZIDIANKAIFA_KEYSTORE_PASSWORD`（CI 用）
+//
+// `signingConfigs` 只声明不绑定：**debug 构建保持无签名**（模拟器安装不需要），
+// 只有 release 构建才绑定，且**缺凭证时直接抛错**——避免产出「看似成功却装不上」的包。
+// ─────────────────────────────────────────────────────────────────────────────
+def keystorePropsFile = rootProject.file('.toolchain/keystore.properties')
+def keystoreProps = new Properties()
+if (keystorePropsFile.exists()) {
+    keystorePropsFile.withInputStream { keystoreProps.load(it) }
+}
+
+def readSigningValue = { String key, String envName ->
+    def v = keystoreProps.getProperty(key)
+    if (v == null || v.trim().isEmpty()) { v = System.getenv(envName) }
+    if (v == null || v.trim().isEmpty()) { return null }
+    return v.trim()
+}
+
+def ksPath = readSigningValue('storeFile', 'ZIDIANKAIFA_KEYSTORE')
+def ksPass = readSigningValue('storePassword', 'ZIDIANKAIFA_KEYSTORE_PASSWORD')
+def ksAlias = readSigningValue('keyAlias', 'ZIDIANKAIFA_KEY_ALIAS') ?: 'zidiankaifa'
+def ksKeyPass = readSigningValue('keyPassword', 'ZIDIANKAIFA_KEY_PASSWORD') ?: ksPass
+// storeFile 相对仓库根（= rootProject）解析
+def ksFile = ksPath == null ? null : rootProject.file(ksPath)
+
 android {
     namespace = "com.lzk101.zidiankaifa"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -20,11 +54,48 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (ksFile != null && ksFile.exists() && ksPass != null) {
+                storeFile     ksFile
+                storePassword ksPass
+                keyAlias      ksAlias
+                keyPassword   ksKeyPass
+                // minSdk 24 ⇒ v1(JAR) 仍建议保留，v2 为必需；v3/v4 由 AGP 视情况补充
+                enableV1Signing true
+                enableV2Signing true
+            }
+        }
+    }
     buildTypes {
+        debug {
+            // 刻意不绑定 signingConfig：走 AGP 默认 debug keystore，模拟器安装足够
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            // ⚠ 只有在凭证齐备时才绑定；下面的 afterEvaluate 会在缺失时**直接失败**，
+            //    而不是静默产出 unsigned APK（那会让整个发布流程出现「假绿」）
+            if (ksFile != null && ksFile.exists() && ksPass != null) {
+                signingConfig signingConfigs.release
+            }
         }
+    }
+}
+
+// 缺凭证时让 release 构建**显式失败**（而不是产出一个装不上的 app-release-unsigned.apk）
+gradle.taskGraph.whenReady { graph ->
+    if (graph.hasTask(':app:assembleRelease') || graph.hasTask(':app:bundleRelease')) {
+        if (ksFile == null || !ksFile.exists() || ksPass == null) {
+            throw new GradleException(
+                "release 构建缺少签名凭证。请任选其一：\n" +
+                "  ① 创建 apps/mobile/android/.toolchain/keystore.properties（见 apps/mobile/KEYSTORE.md）\n" +
+                "  ② 设环境变量 ZIDIANKAIFA_KEYSTORE 与 ZIDIANKAIFA_KEYSTORE_PASSWORD\n" +
+                "当前解析结果：storeFile=" + ksFile + " exists=" + (ksFile != null && ksFile.exists()) +
+                " storePassword=" + (ksPass == null ? "未设置" : "已设置") + "\n" +
+                "⚠ 本机现值：storeFile 应为 .android-toolchain/upload-keystore/zidiankaifa-upload.jks")
+        }
+        logger.lifecycle("[zidiankaifa] release 签名已启用：alias=" + ksAlias + " keystore=" + ksFile)
     }
 }
 

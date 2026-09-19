@@ -89,3 +89,16 @@ apps/mobile/android/local.properties
 #   ⇒ 完整构建链（clone 之后）：pnpm install → pnpm --filter @zidiankaifa/web build
 #     → pnpm --filter @zidiankaifa/mobile sync → android 工程 gradlew assembleDebug
 
+# ---- v0.11.0 release 签名凭证（★安全：绝不能入 git）----
+# 存放：apps/mobile/android/.toolchain/
+#   zidiankaifa-upload.jks     release 签名密钥（App 的**永久身份**）
+#   keystore.properties        Gradle 读取的口令（storePassword / keyPassword）
+#
+# ⚠ **这条规则必须显式写、且必须是 .toolchain/ 而不能只写 .android-toolchain/**：
+#   `git check-ignore -v` 实测确认，根 .gitignore:71 的 `.android-toolchain/` 是**带短横线的另一个目录**，
+#   不覆盖带点的 `.toolchain/`；而 git 的目录忽略规则对**嵌套**路径不自动生效
+#   （实测 `--untracked-files=all` 会把这两个文件报成 `??` ⇒ 一旦有人 `git add apps/mobile` 就会把私钥提交上去）。
+# ⚠ 私钥入库 = App 身份泄露：任何人都能用同一密钥伪造出「可覆盖升级」的恶意版本分发给你已安装的用户。
+# ⇒ 双保险：本规则忽略整个目录；`apps/mobile/KEYSTORE.md` 记录凭证位置与指纹，但**只记指纹不记口令**。
+.toolchain/
+
