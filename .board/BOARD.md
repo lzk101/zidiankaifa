@@ -2891,3 +2891,67 @@ book   200 count=3
 - ⚠ **`.board/_sync_srv.log` / `.board/_sync_srv.err.log` 删不掉 —— 且不该删**：被运行中的 sync-server 持有（**PID 105344**，`Get-NetTCPConnection -LocalPort 4570 -State Listen` 实测；`/health` → `HTTP 200 {"ok":true,"words":770611,"sync":"zidiankaifa-sync-server","version":"0.10.0"}`）。`Remove-Item` 报 `The process cannot access the file ... because it is being used by another process`。**登记为「白名单残留」**（活跃进程日志 · `*.log` 已被 `.gitignore:4` 覆盖 · `git ls-files` 零命中）⇒ **不计入「临时残留 = 0」的违例**。若要真正清 0，须先停 sync-server —— 但 T83/T84 正需要它，**故本轮不动**。
   ⇒ 纪律：**体检「临时残留 = 0」时，必须区分「活跃进程日志」与「死残留」**；前者只能停止进程后清。
 - ⚠ **我自己的脚本假绿（本项目第 15 次计数/口径类失误，责任在我）**：清理循环写作 `if (Test-Path $f) { Remove-Item $f -Force; Write-Output "已删 $f" }` —— `Remove-Item` **失败时 `Write-Output` 仍会执行** ⇒ 对两个被锁文件**打印了「已删」而实际仍在**。**修法**：`Remove-Item ... -ErrorAction Stop` 包 try/catch，**删除后再 `Test-Path` 复核**，以复核结果而非动作成功与否作为证据。⇒ 升级为通用纪律：**任何「已删除/已清理」结论必须以删除后的存在性复查为准，不得以「执行过删除命令」为准**。
+
+---
+
+## [主管] 第 13 轮续：★ 门禁阻断级回归「只读旧库无 user_id 列」的发现与修复（2026-09-20）
+
+### 一、现象：core 门禁 exit 1，但**不是断言失败、4 秒即崩**
+采集命令 `pnpm --filter @zidiankaifa/core test`，采集时点确认**工作区无其它写入**（铁律：有并行写入时数字无效）。
+```
+Error: no such column: user_id
+    at i18nToDetail (file:///…/packages/core/dist/db/index.js:704:14)
+    at lookupI18n (:676) → lookupWord (:725) → packages/core/test/regress.mjs:82
+    code: 'ERR_SQLITE_ERROR', errcode: 1, errstr: 'SQL logic error'
+```
+修 `inBook` 后崩点**前移**到同类查询：
+```
+Error: no such column: user_id
+    at lookupWord (file:///…/packages/core/dist/db/index.js:804:14) → packages/core/test/regress.mjs:83
+```
+
+### 二、根因（两层，缺一不可）
+1. **`book` 表早于 v0.11.0 就存在**（v0.10.0 起为 `(word, lang)`），而 `openDatabase()` 的迁移**只在可写路径生效**；
+2. **测试与其它只读消费者用 `new DatabaseSync(dbPath, { readOnly: true })` 直接打开冻结词库**（`packages/core/test/regress.mjs:13`）—— 该路径**没有任何迁移**，也没有连接级缓存可挂「已迁移」状态。
+⇒ AC-27 给所有 book 查询无条件加 `user_id = ?` 后，**只读冻结库上每一次查词都抛**。
+
+**实测数据（钉死前提，勿重复勘察）**：
+- 冻结库 `data/db/dict.db` 的 `book` 表 `PRAGMA table_info` = `["word","lang","added_at","updated_at","status","note","tags","review_count","last_reviewed_at","deleted"]` ⇒ **无 `user_id`**；主键 `["word","lang"]`；**3 行**
+- 同一库的**副本**经 `openDatabase()` 后：列含 `user_id`、主键 `["user_id","word","lang"]`、**行数 3 不变** ⇒ **迁移本身完全正确，问题只在只读路径**
+
+### 三、修法（主管先改一处 → 开发 agent 按同模式补齐，已一致）
+新增**列存在性探测**（`packages/core/src/db/index.ts`）：
+```ts
+function bookHasColumn(db: DatabaseSync, col: string): boolean {
+  try {
+    const cols = db.prepare('PRAGMA table_info(book)').all() as unknown as { name: string }[];
+    return cols.some((c) => c.name === col);
+  } catch { return false; }
+}
+```
+两个**只读可达**的 `inBook` 改为能力分支（IIFE 避免重复调用 `bookHasColumn`）：
+- `i18nToDetail`（俄语路径）：主循环原文 `... WHERE user_id = ? AND word = ? AND lang = ? AND deleted = 0` → 无列时退化为 `... WHERE word = ? AND lang = ? AND deleted = 0`
+- `lookupWord` 英文分支（`lang = 'en'` 硬编码那条，原文在 `:961-963`）：同一模式退化
+
+**为什么不违反 AC-27③「过滤条件无条件存在」**：该条禁的是「**有该维度却不过滤**」；这里是「**该维度在旧库中尚不存在**」⇒ 退化为 v0.10.0 判定（等价于作用域 = 本机），**语义不降级**。
+★ **`regress.mjs` 只读打开冻结库是保护词库的设计，不能为迁就实现去改测试** —— 只读 = 结构上不可能改词库，这是本项目的一条防线。
+
+### 四、修复效果（主管实测）
+- **前 6 个测试文件全部恢复全绿**：`regress 99/0` · `lexicon 67/0` · `related 38/0` · `ru_morph 60/0` · `ru_morph_d1fix 194/0` · `ru_morph_d1guard 26/0` ⇒ **484 通过 / 0 失败 exit 0**
+- **`book_lang.mjs`：125 通过 / 12 失败**（`[A] 迁移 34/8` · `[B] 26/0` · `[C] 18/0` · `[D] 25/0` · `[E] 备份一致性 22/4`）
+
+### 五、★ 主管裁定：那 12 条**不是实现缺陷，是断言编码了旧契约**
+**决定性证据**（失败项的实测值本身就是新契约的正确值）：
+```
+E17 … ⇒ 备份数不增加 ∧ 主键仍 [word, lang] ∧ …  —— 备份数 1 → 1 · 主键=["user_id","word","lang"] · 数据不变=true · 二次 warn=[]
+E20 … —— 主键=["user_id","word","lang"] · 备份 3/3 行 · 逐字段==迁移前=true · integrity=true · warn=[]
+```
+⇒ 两条**其余每一项都通过**（备份数、逐字段相等、`integrity_check`、warn 全对），**只有主键期望值过时**。
+**AC-27 有意把主键迁到 `(user_id, word, lang)`**（用户拍板「本地优先 + 邮箱密码账号」；`DEC-033` 明令 `user_id` **NOT NULL 且不给 DEFAULT**，因为给 DEFAULT 会让「漏写 user_id 的 INSERT 静默落 'local'」+「漏过滤 SELECT 仍能读到行」⇒ **双向隔离在 SQL 层同时失效且无报错**）。
+⇒ **绝不能为了保住 621 而把主键改回 2 列**——那是砍掉新功能去迁就旧断言。**已派测试 agent 更新这 12 条**（`packages/core/test/**` 是其写域，主管不越界），并要求**逐条归类「过时期望 vs 真实回归」**、给出**新的断言总数与 `621 = 99+67+38+60+194+26+137` 的新构成式**。
+
+### 六、连带纪律（新增，跨会话有效）
+1. **给 `book` 这类「后加列」加过滤条件时，必须同时判断「这条路径会不会被只读连接执行」** —— 判据是 `packages/core/test/**` 里谁用了 `readOnly: true`，**不是「我觉得」**。
+   - **只读可达**（`lookupWord` / `lookupI18n` / `i18nToDetail` / `getI18n` / `suggest` 触达的一切）⇒ **必须做能力探测**
+   - **只在 `openDatabase()` 之后调用**（`bookList` / `bookListAll` / `upsertBook` / `syncMerge` 等）⇒ 可无条件过滤
+2. **红态留证 ≠ 泄漏**：`book_lang.mjs` **仅在全绿时才删临时目录**，一旦有红就保留取证（打印「临时库保留（取证）：…\run-<随机>」）⇒ 本轮两次失败各留 1 个 `run-*`（`run-2eX94z` / `run-7Zfmt8`，各约 54 文件），**已清理**，`_tmp` 类文件 `git ls-files` **零命中**。
