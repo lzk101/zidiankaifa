@@ -2955,3 +2955,43 @@ E20 … —— 主键=["user_id","word","lang"] · 备份 3/3 行 · 逐字段==
    - **只读可达**（`lookupWord` / `lookupI18n` / `i18nToDetail` / `getI18n` / `suggest` 触达的一切）⇒ **必须做能力探测**
    - **只在 `openDatabase()` 之后调用**（`bookList` / `bookListAll` / `upsertBook` / `syncMerge` 等）⇒ 可无条件过滤
 2. **红态留证 ≠ 泄漏**：`book_lang.mjs` **仅在全绿时才删临时目录**，一旦有红就保留取证（打印「临时库保留（取证）：…\run-<随机>」）⇒ 本轮两次失败各留 1 个 `run-*`（`run-2eX94z` / `run-7Zfmt8`，各约 54 文件），**已清理**，`_tmp` 类文件 `git ls-files` **零命中**。
+### 七、★ 主管独立验证：AC-27 core 侧行为已全绿（10/10，主管亲跑，不采信自述）
+**方法**：把冻结库 `data/db/dict.db` 复制到临时目录 → 用 `packages/core/dist/db/index.js` 的 `openDatabase()` 打开副本 → 逐项断言 → 清理。**全程不碰冻结库本体**。
+
+| # | 检查项 | 实测结果 |
+|---|---|---|
+| ① | 迁移后主键 | ✅ `["user_id","word","lang"]` |
+| ② | 老 3 行归属 | ✅ 全部 `user_id = 'local'`（`abandon` / `city` / `telephone`，即 `data/db/dict.db` 原有的 3 行） |
+| ③ | **两用户同词同语言共存**（AC-27② 核心） | ✅ `('alice','ac27probe','en')` 与 `('bob','ac27probe','en')` **两行共存**（**不是「只剩 1 行」**） |
+| ④ | **双向隔离** | ✅ `bookListAll(db,'alice')` 只得自己的、`('bob')` 只得自己的、`(LOCAL_USER_ID)` **看不到二者**（n=0） |
+| ⑤ | 漏写 `user_id` 的 INSERT | ✅ 抛 `NOT NULL constraint failed: book.user_id` ← **这正是 `DEC-033` 禁止给 DEFAULT 的意义**：漏写会**显式报错**而不是静默落 `'local'` |
+| ⑥ | 幂等（二次 `openDatabase`） | ✅ 主键不变、**5 → 5 行**（不重复迁移、不重复备份） |
+
+**签名事实**（`packages/core/dist/db/index.d.ts`，写代码时以此为准）：
+```ts
+bookAdd(db: DatabaseSync, word: string, tags?: string[], lang?: string, userId?: string): BookItem
+bookRemove(db: DatabaseSync, word: string, lang?: string, userId?: string): void
+bookList(db: DatabaseSync, lang?: string, userId?: string): BookItem[]
+bookListAll(db: DatabaseSync, userId?: string): BookItem[]
+bookUpdate(db: DatabaseSync, item: Partial<BookItem> & { word: string }, …)
+```
+⇒ **`userId` 一律是「可选、末位参数、缺省 `LOCAL_USER_ID`」**，与 `AC-28①`「匿名不阻断功能」一致。
+
+### 八、★ 主管自我纠错：一次**差点成立的假发现**（已核实推翻，留痕）
+我在探测输出里看到 `{"user_id":"alice","note":null,"tags":"[\"A\"]"}`，一度怀疑 **`tags` 契约不符**（`BookItem.tags: string[]` 应为数组，却像字符串）。
+**核实后推翻**：那条 JSON 里的 `"tags"` 键实际是**我 SELECT 的 `note` 列**（因我查询写的是 `SELECT user_id, note, tags`，而 `note` 值为 null，视觉上错位）。
+**受控复查**（同一次探测内直接比对存储形态与 API 返回）：
+```
+原始存储：sqltype = text | tags 值 = "[\"A\",\"B\"]" | JS typeof = string
+API 返回：tags = ["A","B"] | isArray = true
+item 全字段 = {"word":"tagprobe","lang":"en","addedAt":…,"note":null,"tags":["A","B"],"reviewCount":0,"lastReviewedAt":null,"deleted":false}
+```
+⇒ **JSON 文本存储 + `rowToBook` 反序列化 = 契约一致**，无缺陷。
+★ 纪律：**报告任何「契约不一致」之前，必须在同一次探测内直接比对「存储形态 vs API 返回」两侧**，不得凭单侧输出的视觉印象下结论（本项目已有多次「看了过滤后的输出就当完整输出」的同族事故）。
+
+### 九、关于 `types.ts` 未加 `userId` 的判断（**非缺陷，主管裁定不追**）
+`packages/core/src/types.ts` 的 `BookItem` 至今**没有** `userId` 字段。**裁定：不需要加**，理由：
+1. 作用域**由函数参数承载**（`userId?: string`，末位、可选、缺省 `LOCAL_USER_ID`），**不由数据行承载** ⇒ 契约更窄，调用点不可能「拿到行却忘了作用域」；
+2. `bookListAll(db, userId)` 的返回**天然只属于该 userId**，返回行再带 `userId` 属冗余；
+3. 实测 `bookListAll` 返回对象字段 = `word/lang/addedAt/updatedAt/status/note/tags/reviewCount/lastReviewedAt/deleted` —— **无 `userId`，且消费方（web 面板）无需它**。
+⚠ 唯一将来可能需要它的场合 = **服务端要在同一次响应里混合返回多个用户的行**（当前不成立：`sync-server` 按鉴权用户逐请求作用域化）。若将来引入该需求，**再加字段并同步 `types.ts` 契约测试**。
