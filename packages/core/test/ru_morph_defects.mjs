@@ -34,13 +34,17 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DatabaseSync } from 'node:sqlite';
-import { openDatabase, breakdownWord } from '../dist/db/index.js';
+import { breakdownWord } from '../dist/db/index.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DB_PATH =
   process.env.ZIDIANKAIFA_DB ?? path.resolve(__dirname, '..', '..', '..', 'data', 'db', 'dict.db');
 
-const db = openDatabase(DB_PATH);
+/* ★ 必须只读打开冻结词库：`openDatabase()` 会跑 `book` 迁移（migrateBookLang → migrateBookUserId →
+ * migrateBookCompositeKey → 后置校验），而迁移**开始前先落一份 `VACUUM INTO` 整库快照** ⇒ 每跑一次本文件
+ * 就写一次 `data/db/dict.db`（冻结库）并多出一个 ~493 MB 的 `dict.db.bak-<ISO>`（实测曾无界膨胀到 1.700 GiB）。
+ * 本文件全程只读取数（`bookAdd`/`bookRemove`/`bookUpdate`/`db.exec`/`.run(` 实测各 **0** 次；下方第 113 行同款只读连接）⇒ `readOnly` 完全够用。 */
+const db = new DatabaseSync(DB_PATH, { readOnly: true });
 let pass = 0;
 let fail = 0;
 
