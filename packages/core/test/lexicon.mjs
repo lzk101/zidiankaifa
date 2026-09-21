@@ -3,12 +3,16 @@
  * 用户要求「主要测试俄语的词源词根词缀」
  */
 import { openDatabase, breakdownWord, listLexicon, getLexiconEntry, lexiconStats, listWords, lookupWord } from '../dist/db/index.js';
+import { DatabaseSync } from 'node:sqlite';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const DB = process.env.ZIDIANKAIFA_DB ?? path.join(REPO_ROOT, 'data', 'db', 'dict.db');
-const db = openDatabase(DB);
+// ★ 必须**只读**打开冻结词库：本文件是纯读取断言（无 bookAdd/bookRemove/db.exec/.run）。
+//   用 `openDatabase()` 会跑迁移 ⇒ **写冻结库**：每跑一次门禁就落一份 ~493 MB 的
+//   `dict.db.bak-<ISO>` 快照 + WAL，造成无界磁盘增长并破坏 `data/**` 的冻结语义。
+const db = new DatabaseSync(DB, { readOnly: true });
 let pass = 0, fail = 0;
 const eq = (name, got, want) => {
   const g = JSON.stringify(got), w = JSON.stringify(want);

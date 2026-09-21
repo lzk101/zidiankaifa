@@ -3045,3 +3045,92 @@ item 全字段 = {"word":"tagprobe","lang":"en","addedAt":…,"note":null,"tags"
 - **冻结库只读打开**，全程不改库；`data/db/dict.db` 未变
 - ⛔ **`SELECT … WHERE word IN (?,?,…)` 在参数 ≥1000 时静默返回空**（`SQLITE_MAX_VARIABLE_NUMBER` = 999）—— 首版探针因此输出「体积全为 0」而**不报错**；**正确做法 = 全量读表 + JS 侧用 `Map`/`Set` 过滤**（本项目计数/口径类陷阱又一例：**静默失败比报错更危险**）
 - 尺子 R 在探针里复现 = **791**，与冻结库权威值一致 ⇒ 口径正确
+
+---
+
+## [开发编程 agent] 2026-09-20 · T83-R1 —— AC-27 核心数据面用户隔离（`(user_id, word, lang)` 三级主键）
+
+### 交付物（2 个已跟踪文件 + 1 个新探针；未碰 `test/**`、未碰 `apps/sync-server/src/**`、未做 git 写操作）
+- **`packages/core/src/db/schema.ts`**：`LOCAL_USER_ID = 'local'`（`:10`）· `BOOK_COLUMNS_SQL` **首列** `user_id TEXT NOT NULL`（`:25`，**无 DEFAULT** —— 有 DEFAULT 会让「漏写 user_id 的 INSERT」与「漏过滤的 SELECT」**双向静默失效**）· `BOOK_TABLE_SQL` 主键 `PRIMARY KEY (user_id, word, lang)`（`:46`）· `SCHEMA_SQL` 内 book 表副本同步（`:133-148`）
+  - ⚠ 踩坑（已修）：首版注释里写了**反引号**，而它在 `SCHEMA_SQL` 的**模板字符串**里 ⇒ 反引号提前闭合字符串 ⇒ `tsc` 报 11 条 `TS1005/TS1434/TS1121`（首条 `schema.ts(149,14)`）。**模板字符串内的注释不得用反引号。**
+- **`packages/core/src/db/index.ts`**：`migrateBookUserId`（`:244` `ALTER TABLE book ADD COLUMN user_id TEXT`，**可空** —— SQLite 不允许 ADD COLUMN NOT NULL 无默认）→ `migrateBookCompositeKey`（`:389` 复用 `BOOK_TABLE_SQL` 建 `book_new`；`:397-401` **两侧显式列名** + `SELECT COALESCE(NULLIF(user_id,''), '${LOCAL_USER_ID}')` 回填；`:410` 严格行数守卫 `after !== before ⇒ ROLLBACK + 抛错`；`:372` `isComposite` 幂等提前 return）→ `ensureBookUserIndexes`（`:257` `idx_book_user_updated`，**逐条 try/catch** —— 用到 `user_id` 的 `CREATE INDEX` **绝不能**进 `SCHEMA_SQL`）
+- 全库 book SQL 带 user 维度：`inBook` i18n（`:890-896`）/ en（`:963-971`）· `bookGet`（`:1405`）· `bookList`（`:1423`/`:1427`）· `bookListAll`（`:1440`）· `existingLangForWord`（`:1356`）· `syncMerge` 冲突查询（`:1554`，`AND user_id = ?` **追加末尾**以保 `scripts/check_v10_ui_contract.mjs:246` 的文本契约子串）；`BOOK_INSERT` 11 列 11 个 `?` + `ON CONFLICT(user_id, word, lang)`；所有 `userId` 参数**可选 · 缺省 `LOCAL_USER_ID`**，过滤条件**无条件存在**
+- **`scripts/probe_t83_user_scope.mjs`**（新建）：②③④ 验收探针 ⇒ **47 通过 / 0 失败 exit 0**
+
+### ★ 只读可达性走查（主管补充指令 ①；判据 = `packages/core/test/**` 里谁用 `readOnly: true`）
+- **只读可达 ⇒ 已套 `bookHasColumn(db,'user_id')`**：`packages/core/test/regress.mjs:13` 以 `readOnly: true` 直接打开**冻结词库**（保护词库的设计，不得为迁就实现去改）⇒ 触达 `lookupWord → lookupI18n → i18nToDetail`（`index.ts:890-896`）与 `lookupWord → lookupEn`（`:963-971`）**两处 `inBook`**。**这是全仓唯一两个被只读连接触达的 book 查询。**
+- **只读不可达 ⇒ 保持无条件过滤**：`bookGet`/`bookList`/`bookListAll`/`existingLangForWord`/`upsertBook`/`syncMerge` 只在 `openDatabase()` 之后被调用，实证：`apps/sync-server/src/index.ts:47-48`（`openDatabase(DICT_DB)` / `openDatabase(SYNC_DB)`）· `apps/desktop/src/main.mjs:313` · `apps/desktop/src/dbmigrate.mjs:39/101`。
+- `packages/core/test/book_lang.mjs` 的只读句柄（`:295 :304 :319 :337 :350 :362 :369 :376 :383 :446` = `snapWithLang`/`snapNoLang`/`pkCols`/`userIds`/`bakProbe`/`bookRows`）**全部只发裸 SQL**、不调 core book API；`related.mjs:142` · `ru_morph_d1fix.mjs:42` · `ru_morph_d1guard.mjs:403` · `ru_morph_defects.mjs:113` · `ru_morph_semantic.mjs:88` 只读打开冻结库但只调 `breakdownWord`/词表查询。
+- `packages/core/src/db/lexicon.ts` 与 `packages/core/src/graph.ts`：无 `user_id`、无 `FROM book` ⇒ 无需改动。
+- **版本归属（避免两版并存）**：`:50 bookHasColumn` 与 `i18nToDetail` 兜底由**主管**加入；`lookupEn`（`:963-971`）兜底由我按**同一模式**补齐，**未覆盖主管那版、无冲突**。
+
+### 门禁（原始数字）
+- `pnpm --filter @zidiankaifa/core build` ⇒ **exit 0**
+- `pnpm --filter @zidiankaifa/core test` ⇒ **626 通过 / 0 失败 exit 0** = 99 regress + 67 lexicon + 38 related + **60 ru_morph（该行无「结果：」前缀，grep 易漏）** + 194 d1fix + 26 d1guard + **142 book_lang**。⚠ 派单写的 **621** 是 AC-27 前的账本；测试 agent 已把 `book_lang.mjs` 由 137 扩到 **142** 条 ⇒ 现账本 = **626**，断言**一条未减**（`BOOK_PK_EXPECTED = ['user_id','word','lang']` 落在 `packages/core/test/book_lang.mjs:334`）。
+- `pnpm --filter @zidiankaifa/desktop test` ⇒ **22 通过 / 0 失败 exit 0**；`pnpm --filter @zidiankaifa/sync-server build` ⇒ **exit 0**
+- ⚠ **13:23–13:25 间出现过的 9–12 条红是测试 agent 改文件的中间态**（`JSON.stringify(pk) === JSON.stringify(['word','lang'])` 旧字面量：`:1760` E9 · `:1769` E17 · `:1793` E20 + A28c/d/e 旧版；mtime 13:23:33 → 13:25:51）⇒ **不是实现缺陷**，订正后全绿。
+
+### 判据 ②③④ 原始输出（`node scripts/probe_t83_user_scope.mjs` ⇒ 47 通过 / 0 失败）
+- **②** alice 与 bob 写同词同语言 ⇒ `(hello,en)` 库内 **2 行**、user_id 集合 `["alice","bob"]`；`WHERE user_id='alice'` 恰 **1 行**；`bookListAll(alice)`/`(bob)` 各只见自己；carol 推同步（更旧 updatedAt）⇒ 自己作用域新建、`(hello,en)` 共 **3 行**且 alice 的 `updatedAt` **未被改写**；alice 落墓碑后 bob/carol 活行不受影响。
+- **③** v0.10.0 老库（主键 `(word, lang)`，3 行 `telephone[en]`/`test[en]`/`test[ru]`）迁移后**仍 3 行** ∧ 非 user 字段**逐字段不变** ∧ `user_id` 全为 `local` ∧ 主键变三列 ∧ 留 1 份 `.bak`；**幂等重跑仍 3 行、不新增备份、字段不变**。另测更老形态（单列主键 `word`、无 `lang` 列）⇒ 2 行守恒、`lang` 回填 `en`、`note`/`status`/墓碑保持。
+- **④** `PRAGMA table_info(book)` 实测：`0 user_id TEXT notnull=1 pk=1` · `1 word notnull=1 pk=2` · `2 lang notnull=1 pk=3`；`sqlite_master` DDL = `PRIMARY KEY (user_id, word, lang)`；索引 = `idx_book_updated` + `idx_book_user_updated`(user_id, updated_at)。
+- **⑤** 冻结库未被触碰：`data/db/dict.db` = **518,242,304 B · mtime 2026-09-13T15:13:53Z**。
+
+### ⚠ 两条请主管裁决
+1. **`BookItem.userId` 本轮未加（有意）**：`packages/core/test/book_lang.mjs:1483` 的 **C18** 断言字段清单逐字为 10 项（无 `userId`）⇒ 加字段必使 [C] 18/18 转红、626/0 破。**数据面 user 维度已完整**（列/主键/查询/写入全带），缺的只是契约类型字段。修法 = 测试 agent 把 `userId` 加进 C18 期望值，我随后一行补齐。
+2. **`openDatabase()` 会改写它打开的库** ⇒ 用 `ZIDIANKAIFA_DB=data/db/dict.db` 起 sync-server（`AGENTS.md` §3 的 UI 验证配方）**现在会真的迁移冻结词库**（ADD COLUMN + 重建表 + 落一份 ~494MB `.bak`）。本轮**未执行**该配方；建议配方改为「先复制到 `.tmp/` 再起服务」。
+### 十一、★★ 重大事故与修复：门禁每次运行都在写冻结词库（2026-09-20 发现）
+
+#### 现象与证据链
+1. 复核 `data/db/dict.db` 时发现其 `book` 表**已是 AC-27 后的形态**（`user_id` 首列、主键 `["user_id","word","lang"]`、`idx_book_user_updated` 存在），**但主文件 size/mtime 与基线逐位一致**。
+2. 该矛盾的解释 = **改动全在 WAL 里**：`dict.db-wal` = 98,912 B，mtime `2026-09-20T12:38:03`。
+3. 直接扫主文件字节找 AC-27 痕迹：`idx_book_user_updated` / `book_new` / `PRIMARY KEY (user_id` **三项全部 NOT FOUND** ⇒ **主文件从未被写**，一直是干净基线。
+4. 解析 WAL 头：page size 4096、**24 帧**、改写页 = `[1,10,11,12,24,25,30,125853,125866,125867]`（页 1 = `sqlite_master` 结构页）⇒ **全是 `book` 表迁移 + 索引页，无任何全库改写**。
+5. 同时多出自动快照 `dict.db.bak-<ISO>`（**493.2 MB**，`ensurePreMigrationBackup` 的 `VACUUM INTO` 产物）。
+
+#### ★ 恢复手法（**保留给将来复用**）
+**删除 `-wal` / `-shm` 即可让冻结库回到逐字节原状** —— 因为主文件本身就是最后一个 checkpoint（干净基线），WAL 里那 24 帧是唯一「未落主文件」的改动。恢复后实测：
+`size = 518,242,304 B`（= 基线）· `mtime = 2026-09-13T23:13:53`（= 基线）· `user_id` **消失** · 基准表行数 `words 770611 / words_i18n(ru) 101512 / morphemes 918 / roots 492 / affixes 416` **全对** · `integrity_check = ok`。
+
+#### ★★ 根因：**多个测试文件用可写方式打开冻结词库**
+| 文件 | 打开方式 | 是否写冻结库 |
+|---|---|---|
+| `packages/core/test/regress.mjs:13` | `new DatabaseSync(dbPath, { readOnly: true })` | **否** ✅ |
+| `packages/core/test/lexicon.mjs:11` | `openDatabase(DB)` ← **可写** | **是** ❌ |
+| `packages/core/test/related.mjs:25` | `openDatabase(DB_PATH)` ← **可写** | **是** ❌ |
+| `packages/core/test/ru_morph.mjs:43` | `openDatabase(DB_PATH)` ← **可写** | **是** ❌ |
+| `packages/core/test/ru_morph_d1fix.mjs:42` | `readOnly: true` | 否 ✅ |
+| `packages/core/test/ru_morph_d1guard.mjs:403` | `readOnly: true` | 否 ✅ |
+⇒ **`openDatabase()` 会跑迁移**（`migrateBookLang` → `migrateBookUserId` → `migrateBookCompositeKey` → 后置校验），而迁移**先落一份 `VACUUM INTO` 整库快照**。
+⇒ **每跑一次 `pnpm test` 就写一次冻结库、并多一个 493 MB 备份**。实测在 12:38 与 13:39 各发生一次 ⇒ `data/db/` 膨胀到 **1.700 GiB**。
+⇒ 这是**无界磁盘增长**，且**直接违反 `data/**` 属保护清单「只报不删」的冻结语义**。
+
+#### 修复（主管执行，最小外科式：只改「打开方式」这一行 + 补 import）
+`lexicon.mjs:11` · `related.mjs:25` · `ru_morph.mjs:43` 三处改为
+```js
+const db = new DatabaseSync(<DB_PATH>, { readOnly: true });
+```
+**可行性有据**：这三个文件实测 `bookAdd` / `bookRemove` / `bookUpdate` / `db.exec` / `.run(` **各 0 次**（纯读取断言）；且同目录 `ru_morph_d1fix` / `ru_morph_d1guard` **一直**用 `readOnly: true` 且全绿 ⇒ 只读完全够用。
+
+#### 验证（修复前后对照，均为主管实测）
+| 指标 | 修复前 | 修复后 |
+|---|---|---|
+| `dict.db.bak-<ISO>` 份数 | 每跑一次门禁 **+1**（实测累积 2 份 = 986 MB） | **0 → 0 不新增** ✅ |
+| `dict.db-wal` | 每跑一次重建（98,912 B） | **0 B** ✅ |
+| `dict.db` size/mtime | 被迁移改写 | 与基线**逐位一致** ✅ |
+| `data/db/` 合计 | **1.700 GiB** | **0.737 GiB** ✅ |
+| core 门禁 | — | **626 通过 / 0 失败 exit 0** ✅ |
+
+**门禁新账本（core 626 = 99 + 67 + 38 + 60 + 194 + 26 + 142）**：
+`book_lang.mjs` 由 **137 → 142**（测试 agent 按 AC-27 新契约更新了那 12 条旧主键断言，并净增 5 条）；原构成式 `621 = …+137` **已作废**，门禁合计相应为 **626（core）+ 22（desktop）= 648**。
+⚠ 该新账本**已实测**，但 `.board/BASELINE.md` 的官方口径更新由主管随后同步。
+
+#### 尚未修复（已登记，待测试 agent 处置）
+不在 `pnpm test` 链内、故不阻塞门禁，但**手动跑仍会写冻结库**：
+`ru_morph_defects.mjs:43` · `ru_morph_goals.mjs:32` · `ru_morph_v090_guard.mjs:36` —— 三处均为 `openDatabase(DB_PATH)`。
+（`scripts/` 下亦有同类：`probe_ru_coverage.mjs:24` · `exp_v9_admission.mjs:26` · `exp_ru_ceiling.mjs:30` · `probe_t32_noi_claims.mjs:14`；`packages/data-pipeline/build_roots_tables.mjs:21` 更是**设计上就要写库**，属词库重建工具，须在**副本**上跑。）
+
+#### ★★ 新增铁律（跨会话有效，建议随后并入 `AGENTS.md`）
+1. **凡以只读目的打开 `data/db/dict.db` 的代码，一律用 `new DatabaseSync(path, { readOnly: true })`，严禁 `openDatabase(path)`** —— 后者会跑迁移并落整库快照。
+2. **冻结库的「已迁移形态」不可作为基线**：本项目历史上 v0.10.0 与 v0.11.0 两次 `book` 迁移**都只存在于 WAL**，主文件一直是最初的词库（`book` 主键实测 = **`["word"]` 单列**，`lang` 在末位）。
+3. **判断冻结库是否被污染的正确手法**：比对 `size` + `mtime` **之外**，还要检查 **`-wal` / `-shm` 是否存在**、以及**主文件字节里是否出现迁移痕迹**（`grep` 式字节扫描），三者缺一不可。

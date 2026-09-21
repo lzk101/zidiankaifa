@@ -33,6 +33,7 @@
  * 运行：node packages/core/test/ru_morph.mjs
  */
 import path from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
 import { openDatabase, breakdownWord } from '../dist/db/index.js';
 
@@ -40,7 +41,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DB_PATH =
   process.env.ZIDIANKAIFA_DB ?? path.resolve(__dirname, '..', '..', '..', 'data', 'db', 'dict.db');
 
-const db = openDatabase(DB_PATH);
+// ★ 必须**只读**打开冻结词库：本判别集是纯读取断言（实测无 bookAdd/bookRemove/db.exec/.run）。
+//   用 `openDatabase()` 会跑迁移 ⇒ **写冻结库**：每跑一次门禁就落一份 ~493 MB 的
+//   `dict.db.bak-<ISO>` 快照 + WAL，造成无界磁盘增长并破坏 `data/**` 的冻结语义。
+const db = new DatabaseSync(DB_PATH, { readOnly: true });
 let pass = 0;
 let fail = 0; // 回归护栏失败
 

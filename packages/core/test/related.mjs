@@ -9,6 +9,7 @@
  * 需要本地 data/db/dict.db（可用 ZIDIANKAIFA_DB 覆盖）。
  */
 import path from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
 import {
   openDatabase,
@@ -22,7 +23,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DB_PATH =
   process.env.ZIDIANKAIFA_DB ?? path.resolve(__dirname, '..', '..', '..', 'data', 'db', 'dict.db');
 
-const db = openDatabase(DB_PATH);
+// ★ 必须**只读**打开冻结词库：本文件是纯读取断言（无 bookAdd/bookRemove/db.exec/.run）。
+//   用 `openDatabase()` 会跑迁移 ⇒ **写冻结库**：每跑一次门禁就落一份 ~493 MB 的
+//   `dict.db.bak-<ISO>` 快照 + WAL，造成无界磁盘增长并破坏 `data/**` 的冻结语义。
+//   已实测：`ru_morph_d1fix.mjs:42` / `ru_morph_d1guard.mjs:403` 一直用 readOnly，本文件比照。
+const db = new DatabaseSync(DB_PATH, { readOnly: true });
 let pass = 0;
 let fail = 0;
 
