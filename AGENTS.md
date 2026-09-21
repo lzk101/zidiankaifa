@@ -26,12 +26,26 @@
 - **权限一句话**：**能删产物，不能删代码；能出方案，不能改架构；能登记 agent，不能唤醒 agent。** 保护清单 —— `data/**` 整棵树 + 全部已跟踪文件，**只报不删**；`data/raw/` 2.93 GB 是词库重建原料，**不要因体积大就当成垃圾**
 - ⚠ **agent 层无「删除」API**：只有 `list_agents`（只读）/ `interrupt_agent`（停当前一轮）/ `send_message`（**= 唤醒**，反清理）。⇒「清理临时 agent」= 台账化 + 标记可回收 + 报主管止损。**`ready` ≠ 已死，随手重派会产出与既有结论冲突的第二版。**
 
-**测试**：`pnpm --filter @zidiankaifa/core test` → 跑 `test/regress.mjs`(99) + `test/lexicon.mjs`(67) + `test/related.mjs`(38) + `test/ru_morph.mjs`(60) + `test/ru_morph_d1fix.mjs`(194) + `test/ru_morph_d1guard.mjs`(26) + `test/book_lang.mjs`(137)（需本地 `data/db/dict.db`）→ **core 621 / 0**；`apps/desktop/test/dbmigrate.test.mjs`(22) ⇒ **门禁 643 通过 / 0 失败**（v0.10.0 后）。
+**测试**：`pnpm --filter @zidiankaifa/core test` → 跑 `test/regress.mjs`(99) + `test/lexicon.mjs`(67) + `test/related.mjs`(38) + `test/ru_morph.mjs`(60) + `test/ru_morph_d1fix.mjs`(194) + `test/ru_morph_d1guard.mjs`(26) + `test/book_lang.mjs`(**142**)（需本地 `data/db/dict.db`）→ **core 626 / 0**；`apps/desktop/test/dbmigrate.test.mjs`(22) ⇒ **门禁 648 通过 / 0 失败**（v0.11.0 AC-27 后）。
+⚠ **构成式变更（2026-09-20 实测）**：`book_lang.mjs` **137 → 142**（AC-27 把 `book` 主键由 `(word,lang)` 升为 `(user_id,word,lang)`，测试 agent 更新了 12 条旧主键断言并净增 5 条）⇒ 旧式 **`621 = 99+67+38+60+194+26+137` 已作废**，新式 **`626 = 99+67+38+60+194+26+142`**，门禁合计 **648 = 626 + 22**。
 ⚠ **`book_lang.mjs` 不读 `data/db/dict.db`**（全程临时合成库），测的是 `packages/core/dist/` 构建产物 ⇒ **改 `packages/core/src/db/**` 后必须先 `pnpm --filter @zidiankaifa/core build`**，否则测的是旧实现（铁律 3）。
 ⚠ **旧口径 506 = core 484 + desktop 22**，而 core 484 = 99+67+38+**60**+194+26 —— 旧账本一度**漏了 `ru_morph.mjs` 的 60**，系本项目第 5 次同类计数陷阱。
 ⚠ **断言计数陷阱**：`ru_morph.mjs` 打印「回归护栏（…）：60 通过 / 0 失败」，**无「结果：」前缀**，用 `Select-String '结果：'` 会漏掉这 60 条。
 `ru_morph_defects.mjs`（缺陷台账，**留红即待办**；v0.9.0 后 **55 通过 / 1 失败** exit 1，唯一余红 = `термостат`）、`ru_morph_goals.mjs`（迭代目标，0/2 exit 2）、`ru_morph_semantic.mjs`（语义判别集，v0.9.0 后 **44 通过 / 1 失败，回归项 0**）**均不接入** `pnpm test`，手动跑。
 ⚠ `lexicon.mjs:122-141` 的 4 条统计断言是**冻结快照**，随倒排表重建而变，须在每次落库迭代后同步（口径注释已写在断言上方）。
+
+⚠️🔴 **打开 `data/db/dict.db` 只读必须用 `new DatabaseSync(path, { readOnly: true })`，严禁 `openDatabase(path)`**（v0.11.0 实测事故，2026-09-20）：
+- **`openDatabase()` 会跑 `book` 迁移**（`migrateBookLang` → `migrateBookUserId` → `migrateBookCompositeKey` → 后置校验），而迁移**开始前先落一份 `VACUUM INTO` 整库快照**。
+- ⇒ 测试文件若用它打开冻结词库，**每跑一次门禁就写一次冻结词库，并多出一个 ~493 MB 的 `dict.db.bak-<ISO>`** —— 实测 `data/db/` 因此膨胀到 **1.700 GiB**（**无界增长**），且**直接违反 `data/**` 属保护清单「只报不删」的冻结语义**。
+- 已修三处：`packages/core/test/lexicon.mjs:11` · `packages/core/test/related.mjs:25` · `packages/core/test/ru_morph.mjs:43`（三文件实测 `bookAdd`/`bookRemove`/`bookUpdate`/`db.exec`/`.run(` **各 0 次**，纯读取断言 ⇒ 只读完全够用）。修后 `dict.db.bak-*` 份数 **0 → 0 不新增**、`dict.db-wal` **0 B**、`dict.db` size/mtime 与基线**逐位一致**，而门禁仍 **648/0 exit 0**。
+- 既有正确范例：`packages/core/test/regress.mjs:13` · `ru_morph_d1fix.mjs:42` · `ru_morph_d1guard.mjs:403` **一直**用 `readOnly: true`。
+- ⚠ **未修（不在 `pnpm test` 链内 ⇒ 不阻塞门禁，但手动跑仍会写库）**：`packages/core/test/ru_morph_defects.mjs:43` · `ru_morph_goals.mjs:32` · `ru_morph_v090_guard.mjs:36`；`scripts/probe_ru_coverage.mjs:24` · `scripts/exp_v9_admission.mjs:26` · `scripts/exp_ru_ceiling.mjs:30` · `scripts/probe_t32_noi_claims.mjs:14`；`packages/data-pipeline/build_roots_tables.mjs:21` 更是**设计上就要写库**（词库重建工具）⇒ **必须在副本上跑**。
+
+⚠️ **冻结库的「已迁移形态」不可作为基线**（v0.11.0 实测）：
+- v0.10.0 与 v0.11.0 **两次 `book` 迁移都只存在于 WAL 里**，主文件一直是**最初**的词库 —— 删掉 `-wal` 后实测 `book` 主键 = **`["word"]`（单列）**、`lang` 在末位。
+- **判断冻结库是否被污染须三项并查，缺一不可**：① `size` + `mtime` ② **`-wal` / `-shm` 是否存在及其大小** ③ **主文件字节里是否有迁移痕迹**（如 `idx_book_user_updated` / `book_new` / `PRIMARY KEY (user_id`）。
+  ⛔ 只看 size/mtime **会漏判**：主文件未被写、改动全在 WAL 时，size/mtime 与基线完全一致。
+- **恢复手法（已验证）**：**删除 `-wal` / `-shm` 即回到逐字节原状** —— 主文件本身就是最后一个 checkpoint。恢复后须复核 `PRAGMA integrity_check = ok` 与基准表行数（`words` 770611 · `words_i18n`(ru) 101512 · `morphemes` 918 · `roots` 492 · `affixes` 416）。
 
 ---
 
