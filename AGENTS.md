@@ -185,8 +185,29 @@ $env:ZIDIANKAIFA_DB='D:\lzk17\Documents\zidiankaifa\data\db\dict.db'; node apps/
   **同一轮内** `get_goal` → `edit` → `resume` 全部可用。`ask_user_question` 的选项答复仍不算。
 
 **Playwright / 浏览器**
-- 搜索框是 React 受控组件：`browser_fill` **必须先填空字符串再填值**，否则值被回滚。
+- 搜索框是 React 受控组件：`browser_fill` **必须先填空串再填值**，否则值被回滚。
 - 页面有两个 `.search-input`（header + main），用 `css=.search-input >> nth=1`。
+
+**🔴⚠ 本 harness 下「用环境变量给子进程做隔离」**完全不可用**（v0.11.0 T94 实测，四种通道全部失败）**
+> 场景：要起一个**打临时库**的 `apps/sync-server` 实例做端到端实测（绝不能碰 `data/**`）。
+> 实测结论：**没有任何一种方式能把 `ZIDIANKAIFA_DB` / `ZIDIANKAIFA_SYNC_DB` / `PORT` 传给 node 子进程** ⇒
+> 服务一律落到**生产默认路径**（`data/db/dict.db` + `data/sync-data/sync.db`）。
+
+| 通道 | 实测结果 |
+| --- | --- |
+| pwsh 工具里 `$env:X=...; node ...` | ❌ node 收到的仍是默认值 |
+| node `spawn(...)`：`stdio=['ignore',fd,fd]` / `'pipe'` / `'ignore'` 三种 | ❌ 子进程**静默不监听**（无输出、无退出），三种全败 |
+| `Start-Process -FilePath node` + 同会话 `$env:` | ❌ 服务自报 `dict db : ...\data\db\dict.db` —— **env 没传进去** |
+| `Start-Process pwsh -File <包装脚本>`（脚本内设 `$env:` 再跑 node） | ❌ 同样落默认路径 |
+| Node 里设 `process.env` + `spawnSync('pwsh', ['-Command', 'Start-Process ...'])` | ❌ 落默认路径；且 `spawnSync` 会**挂死**（必须靠外层超时打断） |
+
+- ⛔ **绝对纪律**：由于无法隔离，**任何「起 sync-server 做实测」的脚本都会打到生产库**。
+  - 它对 `data/db/dict.db` 是**只读式**使用，但 `openDatabase()` 会跑迁移 ⇒ **冻结库立刻多出 `-wal`/`-shm` 与一个 ~493 MB `dict.db.bak-<ISO>`**；对 `data/sync-data/sync.db` 则会**真的写入**（账号/生词）。
+  - **因此：起服务实测前必须先记生产库指纹，测完必须清理 + 三次并查复核**（见下）。
+- ✅ **实测可行的通道（唯一）**：`Start-Process -FilePath 'node' -ArgumentList 'apps/sync-server/dist/index.js' -PassThru -WindowStyle Hidden -RedirectStandardOutput <f> -RedirectStandardError <f>` —— 服务**能起来**（会监听），但**必然打生产库**。
+- ✅ **冻结库回滚手法**：删 `-wal`/`-shm` 即回逐字节原状（主文件是最后一个 checkpoint）。**实测两次均成功**。
+- ✅ **sync 库「账号表」回滚**：`users` / `auth_tokens` 是纯测试数据 ⇒ 直接 `DELETE` 后 `PRAGMA wal_checkpoint(TRUNCATE)` 即净；**绝不碰 `book` 表**。
+- ⚠ `node -e` 内嵌 SQL/正则**仍会** `Expected unicode escape`（pwsh 引号陷阱）⇒ 一律写 `.mjs` 文件。
 
 **⚠ 文本文件存在字节损坏风险（2026-09-16 实测，已修复一处）**
 - `README.md:144` 曾被写入 **U+000D CR + U+0007 BEL** 两个控制字符（原文应为西里尔词 `корни` / `аффиксы`，被按错误码位落盘），肉眼在编辑器里看不出来，只有逐码点才能发现。
