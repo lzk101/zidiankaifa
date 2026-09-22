@@ -1440,3 +1440,96 @@ if (cp.busy !== 0) {
 
 
 
+
+---
+
+# §14 · v0.11.0 发布收口（主管，2026-09-22）
+
+## §14.1 一句话
+**v0.11.0 已发布**：`https://github.com/lzk101/zidiankaifa/releases/tag/v0.11.0` ｜ tag `v0.11.0` ｜ commit `52827d6` ｜ published `2026-09-22T04:19:17Z` ｜ **5 附件**。
+
+## §14.2 发布门禁 G1–G6 终局（逐条实测，非推断）
+
+| # | 门禁 | 判据 | 实测 |
+| --- | --- | --- | --- |
+| G1 | AC-27 用户隔离（`DEC-031`） | 主键 / 双向隔离 / 无明文 / 撤销即失效 | ✅ `scripts/probe_t97_r3_isolation.mjs` **33 通过 / 0 失败 exit 0** |
+| G2 | 门禁不回归 | core ＋ desktop | ✅ core **626/0** ＋ desktop **22/0** ⇒ **648/0** |
+| G3 | 签名指纹 | keystore == APK | ✅ `Verifies` · v1 false · **v2 true** · 1 signer · `d37c04a8…851e` |
+| G4 | 包内 web 资源 = `apps/web/dist` | 文件名 ＋ 长度 | ✅ 双方 `index-CwJqPsi9.js` / **200,263 B**（含 `v0.11.0`） |
+| G5 | 版本号统一 | 5 个 `package.json` ＋ 3 处文本 | ✅ 全 `0.11.0`；`/health` = `"version":"0.11.0"` |
+| G6 | `versionCode` 单调递增 | `build.gradle` | ✅ `1100` / `versionName "0.11.0"` |
+
+## §14.3 Release 附件（**已用 `gh release view --json assets` 复核，非采信 `gh` 回显**）
+
+| 附件 | 字节 |
+| --- | --- |
+| `zidiankaifa-0.11.0-x64.exe` | **175,048,814** |
+| `zidiankaifa-portable-0.11.0-x64.exe` | **174,818,998** |
+| `zidiankaifa-0.11.0-x64.exe.blockmap` | 182,861 |
+| `latest.yml` | 350 |
+| **`zidiankaifa-0.11.0.apk`** | **3,277,846** |
+
+- APK SHA256 = `C040CE801A6F3C6242FE670F825CDD0A8CD96433FFB52DBDABF6E3FED28648AA`（与 `dist-release/zidiankaifa-0.11.0.apk`、`apps/mobile/android/app/build/outputs/apk/release/app-release.apk`、桌面交付件 `电子辞典-v0.11.0.apk` **四者一致**）
+- `latest.yml` 自报 `version: 0.11.0` · `releaseDate: '2026-09-22T03:54:36.002Z'` ⇒ 桌面端自动更新已能识别本版
+
+## §14.4 三笔提交（均已 push，origin 同步 `0 0`）
+
+| commit | 内容 |
+| --- | --- |
+| `44d6414` | R3 多用户隔离 ＋ 版本 bump 0.11.0 ＋ 客户端账号能力 ＋ 冻结库基线第 7 条（25 文件） |
+| `52827d6` | v0.11.0 发布收口（`README.md` Roadmap 转已发布 ＋ `docs/release-v0.11.0.md` 据实更新） |
+| tag `v0.11.0` | 附注 tag 已推送 |
+
+## §14.5 R3 到底改了什么（主管亲改，非 agent —— 因原派单静默丢失后由主管接手）
+
+`apps/sync-server/src/index.ts` 三处补参，**残留裸调用实测 = 0**：
+- `GET /api/v1/book` → `bookListAll(syncDb, auth.scope)`
+- `GET /api/v1/book-groups` → `bookList(syncDb, lang, auth.scope)`
+- `POST|PUT /api/v1/sync|book` → `syncMerge(syncDb, items, auth.scope)`
+
+新增 `claimAnonymousBook(db, newUserId)`：`UPDATE book SET user_id = ? WHERE user_id = LOCAL_USER_ID`，**只在首个账号生效**（判据 = 认领前 `users` 计数为 1），第二账号 `claimed = 0`（`'local'` 是单个匿名桶，不可二分）。
+
+`Array.isArray(body.items)` 字面量**保留**（`book_lang.mjs:1427-1428` 的 C17 文本级断言未破）。
+
+## §14.6 未交付（**照实，已写进 Release Notes §二**）
+
+1. **离线最小可用集** —— 包内 `assets/` 仅 226.6 KB，无词库 ⇒ **断网不可用**（用户已拍板「中档」= 英 20k `bnc` ＋ 俄 40k 词长，gzip ≈11.65 MiB，**尚未生成**）
+2. **云端托管同步** —— 需用户提供 Turso 账号/API token，主管不代注册
+3. **桌面端账号 UI / 令牌** —— T99 派单**未落地**（实测 `apps/desktop/src/main.mjs` 的 `Authorization` / `Bearer` / `ZIDIANKAFA_AUTH_TOKEN` **命中均为 0**，mtime 仍是 `09-14 01:40:33`）
+4. **iOS** —— Windows 物理无法编译
+5. **`scripts/probe_v10_book_lang.mjs` 4 条旧主键断言** 与 **`scripts/check_user_scope.mjs` 11 条**（含 5 条「无凭证应 200」旧契约）—— T98 派单**未落地**（两文件 mtime 仍是 `09-14`）
+
+## §14.7 两条测试侧订正（判据漂移，**不是实现缺陷**）
+
+- `scripts/check_v10_ui_contract.mjs`：`D16 冲突目标` 与 `AC-13⑤ bookRemove 带 lang` 两条红，实为 R1 契约升级（`(word,lang)` → `(user_id,word,lang)`）造成的**真实漂移** ⇒ 判据改为 `/ON CONFLICT\((?:user_id,\s*)?word,\s*lang\) DO UPDATE/` 与 `/export function bookRemove\(db: DatabaseSync, word: string, lang\?: string(?:, userId: string = LOCAL_USER_ID)?\)/` ⇒ **复跑 60/0 exit 0**
+- `scripts/probe_v10_book_lang.mjs` **42/4**：A1.1 / A1.9 / A2.1 / A3.1 四条期望 `['word','lang']`，实得 `['user_id','word','lang']` ⇒ **同一漂移**，待 T98
+
+## §14.8 冻结库：**主文件已变为「已迁移形态」**（前提变更，已写入 `BASELINE.md` §8.2 第 7 条）
+
+- 主文件 `book` 列含 `user_id`、主键 = `['user_id','word','lang']`、3 行 ⇒ **推翻**「两次迁移都只在 WAL、主文件一直是最初词库」的旧结论（旧结论保留为历史留痕）
+- **指纹不变**：`518,242,304 B` · mtime `2026-09-13 23:13:53` · **SHA256 `BDAF498ED318350801A7C4D3C06EF61E21E258428FAE51AF328A123680C40CCC`**
+- **受控实验**：连跑两次 core 门禁 ⇒ `bak-*` **恒 3 → 3 不新增**、`-wal` 恒 **65,952 B**、mtime 不变 ⇒ **`pnpm test` 链已不迁移冻结库**（`b37dd2f` ＋ `ca915eb` 的实际效果）
+- **口径纠错**：`dict.db-wal` 头**偏移 12 是 checkpoint 序号，不是帧数**；帧数 = `(size - 32) / (24 + pageSize)` ⇒ 实测 65,952 B / pageSize 4096 = **帧数 0**。此前记的「24 帧」是误读 `readUInt32BE(12)`
+- ⚠ **未解疑点（已挂账，依熔断停手）**：`dict.db.bak-2026-09-22T01-22-01-180Z`（517,132,288 B）的 `book` 主键 = `['word']` ∧ 含 `user_id` 列 = `migrateBookUserId` 之后、复合主键之前那一瞬 ⇒ **确有一次 `openDatabase()` 迁移了冻结库**，但**未定位到执行者**（环境变量干净；`probe_v10_book_lang.mjs` 用临时库；sync-server 09:11 启动、快照 09:22 才出现）。两份快照内容等价（均 `integrity_check = ok` ＋ 基准表行数全对）⇒ 冗余快照已删
+- **生产 sync 库已清理**：删除探针账号 `probe_check_002@example.com` ＋ 其 token ⇒ `users = 0` / `tokens = 0` / 生词本仍 3 条 `'local'` ⇒ **匿名同步恢复**（`GET /api/v1/book` = 200 / items=3）。理由：有账号时匿名通道自动关闭 ⇒ App 开箱即坏
+
+## §14.9 agent 台账（**时点 = 本轮，实测 `children` 14 行**）
+
+**`children` = 14**（原 12 ＋ 新增 **`f8d3fb49-53af-40f0-862d-6d72e7e7e7b7`**（label `Run R2 isolation assertions`）与 **`46a8dfbc-6703-413c-8101-5d0e9e7bba5b`**（label `Summarize T94v2 report`）—— **两条均由其他 agent 自行 spawn，未经 §7.2 四项登记**）＋ depth2 3（`36ef2379` / `9db3c4d0` / `0f53feaa`）⇒ **物理合计 17**。
+- **全部 `ready`、无一个 `running`**；`interrupt_agent` 对 `ready` 者 = 无操作
+- **本轮新增 2 条再次证明**：**入口纪律（§7.1 准入四问）是本工具层唯一可施力的方向** —— 无删除 API，实际增长只能靠「少新建」抑制
+- 待结构 agent 出账（T89/T82 订正尚未回执）
+
+## §14.10 结构预算（**时点 `52827d6`**）
+
+- 已跟踪 **295 / 300（余量 5）** —— ⚠ **逼近上限**，本轮已按预算取舍：11 个未跟踪交付脚本中**只入库 3 个**（`scripts/check_user_scope.mjs` · `scripts/probe_t97_r3_isolation.mjs` · `scripts/check_v10_ui_contract.mjs` 订正），其余 8 个留在工作区未跟踪
+- `dist-release/` = **11 文件 / 1,050,112,917 B = 0.978 GiB**（预算 1.5 GiB ✅）—— 因新增 0.11.0 四件套（现含 3 个版本的历史 exe）
+- ⚠ **`.board/BOARD.md` = 3,209 行，已超 `BASELINE.md` §7「`.board/*.md` ≤ 3000 行」预算**（第二次提请注意；建议由结构 agent 出分册方案：按「已结案裁决史」与「当前在办」拆分）
+
+## §14.11 下一步（v0.11.0 之后）
+
+**用户已拍板顺序：先手机端与互通**（已完成）⇒ 剩余按此优先级：
+1. **离线最小可用集**（用户已定「中档」：英 20k `bnc` 升序 ＋ 俄 40k 词长升序；gzip ≈11.65 MiB ⇒ APK ≈17.6 MiB）—— 这是「手机端不用连电脑也能用」的关键
+2. **Turso 云同步**（**需用户提供账号/token**）
+3. **v0.12.0 正确性梯队**（`а-` 前缀缺失 / `inBook` 硬编码 `lang='en'`（`packages/core/src/db/index.ts:823`）/ D2 通用空洞上限 / 假词根全库普查 / `термостат` 取舍 / `да-` 假族 26 词）
+4. 工程债：桌面端令牌（T99）· 测试侧旧契约订正（T98）· 结构 agent 台账订正（T89）· `BOARD.md` 分册
