@@ -29,11 +29,32 @@ import type {
 } from '../types.js';
 import { isCjk, isCyrillic, I18N_LANG_NAME } from '../lang.js';
 import { groupBookByMorphemeData } from '../graph.js';
-import { SCHEMA_SQL, BOOK_TABLE_SQL } from './schema.js';
+import { SCHEMA_SQL, BOOK_TABLE_SQL, LOCAL_USER_ID } from './schema.js';
 
-export { SCHEMA_SQL };
+export { SCHEMA_SQL, LOCAL_USER_ID };
 
 /* ---------------- 行类型（snake_case，来自 SQLite） ---------------- */
+
+/**
+ * 该表是否有某一列（只读路径的**能力探测**）。
+ *
+ * ★ 为什么需要它：`openDatabase()` 的迁移只在**可写**路径生效，而只读消费者
+ *   （测试、只读工具）用 `new DatabaseSync(path, { readOnly: true })` 直接打开库，
+ *   既不做迁移、也无法把「已迁移」状态挂到连接上缓存。
+ *   ⇒ 凡是在查询里用到**后加列**（`lang`@v0.10.0 · `user_id`@v0.11.0）的地方，
+ *     都必须先探测该列是否存在，否则旧库上会抛 `no such column`。
+ *
+ * 代价：`PRAGMA table_info` 是微秒级 O(列数) 查询，且仅在只读查词路径每词调用一次，
+ * 与既有的 `PRAGMA` 用法（`bookPkCols` / `migrateAddColumn`）一致，无需额外缓存。
+ */
+function bookHasColumn(db: DatabaseSync, col: string): boolean {
+  try {
+    const cols = db.prepare('PRAGMA table_info(book)').all() as unknown as { name: string }[];
+    return cols.some((c) => c.name === col);
+  } catch {
+    return false; // 表不存在等异常 ⇒ 视作无该列（调用方会走老库分支）
+  }
+}
 
 interface WordRow {
   word: string;
@@ -139,9 +160,16 @@ export function openDatabase(path: string): DatabaseSync {
   const db = new DatabaseSync(path);
   try {
     db.exec(SCHEMA_SQL);
-    // 迁移顺序不可颠倒：先 ADD COLUMN lang（老库没有该列），再升级为 (word, lang) 复合主键
+    // 迁移顺序不可颠倒：先 ADD COLUMN lang（老库没有该列），再 ADD COLUMN user_id（同为加列），
+    // 最后升级为 (user_id, word, lang) 复合主键（重建表时会读这两列回填）。
     migrateBookLang(db);
+    migrateBookUserId(db);
     migrateBookCompositeKey(db);
+    // ★ 新列索引**必须在 `SCHEMA_SQL` 之外单独建**（自身 try/catch，见函数内注释）：
+    //   老库的 book 表已存在 ⇒ `SCHEMA_SQL` 里的 `CREATE TABLE IF NOT EXISTS` 被跳过
+    //   ⇒ 若把用到 `user_id` 的 `CREATE INDEX` 写进 `SCHEMA_SQL`，老库启动抛
+    //   `Error: no such column: user_id`（AC-27⑤ / `DEC-033` 第 4 条；T74 已实测复现）。
+    ensureBookUserIndexes(db);
     // ★★ T48（采纳需求 agent T47 异议 1）：后置校验**必须放在这里**，不能放在 `migrateBookCompositeKey` 内。
     //
     // 为什么：`migrateBookCompositeKey` 内部有**两条位于 try 内的早期 `return`**，会绕过该函数末尾的任何校验：
@@ -184,10 +212,12 @@ export function openDatabase(path: string): DatabaseSync {
 function assertBookCompositeOrThrow(db: DatabaseSync): void {
   const pk = bookPkCols(db);
   if (!pk.length) return; // 表不存在 ⇒ 无需校验
-  if (pk.length === 2 && pk.includes('word') && pk.includes('lang')) return;
+  // v0.11.0（AC-27）：目标主键 = (user_id, word, lang)。逐列判定（不依赖列序，但要求三列齐备）
+  if (pk.length === 3 && pk.includes('user_id') && pk.includes('word') && pk.includes('lang')) return;
   throw new Error(
-    `book 表未能迁移到 (word, lang) 复合主键（当前主键列 = ${JSON.stringify(pk)}）：` +
-      '继续运行会导致生词本写入全部失败（ON CONFLICT 不匹配）且同形词跨语言互相覆盖。' +
+    `book 表未能迁移到 (user_id, word, lang) 复合主键（当前主键列 = ${JSON.stringify(pk)}）：` +
+      '继续运行会导致生词本写入全部失败（ON CONFLICT 不匹配）、同形词跨语言互相覆盖，' +
+      '且多用户之间看不到隔离（同一 (word, lang) 只能存一行）。' +
       '请确认磁盘空间充足、数据库未被其他进程占用后重试（迁移前已生成 .bak-<ISO> 一致性快照备份）。'
   );
 }
@@ -195,6 +225,44 @@ function assertBookCompositeOrThrow(db: DatabaseSync): void {
 /** 老库迁移：book 表补 lang 列（默认 'en'） */
 function migrateBookLang(db: DatabaseSync): void {
   migrateAddColumn(db, 'book', 'lang', "ALTER TABLE book ADD COLUMN lang TEXT NOT NULL DEFAULT 'en'");
+}
+
+/**
+ * v0.11.0 迁移（AC-27 第 1 步）：book 表补 `user_id` 列。
+ *
+ * ★ 为什么这里是**可空**列（不给 NOT NULL / DEFAULT）：
+ *   SQLite 的 `ALTER TABLE ... ADD COLUMN` **不允许**加 `NOT NULL` 且无默认值的列
+ *   （报 `Cannot add a NOT NULL column with default value NULL`）。而给 `DEFAULT 'local'`
+ *   又会踩 `DEC-033` 明令禁止的那条：漏写 `user_id` 的 `INSERT` 会**静默**落进 `'local'`，
+ *   缺陷不再暴露。⇒ 两步走：本函数只加**可空**列（老行暂为 NULL），紧接着
+ *   `migrateBookCompositeKey` 用它重建表，新表按 `BOOK_COLUMNS_SQL` 定义为 `NOT NULL`，
+ *   并把老行的 NULL/空串**回填成 `LOCAL_USER_ID`**。
+ *
+ * 幂等：列已存在则 `migrateAddColumn` 直接返回。
+ */
+function migrateBookUserId(db: DatabaseSync): void {
+  migrateAddColumn(db, 'book', 'user_id', 'ALTER TABLE book ADD COLUMN user_id TEXT');
+}
+
+/**
+ * v0.11.0（AC-27⑤ / `DEC-033` 第 4 条）：**新列（`user_id`）的索引单独建**。
+ *
+ * 为什么不能写进 `SCHEMA_SQL`：老库的 `book` 表已存在 ⇒ `CREATE TABLE IF NOT EXISTS` 被跳过
+ * ⇒ 建索引时该列还不存在 ⇒ 启动即抛 `Error: no such column: user_id`（T74 已实测复现）。
+ * 故本函数逐条 `try/catch`：任何一条失败只告警、不影响启动（索引是性能优化，不是正确性前提）。
+ */
+function ensureBookUserIndexes(db: DatabaseSync): void {
+  const idx: [string, string][] = [
+    // 按用户列出生词本（bookList/bookListAll 的 ORDER BY updated_at DESC 走它更省一次排序）
+    ['idx_book_user_updated', 'CREATE INDEX IF NOT EXISTS idx_book_user_updated ON book(user_id, updated_at)'],
+  ];
+  for (const [name, ddl] of idx) {
+    try {
+      db.exec(ddl);
+    } catch (e) {
+      console.warn(`[zidiankaifa] 索引 ${name} 建立失败（忽略）：${(e as Error)?.message}`);
+    }
+  }
 }
 
 /**
@@ -320,8 +388,9 @@ function migrateBookCompositeKey(db: DatabaseSync, st: MigrationState = { bak: n
       .filter((c) => Number(c.pk) > 0)
       .sort((a, b) => Number(a.pk) - Number(b.pk))
       .map((c) => c.name);
-    const isComposite = pkCols.length === 2 && pkCols.includes('word') && pkCols.includes('lang');
-    if (isComposite) return; // 已是新结构 ⇒ 幂等返回
+    const isComposite =
+      pkCols.length === 3 && pkCols.includes('user_id') && pkCols.includes('word') && pkCols.includes('lang');
+    if (isComposite) return; // 已是新结构 ⇒ 幂等返回（不迁移、也不重复备份）
 
     // 迁移前备份（AC-12 第 8 条：与事务并列的第二道独立防线）
     // ★ 备份失败 ⇒ **放弃迁移**（宁可暂不迁移，也不在无备份的情况下动用户数据）
@@ -339,16 +408,27 @@ function migrateBookCompositeKey(db: DatabaseSync, st: MigrationState = { bak: n
     try {
       // 表结构复用 schema.ts 的唯一定义（只换表名），避免两处结构漂移
       db.exec(BOOK_TABLE_SQL.replace('CREATE TABLE IF NOT EXISTS book', 'CREATE TABLE book_new'));
-      // 显式列名（含墓碑 deleted 与 lang）；老数据 lang 为空按 'en' 归位
+      // ★ 显式列名（**两侧都列**，含墓碑 `deleted`）—— 绝不依赖列序：
+      //   `INSERT INTO t VALUES (...)` 按位置对齐，一旦 schema 增列就会静默错位
+      //   （与 `V11-SYNC-DTO` 同族缺陷：字段名/顺序不一致导致「看着成功、值落错列」）。
+      // ★ v0.11.0（AC-27）：`user_id` 是**新列**且在新表里是 `NOT NULL` 无默认值 ——
+      //   老行的该列为 NULL/空串（`migrateBookUserId` 只能加可空列），故这里必须回填。
+      //   回填值取 `LOCAL_USER_ID` 常量（不写字面量 `'local'`，防两处口径漂移）；
+      //   该常量是本模块内的编译期字符串常量、非外部输入，故可安全内联进 DDL 字符串。
       db.exec(`INSERT OR REPLACE INTO book_new
-        (word, lang, added_at, updated_at, status, note, tags, review_count, last_reviewed_at, deleted)
-        SELECT word, COALESCE(NULLIF(lang, ''), 'en'), added_at, updated_at, status, note, tags,
-               review_count, last_reviewed_at, deleted
+        (user_id, word, lang, added_at, updated_at, status, note, tags, review_count, last_reviewed_at, deleted)
+        SELECT COALESCE(NULLIF(user_id, ''), '${LOCAL_USER_ID}'), word, COALESCE(NULLIF(lang, ''), 'en'),
+               added_at, updated_at, status, note, tags, review_count, last_reviewed_at, deleted
         FROM book`);
       const after = Number(
         (db.prepare('SELECT COUNT(1) AS n FROM book_new').get() as unknown as { n: number }).n
       );
-      if (after < before) throw new Error(`book 迁移行数减少：${before} → ${after}`);
+      // ★ 行数守卫（AC-30④ / AC-12：**迁移前后行数必须一致**，不一致即 ROLLBACK 并抛错）。
+      //   为什么是 `!==` 而不是原来的 `<`：`INSERT OR REPLACE` 在主键冲突时会**合并**行，
+      //   合并一定表现为行数减少，但把判据写成「必须严格相等」才能在两个方向上都拦住异常。
+      //   本迁移不可能合并 —— user_id 被统一回填成常量，冲突只可能来自老库里重复的 (word, lang)，
+      //   而老主键（`(word, lang)` 或更早的 `(word)`）本身已保证其唯一 ⇒ 行数必守恒。
+      if (after !== before) throw new Error(`book 迁移行数不守恒：${before} → ${after}`);
       db.exec('DROP TABLE book');
       db.exec('ALTER TABLE book_new RENAME TO book');
       db.exec('CREATE INDEX IF NOT EXISTS idx_book_updated ON book(updated_at)');
@@ -721,7 +801,12 @@ export function getI18n(db: DatabaseSync, word: string, lang = 'ru'): I18nWord |
   return rowToI18n(pick, null);
 }
 
-function lookupI18n(db: DatabaseSync, word: string, lang: string): WordDetail | null {
+function lookupI18n(
+  db: DatabaseSync,
+  word: string,
+  lang: string,
+  userId: string = LOCAL_USER_ID
+): WordDetail | null {
   const direct = getI18n(db, word, lang);
   // 1) 词形反查优先：命中即返回主词条（含完整变格表）+ 词形标注（столом → стол[instrumental,singular]）。
   //    zh 转储会把变格形也建成独立词条（столом 有词条，甚至带 forms，但那是屈折形而非主词条），
@@ -752,17 +837,22 @@ function lookupI18n(db: DatabaseSync, word: string, lang: string): WordDetail | 
           /* ignore */
         }
         const withForm: I18nWord = { ...base, matchedForm: { form: word, display: word, tags } };
-        return i18nToDetail(db, withForm, lang);
+        return i18nToDetail(db, withForm, lang, userId);
       }
     }
   }
   // 2) 直接词条
-  if (direct) return i18nToDetail(db, direct, lang);
+  if (direct) return i18nToDetail(db, direct, lang, userId);
   return null;
 }
 
 /** 多语言词条 → WordDetail：补词源（词源语言与词条语言一致）与词根词缀拆解 */
-function i18nToDetail(db: DatabaseSync, i: I18nWord, lang: string): WordDetail {
+function i18nToDetail(
+  db: DatabaseSync,
+  i: I18nWord,
+  lang: string,
+  userId: string = LOCAL_USER_ID
+): WordDetail {
   const base = i.word; // 保留原词形（俄语专名 Китай 按原形入库），大小写兜底交给 getOrigin/getEtymology
   return {
     word: i.word,
@@ -783,32 +873,57 @@ function i18nToDetail(db: DatabaseSync, i: I18nWord, lang: string): WordDetail {
     breakdown: breakdownWord(db, i.word, lang),
     // v0.10.0：多语言词条也要如实反映「是否已在生词本」——按 (word, lang) 判定，
     // 否则俄语词条永远显示未收藏（生词本已按语言分离，收藏状态也必须按语言分离）
-    inBook: !!db.prepare('SELECT 1 FROM book WHERE word = ? AND lang = ? AND deleted = 0').get(i.word, lang),
+    //
+    // v0.11.0（AC-27③）：再加 user 维度 —— 过滤条件**无条件存在**，缺省作用域 = LOCAL_USER_ID。
+    // 漏这一维 = 别的用户的收藏会让本机显示「已收藏」（跨用户可见）。
+    //
+    // ★★ 老库兜底（绝不可省）：**只读打开的旧库不上 `user_id` 过滤，绝不抛错**。
+    //   `book` 表**早于 v0.11.0 就存在**（v0.10.0 起为 `(word, lang)`），而 `openDatabase()`
+    //   的迁移只在**可写**路径生效。测试（`packages/core/test/regress.mjs:13` 等）与其它只读
+    //   消费者用 `new DatabaseSync(path, { readOnly: true })` 直接打开**冻结词库**，那条路径
+    //   **没有任何迁移**、也没有连接缓存可挂载「已迁移」状态。
+    //   ⇒ 若无条件写 `WHERE user_id = ?`，只读冻结库上**每一次查词都会抛**
+    //   `Error: no such column: user_id`（实测：`i18nToDetail` → `lookupWord` → 回归全断）。
+    //   ⇒ 改为「**有该列才带该维度**」：老库退化为 v0.10.0 的判定（等价于作用域 = 本机），
+    //     新库则带完整 user 维度。语义不降级、也不与 AC-27③「漏过滤」冲突 ——
+    //     漏过滤指的是**有该维度却不过滤**，这里是**该维度尚不存在**。
+    inBook: (() => {
+      const hasUser = bookHasColumn(db, 'user_id');
+      const row = hasUser
+        ? db.prepare('SELECT 1 FROM book WHERE user_id = ? AND word = ? AND lang = ? AND deleted = 0').get(userId, i.word, lang)
+        : db.prepare('SELECT 1 FROM book WHERE word = ? AND lang = ? AND deleted = 0').get(i.word, lang);
+      return !!row;
+    })(),
     i18n: i,
   };
 }
 
-/** 查词：lang='auto'（默认）按输入脚本自动识别；'en'/'ru' 强制指定语言 */
+/**
+ * 查词：lang='auto'（默认）按输入脚本自动识别；'en'/'ru' 强制指定语言。
+ * v0.11.0（AC-27③）：`opts.userId` = 生词本作用域（**可选，缺省 `LOCAL_USER_ID`**）；
+ * `WordDetail.inBook` 恒按该用户过滤（过滤条件无条件存在，不存在「有 userId 才过滤」的分支）。
+ */
 export function lookupWord(
   db: DatabaseSync,
   rawWord: string,
-  opts?: { lang?: LangMode | string },
+  opts?: { lang?: LangMode | string; userId?: string },
 ): WordDetail | null {
   const raw = rawWord.trim();
   const word = normalizeWord(rawWord);
   if (!word) return null;
   const lang = opts?.lang ?? 'auto';
+  const userId = opts?.userId ?? LOCAL_USER_ID;
 
   if (lang === 'ru') {
     // 强制俄语：直接词条或词形反查；未命中则放弃（不回落英语，避免混用）
     // 传原始词形（不预先小写）：专名 Франция「法国」与小写屈折词条 франция「франций 的属格单数」
     // 在库中并存，小写化会让用户查「法国」却看到「钫的属格单数」。
-    return lookupI18n(db, raw, 'ru');
+    return lookupI18n(db, raw, 'ru', userId);
   }
 
   // 西里尔输入（auto）→ 俄语词条（先词形反查）
   if (lang !== 'en' && isCyrillic(word)) {
-    const ru = lookupI18n(db, raw, 'ru');
+    const ru = lookupI18n(db, raw, 'ru', userId);
     if (ru) return ru;
   }
 
@@ -830,7 +945,7 @@ export function lookupWord(
         .prepare("SELECT word, lang FROM words_i18n WHERE translation LIKE ? ESCAPE '\\' LIMIT 1")
         .get(like) as unknown as { word: string; lang: string } | undefined;
       if (ruRow) {
-        const ru = lookupI18n(db, ruRow.word, ruRow.lang);
+        const ru = lookupI18n(db, ruRow.word, ruRow.lang, userId);
         if (ru) return ru;
       }
     }
@@ -842,7 +957,19 @@ export function lookupWord(
     origin: getOrigin(db, matched),
     etymology: getEtymology(db, matched),
     breakdown: breakdownWord(db, matched),
-    inBook: !!db.prepare("SELECT 1 FROM book WHERE word = ? AND lang = 'en' AND deleted = 0").get(matched),
+    // v0.11.0（AC-27③）：英文路径同样按 user 维度过滤（缺省 LOCAL_USER_ID），过滤条件无条件存在。
+    // ★ 老库兜底同俄语路径（`i18nToDetail`）：只读打开的旧库没有 `user_id` 列，
+    //   带上该维度会抛 `no such column` ⇒ 探测到缺列时退化为 v0.10.0 的单用户判定。
+    inBook: (() => {
+      const row = bookHasColumn(db, 'user_id')
+        ? db
+            .prepare("SELECT 1 FROM book WHERE user_id = ? AND word = ? AND lang = 'en' AND deleted = 0")
+            .get(userId, matched)
+        : db
+            .prepare("SELECT 1 FROM book WHERE word = ? AND lang = 'en' AND deleted = 0")
+            .get(matched);
+      return !!row;
+    })(),
     i18n: null,
   };
 }
@@ -1209,8 +1336,10 @@ export function relatedByMorpheme(db: DatabaseSync, word: string, lang = 'en'): 
 
 /* ---------------- 生词本 ---------------- */
 
+// v0.11.0（AC-27）：`user_id` 进列清单（**首列**），占位符 +1 ⇒ 11 个 `?`。
+// ★ 写死列名而不是 `INSERT INTO book VALUES (...)`：依赖列序会在 schema 增列时静默错位。
 const BOOK_INSERT =
-  'INSERT INTO book (word, lang, added_at, updated_at, status, note, tags, review_count, last_reviewed_at, deleted) VALUES (?,?,?,?,?,?,?,?,?,?)';
+  'INSERT INTO book (user_id, word, lang, added_at, updated_at, status, note, tags, review_count, last_reviewed_at, deleted) VALUES (?,?,?,?,?,?,?,?,?,?,?)';
 
 /** 缺省语言（历史数据全为 'en'，v0.10.0 前无语言维度） */
 const BOOK_DEFAULT_LANG = 'en';
@@ -1219,20 +1348,25 @@ const BOOK_DEFAULT_LANG = 'en';
  * 推断某 word 既有记录的语言（该词只有一种语言时有效）。
  * 仅用于 bookUpdate / bookRemove **未显式传 lang** 的老调用点：沿用既有语言，
  * 而不是老实现的 `?? 'en'`（那会把俄语条静默改写成英语条，见 REQ.md §8.1-B-3）。
+ * v0.11.0（AC-27③）：**同一作用域内**推断（缺省 `LOCAL_USER_ID`）—— 否则会拿别的用户的
+ * 语言来决定本用户墓碑的语言。
  */
-function existingLangForWord(db: DatabaseSync, word: string): string | null {
+function existingLangForWord(db: DatabaseSync, word: string, userId: string = LOCAL_USER_ID): string | null {
   const row = db
-    .prepare('SELECT lang FROM book WHERE word = ? ORDER BY deleted ASC, updated_at DESC LIMIT 1')
-    .get(word) as unknown as { lang: string } | undefined;
+    .prepare('SELECT lang FROM book WHERE user_id = ? AND word = ? ORDER BY deleted ASC, updated_at DESC LIMIT 1')
+    .get(userId, word) as unknown as { lang: string } | undefined;
   return row ? row.lang : null;
 }
 
-function upsertBook(db: DatabaseSync, it: BookItem & { lang: string }): void {
+function upsertBook(db: DatabaseSync, it: BookItem & { lang: string }, userId: string): void {
   // v0.10.0：冲突目标 = (word, lang) 复合主键 ⇒ 同一拼写的英/俄两条互不覆盖（AC-13）
   // 注意：不再写 `lang = excluded.lang`（主键已含 lang，改写它只会在旧单键结构下造成跨语言覆盖）
+  // v0.11.0（AC-27②）：冲突目标 = **(user_id, word, lang)** ⇒ 不同用户写同词同语言各存一行。
+  // ★ 这里**不写** `user_id = excluded.user_id`：user_id 是主键成员，改写它等于把本行「过户」给别的用户；
+  //   作用域必须由调用方通过 `userId` 显式传入，不能由载荷里的字段决定。
   db.prepare(
     `${BOOK_INSERT}
-     ON CONFLICT(word, lang) DO UPDATE SET
+     ON CONFLICT(user_id, word, lang) DO UPDATE SET
        added_at = excluded.added_at,
        updated_at = excluded.updated_at,
        status = excluded.status,
@@ -1242,6 +1376,7 @@ function upsertBook(db: DatabaseSync, it: BookItem & { lang: string }): void {
        last_reviewed_at = excluded.last_reviewed_at,
        deleted = excluded.deleted`
   ).run(
+    userId,
     it.word,
     it.lang,
     it.addedAt,
@@ -1255,86 +1390,128 @@ function upsertBook(db: DatabaseSync, it: BookItem & { lang: string }): void {
   );
 }
 
-/** 查一条生词；**缺省 lang = 'en'**（与既有行为一致：历史数据全为 en，AC-13 第 6 条） */
-export function bookGet(db: DatabaseSync, word: string, lang: string = BOOK_DEFAULT_LANG): BookItem | null {
+/**
+ * 查一条生词；**缺省 lang = 'en'**（与既有行为一致：历史数据全为 en，AC-13 第 6 条）。
+ * v0.11.0（AC-27③）：`userId` **可选、缺省 `LOCAL_USER_ID`**（匿名=本机生词本，AC-28① 不阻断功能）；
+ * 过滤条件**无条件存在** —— 不存在「有 userId 才过滤」的分支（那种写法一旦漏传就跨用户可见）。
+ */
+export function bookGet(
+  db: DatabaseSync,
+  word: string,
+  lang: string = BOOK_DEFAULT_LANG,
+  userId: string = LOCAL_USER_ID
+): BookItem | null {
   const r = db
-    .prepare('SELECT * FROM book WHERE word = ? AND lang = ?')
-    .get(normalizeWord(word), lang) as unknown as BookRow | undefined;
+    .prepare('SELECT * FROM book WHERE user_id = ? AND word = ? AND lang = ?')
+    .get(userId, normalizeWord(word), lang) as unknown as BookRow | undefined;
   return r ? rowToBook(r) : null;
 }
 
 /**
  * 列出未删除的生词。
- * ★ 缺省（不传 lang）= **不过滤，返回全部语言** ——「宁可多不可少」：缺省过滤会让俄语条
+ * ★ 缺省（不传 lang）= **不过滤语言，返回本用户全部语言** ——「宁可多不可少」：缺省过滤会让俄语条
  * 在未改造的调用点静默消失（AC-13 第 6 条 / D17）。**UI 层每一处读取必须显式传 lang**（AC-16 第 7 条）。
+ * ★ v0.11.0（AC-27③）：**`userId` 的缺省语义与 `lang` 不同** —— `lang` 缺省 = 不过滤，
+ *   `userId` 缺省 = `LOCAL_USER_ID`（**必须过滤**）。两者不可混用：语言多出来只是列表长一点，
+ *   用户多出来是**跨用户数据泄露**（`DEC-031` / AC-27）。
  */
-export function bookList(db: DatabaseSync, lang?: string): BookItem[] {
+export function bookList(db: DatabaseSync, lang?: string, userId: string = LOCAL_USER_ID): BookItem[] {
   const rows = (
     lang
       ? db
-          .prepare('SELECT * FROM book WHERE deleted = 0 AND lang = ? ORDER BY updated_at DESC')
-          .all(lang)
-      : db.prepare('SELECT * FROM book WHERE deleted = 0 ORDER BY updated_at DESC').all()
+          .prepare(
+            'SELECT * FROM book WHERE user_id = ? AND deleted = 0 AND lang = ? ORDER BY updated_at DESC'
+          )
+          .all(userId, lang)
+      : db
+          .prepare('SELECT * FROM book WHERE user_id = ? AND deleted = 0 ORDER BY updated_at DESC')
+          .all(userId)
   ) as unknown as BookRow[];
   return rows.map(rowToBook);
 }
 
-/** 含墓碑（deleted）的全部记录，用于同步 */
-export function bookListAll(db: DatabaseSync): BookItem[] {
-  const rows = db.prepare('SELECT * FROM book ORDER BY updated_at DESC').all() as unknown as BookRow[];
+/**
+ * 含墓碑（deleted）的**某一用户**的全部记录，用于同步。
+ * ★ 它同时服务两个入口：`GET /api/v1/book` 与 `POST /api/v1/sync` 的回包（`REQ.md` §10.3-19）
+ *   ⇒ 用户维度**必须成套改**，不能只改端点半边（AC-27④）。
+ */
+export function bookListAll(db: DatabaseSync, userId: string = LOCAL_USER_ID): BookItem[] {
+  const rows = db
+    .prepare('SELECT * FROM book WHERE user_id = ? ORDER BY updated_at DESC')
+    .all(userId) as unknown as BookRow[];
   return rows.map(rowToBook);
 }
 
-export function bookAdd(db: DatabaseSync, word: string, tags: string[] = [], lang = BOOK_DEFAULT_LANG): BookItem {
+export function bookAdd(
+  db: DatabaseSync,
+  word: string,
+  tags: string[] = [],
+  lang = BOOK_DEFAULT_LANG,
+  userId: string = LOCAL_USER_ID
+): BookItem {
   const w = normalizeWord(word);
   const now = Date.now();
-  upsertBook(db, {
-    word: w,
-    lang,
-    addedAt: now,
-    updatedAt: now,
-    status: 'new',
-    note: null,
-    tags,
-    reviewCount: 0,
-    lastReviewedAt: null,
-  });
-  // ★ 必须按 (word, lang) 回读：否则俄语条会读成同拼写的英语条
-  return bookGet(db, w, lang)!;
+  upsertBook(
+    db,
+    {
+      word: w,
+      lang,
+      addedAt: now,
+      updatedAt: now,
+      status: 'new',
+      note: null,
+      tags,
+      reviewCount: 0,
+      lastReviewedAt: null,
+    },
+    userId
+  );
+  // ★ 必须按 (user_id, word, lang) 回读：否则俄语条会读成同拼写的英语条、或读成别的用户的行
+  return bookGet(db, w, lang, userId)!;
 }
 
-/** 删除 = 写墓碑。★ 墓碑必须保留原语言（AC-13 第 5 条） */
-export function bookRemove(db: DatabaseSync, word: string, lang?: string): void {
+/** 删除 = 写墓碑。★ 墓碑必须保留原语言（AC-13 第 5 条）与**原作用域**（AC-27） */
+export function bookRemove(db: DatabaseSync, word: string, lang?: string, userId: string = LOCAL_USER_ID): void {
   const w = normalizeWord(word);
-  const l = lang ?? existingLangForWord(db, w) ?? BOOK_DEFAULT_LANG;
+  const l = lang ?? existingLangForWord(db, w, userId) ?? BOOK_DEFAULT_LANG;
   const now = Date.now();
-  const existing = bookGet(db, w, l);
-  upsertBook(db, {
-    word: w,
-    lang: l,
-    addedAt: existing?.addedAt ?? now,
-    updatedAt: now,
-    status: existing?.status ?? 'new',
-    note: existing?.note ?? null,
-    tags: existing?.tags ?? [],
-    reviewCount: existing?.reviewCount ?? 0,
-    lastReviewedAt: existing?.lastReviewedAt ?? null,
-    deleted: true,
-  });
+  const existing = bookGet(db, w, l, userId);
+  upsertBook(
+    db,
+    {
+      word: w,
+      lang: l,
+      addedAt: existing?.addedAt ?? now,
+      updatedAt: now,
+      status: existing?.status ?? 'new',
+      note: existing?.note ?? null,
+      tags: existing?.tags ?? [],
+      reviewCount: existing?.reviewCount ?? 0,
+      lastReviewedAt: existing?.lastReviewedAt ?? null,
+      deleted: true,
+    },
+    userId
+  );
 }
 
 /**
- * 更新一条生词（按 (word, lang) 定位；未传 lang 时沿用既有语言，不隐式回退 'en'）。
+ * 更新一条生词（按 **(user_id, word, lang)** 定位；未传 lang 时沿用既有语言，不隐式回退 'en'）。
  *
  * ★ 入参允许**局部字段**（AC-13 第 3 条判定式用 `{ word, lang, note }` 这种不完整对象）：
- *   未提供的字段一律**沿用该 (word, lang) 既有行的值**，行不存在时才用缺省值
+ *   未提供的字段一律**沿用该 (user_id, word, lang) 既有行的值**，行不存在时才用缺省值
  *   （addedAt/updatedAt 取 now，status='new'，tags=[] 等）。
  *   ⇒ 局部更新**不会**把同一 word 的另一语言条目的字段带过来，也不会写坏本行其它字段。
+ * ★ v0.11.0（AC-27③）：作用域由**第 2 个参数** `userId` 给定（缺省 `LOCAL_USER_ID`），
+ *   **不**从 `item` 载荷里读 —— 载荷来自客户端，用它决定「写到谁名下」等于让调用方自选用户。
  */
-export function bookUpdate(db: DatabaseSync, item: Partial<BookItem> & { word: string }): BookItem {
+export function bookUpdate(
+  db: DatabaseSync,
+  item: Partial<BookItem> & { word: string },
+  userId: string = LOCAL_USER_ID
+): BookItem {
   const w = normalizeWord(item.word);
-  const lang = item.lang ?? existingLangForWord(db, w) ?? BOOK_DEFAULT_LANG;
-  const prev = bookGet(db, w, lang);
+  const lang = item.lang ?? existingLangForWord(db, w, userId) ?? BOOK_DEFAULT_LANG;
+  const prev = bookGet(db, w, lang, userId);
   const now = Date.now();
   const it: BookItem & { lang: string } = {
     word: w,
@@ -1349,41 +1526,56 @@ export function bookUpdate(db: DatabaseSync, item: Partial<BookItem> & { word: s
       item.lastReviewedAt !== undefined ? item.lastReviewedAt : (prev?.lastReviewedAt ?? null),
     deleted: item.deleted ?? prev?.deleted ?? false,
   };
-  upsertBook(db, it);
-  return bookGet(db, w, lang)!;
+  upsertBook(db, it, userId);
+  return bookGet(db, w, lang, userId)!;
 }
 
 /**
- * 跨端同步合并（last-write-wins），返回合并后的全量记录（含墓碑）。
+ * 跨端同步合并（last-write-wins），返回**该作用域**合并后的全量记录（含墓碑）。
  * v0.10.0：冲突判定键 = **(word, lang)** —— 另一语言的 updatedAt 不再决定本条是否被推（AC-14 第 3 条）。
+ * v0.11.0（AC-27②③④）：再加 **user_id** —— 冲突判定键 = `(user_id, word, lang)`，
+ *   且回包（`items`）只含**该用户**的行（`bookListAll(db, userId)`）。这一维必须成套改：
+ *   `bookListAll` 同时服务 `GET /api/v1/book` 与 `POST /api/v1/sync` 的回包（`REQ.md` §10.3-19），
+ *   只改读侧或只改写侧都会留下「半边无用户维度」的泄露面。
  */
-export function syncMerge(db: DatabaseSync, items: BookItem[]): { pushed: number; pulled: number; items: BookItem[] } {
+export function syncMerge(
+  db: DatabaseSync,
+  items: BookItem[],
+  userId: string = LOCAL_USER_ID
+): { pushed: number; pulled: number; items: BookItem[] } {
   let pushed = 0;
   for (const it of items) {
     const word = normalizeWord(it.word);
     const lang = it.lang ?? BOOK_DEFAULT_LANG;
-    const cur = db.prepare('SELECT updated_at FROM book WHERE word = ? AND lang = ?').get(word, lang) as unknown as
-      | { updated_at: number }
-      | undefined;
+    // 冲突查询带 user_id（缺省作用域 = LOCAL_USER_ID）；★ 追加在末尾以保持既有
+    // `WHERE word = ? AND lang = ?` 子串不变（`scripts/check_v10_ui_contract.mjs:246` 是文本级契约断言）。
+    // WHERE 子句的**顺序无语义影响**，用户维度是无条件存在的。
+    const cur = db
+      .prepare('SELECT updated_at FROM book WHERE word = ? AND lang = ? AND user_id = ?')
+      .get(word, lang, userId) as unknown as { updated_at: number } | undefined;
     if (!cur || it.updatedAt > cur.updated_at) {
       // 远端载荷可能缺字段（老客户端）：缺失项沿用本端既有行，避免写入 undefined 触发绑定错误
-      const prev = bookGet(db, word, lang);
-      upsertBook(db, {
-        word,
-        lang,
-        addedAt: it.addedAt ?? prev?.addedAt ?? it.updatedAt,
-        updatedAt: it.updatedAt,
-        status: it.status ?? prev?.status ?? 'new',
-        note: it.note ?? prev?.note ?? null,
-        tags: it.tags ?? prev?.tags ?? [],
-        reviewCount: it.reviewCount ?? prev?.reviewCount ?? 0,
-        lastReviewedAt: it.lastReviewedAt ?? prev?.lastReviewedAt ?? null,
-        deleted: it.deleted ?? prev?.deleted ?? false,
-      });
+      const prev = bookGet(db, word, lang, userId);
+      upsertBook(
+        db,
+        {
+          word,
+          lang,
+          addedAt: it.addedAt ?? prev?.addedAt ?? it.updatedAt,
+          updatedAt: it.updatedAt,
+          status: it.status ?? prev?.status ?? 'new',
+          note: it.note ?? prev?.note ?? null,
+          tags: it.tags ?? prev?.tags ?? [],
+          reviewCount: it.reviewCount ?? prev?.reviewCount ?? 0,
+          lastReviewedAt: it.lastReviewedAt ?? prev?.lastReviewedAt ?? null,
+          deleted: it.deleted ?? prev?.deleted ?? false,
+        },
+        userId
+      );
       pushed++;
     }
   }
-  const all = bookListAll(db);
+  const all = bookListAll(db, userId);
   return { pushed, pulled: all.length, items: all };
 }
 

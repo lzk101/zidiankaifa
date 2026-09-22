@@ -3133,4 +3133,78 @@ const db = new DatabaseSync(<DB_PATH>, { readOnly: true });
 #### ★★ 新增铁律（跨会话有效，建议随后并入 `AGENTS.md`）
 1. **凡以只读目的打开 `data/db/dict.db` 的代码，一律用 `new DatabaseSync(path, { readOnly: true })`，严禁 `openDatabase(path)`** —— 后者会跑迁移并落整库快照。
 2. **冻结库的「已迁移形态」不可作为基线**：本项目历史上 v0.10.0 与 v0.11.0 两次 `book` 迁移**都只存在于 WAL**，主文件一直是最初的词库（`book` 主键实测 = **`["word"]` 单列**，`lang` 在末位）。
+
+---
+
+## [主管] T94 — v0.11.0 第 14 轮：★ R2 鉴权底座实测 + **事故**「诊断脚本无法隔离 → 打到生产库」+ 用户两项拍板
+
+### 一、用户指令与拍板（本轮）
+- 「报告进度，并继续开发」／承前总方向不变：**先做手机端 + 手机端与电脑端互通**。
+- 主管以实测结论提两问 ⇒ **用户拍板**：① **R2 验收方式 = 接受「有限验收」**（不另起服务；用源码级主键/过滤走查 ＋ 测试 agent 的 `scripts/check_user_scope.mjs` ＋ 已完成的 5/5 HTTP 注册链路实测，三者合判 AC-27；隔离/撤销两条留到 **R3 落地后走真机 App ↔ 4570** 端到端验证）② **账号标识字段 = 改成 `email`**（按 T76 需求稿与 AC-28；开发 agent 实现在 `username`，现在改零代价，因 `users` 表为空且 Turso 云端 schema 未定）。
+
+### 二、★★ 事故与根因：**本 harness 下「用环境变量给子进程做隔离」完全不可用**
+**场景**：要起一个打临时库的 `apps/sync-server` 做端到端实测（绝不能碰 `data/**`）。
+**实测结论：五种通道全部失败** ⇒ 服务一律落到生产默认路径（`data/db/dict.db` ＋ `data/sync-data/sync.db`）。
+
+| # | 通道 | 实测 |
+| --- | --- | --- |
+| 1 | pwsh 工具内 `$env:X=...; node ...` | ❌ node 收到默认值 |
+| 2 | node `spawn`：`stdio=['ignore',fd,fd]` / `'pipe'` / `'ignore'` | ❌ **三种全败**，子进程静默不监听、无输出、不退出 |
+| 3 | `Start-Process node` ＋ 同会话 `$env:`（单次调用内完成） | ❌ 服务自报 `dict db : ...\data\db\dict.db` |
+| 4 | `Start-Process pwsh -File <包装脚本>`（脚本内设 `$env:` 再跑 node） | ❌ 同样落默认路径 |
+| 5 | Node 设 `process.env` ＋ `spawnSync('pwsh', ['-Command','Start-Process ...'])` | ❌ 落默认路径；且 `spawnSync` **挂死**（须靠外层超时打断） |
+
+**唯一可行通道**：`Start-Process -FilePath 'node' -ArgumentList 'apps/sync-server/dist/index.js' -PassThru -WindowStyle Hidden -RedirectStandardOutput <f> -RedirectStandardError <f>` —— 服务**能起来**（会监听），但**必然打生产库**。
+⚠ 通道 #2 的另一种表现：探针用 `spawn` 时服务**根本没起来**（`server.log` 0 B），失败模式是「静默」而非报错 ⇒ **容易误判为 flake**。
+✅ 上述全部已写入 `AGENTS.md` §3（跨会话铁律）。
+
+### 三、★★ 污染与恢复（如实留痕；两次污染、两次精确回滚）
+**污染内容**：
+1. `data/db/dict.db` 被 `openDatabase()` 跑了一次 `book` 迁移 ⇒ 多出 `-wal`(65,952 B)/`-shm` ＋ 反复多出 **`dict.db.bak-<ISO>` 整库快照**（最多时 **18 个** `dict.db.bak-*`，其中 **4 份是半截 VACUUM 残骸**：161 / 170 / 254.5 / 316.7 / 482.1 MB，**均打不开**）＋ 6 个孤立 `-journal`。`data/db` 膨胀到 **3.534 GiB**。
+2. `data/sync-data/sync.db` 被写入 **3 个测试账号**（`alice_probe` / `probeuser1` / `tmpcheck`）＋ 3 条 `auth_tokens`。
+
+**恢复（主管亲执行 + 独立复查，不以「执行过命令」为准）**：
+- 删 `users` / `auth_tokens` 中上述行 → `PRAGMA wal_checkpoint(TRUNCATE)`；
+- 删冻结库 `-wal`/`-shm`（**主文件即最后一个 checkpoint**）⇒ **回逐字节原状**；
+- 删 4 份半截残骸 ＋ 6 个孤立 `-journal`（先逐一验证「打不开」再删）；3 份**完整可用快照**中留 1 份**移出仓库**到 `.android-toolchain/frozen-snapshots/dict.db.v0.10.0-frozen.bak`（复制后**校验 `book=3 / words=770611 / morphemes=918` 通过才删原件**），其余 2 份删除；
+- **终局实测**：`dict.db` = **518,242,304 B / 2026-09-13 23:13:53**（与基线**逐位一致**）· **无 `-wal`/`-shm`** · `integrity_check = ok` · 基准表行数全对（`words` 770611 · `words_i18n(ru)` 101512 · `morphemes` 918 · `roots` 492 · `affixes` 416）· `book` 列 = **`["word",…,"lang"]`**（**迁移前 v0.10.0 形态**）· sync 库 `users=0` / `auth_tokens=0` / **`book` 仍 3 行**（`telephone[en]` / `test[en]` / `test[ru]`，未受影响）；
+- `data/db` **3.534 GiB → 0.737 GiB**；`data/` 整棵 **3.667 GiB**（预算 ≤4.5 GB ✅）。
+**纪律升级**：**起服务做实测前必须先记生产库指纹；测完必须「清理 ＋ 三次并查复核」**；`data/sync-data` 的账号表是纯测试数据可删、**`book` 表绝不可碰**。
+
+### 四、★ R2（鉴权底座）实测 —— 开发 agent 交付，主管亲测
+**产物**：`apps/sync-server/src/index.ts` **13,423 → 28,045 B（+271/−10）** · 路由 **18 条**（新增 `auth/{register,login,revoke,whoami}`）· `dist/index.js` = 26,764 B（build exit 0）。
+**实测契约（读源码 + 真跑）**：
+- `POST /api/v1/auth/register` 字段 = **`username`**（3-32 位字母/数字/下划线/点/减号）＋ `password`；返回 `{ok, token, userId, username, scope}`，`scope = u:<userId>` —— ⚠ **与需求稿的 email 不符 ⇒ 已由用户拍板「改成 email」**；
+- `POST /api/v1/auth/login`：**用户不存在时也走一次同代价 scrypt（`DUMMY_HASH`）**，失败信息不区分「无此用户/口令错」⇒ **防用户名枚举**；
+- `POST /api/v1/auth/revoke`：在鉴权门后；`tokenHash` 为空（遗留 `ZIDIANKAIFA_SYNC_TOKEN`）⇒ 400；`body.all===true` 撤销该用户全部 token；
+- 鉴权门 `resolveAuth(req)`（`:419`）在 register/login **之后**；其后有**作用域维度限流** `take('scope:'+auth.scope, RATE_MAX, RATE_WINDOW_MS)`（`:425`）；
+- 密码：`scryptSync` ＋ 每用户随机盐 ＋ `timingSafeEqual`（**先比长度再比内容**，否则抛 `ERR_CRYPTO_TIMING_SAFE_EQUAL_LENGTH`）；格式 **`scrypt$<N>$<salt base64url>$<hash base64url>`**（`:154`）；表 `users(username, pass_hash, created_at)` · `auth_tokens(token_hash, user_id, created_at, label)`，**token 只存哈希**；
+- **限流其实已实现**：`RATE_MAX` 默认 **300**/60s（`ZIDIANKAIFA_RATE_MAX`）· `AUTH_RATE_MAX` 15 · `AUTH_USER_RATE_MAX` 8 · `RATE_WINDOW_MS` 60,000（⇒ 测试 agent 早前报的「150 次内未出 429」是**阈值理解问题，不是未实现**）；
+- ✅ **`Array.isArray(body.items)` 字面量已保留**（`:541` 注释自标「T78 保留…AC-14⑤ 协议不改」）—— C17 文本级断言未破。
+**真跑结果（`scripts/probe_t94_auth_e2e.mjs`，25 条断言设计）**：首轮 **注册链路 5/5 全绿** —— `1.1 端点存在（R2 前实测 404）` · `1.2 返回 200` · `1.3 签发 token（43 字符）` · `1.4 响应不含明文口令` · `1.5 重复注册被拒（409）`；`scope = u:1`。
+⚠ **未跑**（因隔离不可用，用户已裁定接受）：`4.3–4.5 两用户隔离` · `5.2 撤销后 token 失效` —— 留到 R3 落地后**走真机 App ↔ 4570 端到端**验证。
+**探针自身两处缺陷（已修，留痕）**：① 我按需求稿发 `email` 字段 ⇒ 400「用户名须为 3-32 位…」（**探针错，非实现错**）② 直读临时 sync 库用 `{ readOnly: true }` ⇒ Windows 上对「sidecar 被删过」的库报 `SQLITE_CANTOPEN (errcode 14)` ⇒ 临时库改用普通打开。
+
+### 五、本轮提交与推送
+- **`cb8ab80`** `docs(AGENTS): 记录「本 harness 库隔离完全不可用」+ 新增 R2 鉴权实测探针与库体检工具`（3 files +387/−1）：`AGENTS.md` §3 新铁律 · **新增 `scripts/probe_t94_auth_e2e.mjs`**（R2 端到端实测探针，25 条断言，随机空闲端口 + 显式 spawn env + 临时库 + 冻结库起止指纹核对；⚠ 文件头如实标注「当前 harness 下无法真正隔离」）· **新增 `scripts/probe_db_health.mjs`**（冻结库体检：三项并查 + 基准表行数 + sync 库账号表清点）。
+- ✅ **推送成功**：`044a341..cb8ab80 main -> main`（代理 `7897` 已恢复，直连 GitHub 亦通 —— 此前「推送受阻」已解除）。
+- HEAD = **`cb8ab80`** ；`origin/main` 同步。
+
+### 六、本轮派单（已送达）
+| 单 | 对象 | 内容 |
+| --- | --- | --- |
+| **T95** | 开发 agent `6c6cedb8` | ① **账号字段 `username` → `email`**（用户在本文档拍板）② **R3**：sync 库 `book` 表迁到 `(user_id,word,lang)`、`bookListAll()` 两处调用补用户维度（`check_user_scope.mjs` 的 3.2/3.4 失败项） |
+| **T96** | 测试 agent `7ff57407` | 把 `check_user_scope.mjs` 的 **PENDING 转成真断言**（鉴权端点已落地：register/login/revoke/whoami + 防枚举 + 限流可配）；**隔离/撤销两条**按用户裁定留到 R3 后走真机端到端 |
+
+### 七、★ 待办与未闭环（照实）
+1. **`docs/` 仍未记录 v0.11.0 改向**（正确性梯队推后 v0.12.0）—— T70 稿未到（此前两次派单均未落盘）。
+2. **R3 未开工** ⇒ `scripts/check_user_scope.mjs` 的 3.2/3.4 仍红（`/api/v1/book@413` · `/api/v1/book-groups@424` · `/api/v1/sync@437` 三处无用户过滤；`bookListAll()` 两处调用未传维度）。
+3. **`turso` 凭证待用户提供**；**离线中档数据集未生成**（用户已定档：英 20k `bnc` + 俄 40k 词长）。
+4. **工作区有 7 个其他 agent 写域的 `modified` 未提交**：`.board/EVIDENCE.md` · `.board/REQ.md` · `.board/agents.md` · `.board/structure/agents_audit.mjs` · `PROJECT_STRUCTURE.md` · `apps/sync-server/src/index.ts` · `packages/core/src/db/{index,schema}.ts` · `packages/core/test/book_lang.mjs`（+73/−21）—— 待其交付后由主管统一提交。
+5. **4 个 agent 交付的未跟踪脚本待收集**：`scripts/check_book_route_scope.mjs`（10,426 B）· `check_user_scope.mjs`（33,622 B）· `probe_t83_user_scope.mjs`（12,057 B）· `probe_t84_recon.mjs`（5,206 B）⇒ 提交后已跟踪 **291 → 295 / 300**（**余量仅 5**）。
+6. ⚠ **`.board/BOARD.md` 现 3,136 行，已超 `BASELINE.md` §7「`.board/*.md` ≤ 3000 行」预算**（本项目**第 16 次**口径类超标，非计数失误，是真实超限）⇒ 提请结构 agent 在下次结构体检时出「分册方案」（建议按「已结案的裁决史」与「当前在办」分拆）。
+7. **PID 164104（node，启动 2026-09-21 21:01:15，累计 CPU 9,207 s）与 PID 78516（启动 09-20 03:44:05）身份未定** —— 值得后续核查是否为遗留的 sync-server 或构建进程；**本轮未处置**（怕误杀正在跑的任务）。
+
+### 八、门禁（本轮实测，工作区有并行写入但数字与基线一致）
+`pnpm --filter @zidiankaifa/core test` ⇒ **exit 0**，分块 `[A]46/0 · [B]26/0 · [C]18/0 · [D]25/0 · [E]27/0`，`book_lang.mjs` **142 通过 / 0 失败** ⇒ **core 626 / 0**；`pnpm --filter @zidiankaifa/desktop test` ⇒ **22 通过 / 0 失败** ⇒ **门禁合计 648 = 626 + 22**（与 `BASELINE.md` §8 一致）。
 3. **判断冻结库是否被污染的正确手法**：比对 `size` + `mtime` **之外**，还要检查 **`-wal` / `-shm` 是否存在**、以及**主文件字节里是否出现迁移痕迹**（`grep` 式字节扫描），三者缺一不可。

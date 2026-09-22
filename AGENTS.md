@@ -122,8 +122,21 @@ pnpm --filter @zidiankaifa/desktop build
 **UI 验证（无需 dev server）**
 ```powershell
 node _serve_static.mjs 5180          # 静态托管 apps/web/dist
-$env:ZIDIANKAIFA_DB='D:\lzk17\Documents\zidiankaifa\data\db\dict.db'; node apps/sync-server/dist/index.js
+$env:ZIDIANKAFA_DB='D:\lzk17\Documents\zidiankaifa\data\db\dict.db'; node apps/sync-server/dist/index.js
 ```
+> 🔴 **拼写陷阱（v0.11.0 实测，本项目已因此出过两次事故）—— 本仓有**两套形近前缀**：**
+>
+> | 拼法 | 谁在用 |
+> | --- | --- |
+> | **`ZIDIANKAFA_*`（无 I，官方）** | `apps/sync-server/src/index.ts` · Electron 调试钩子（`ZIDIANKAFA_SHOT` 等）· `scripts/probe_t96_*` · `scripts/check_{sync_dto_contract,user_scope}.mjs` |
+> | `ZIDIANKAIFA_*`（**多一个 I，错**） | **本文件的旧配方（已更正）** · `packages/core/test/**` · 约 26 个历史 `scripts/probe_*.mjs` |
+>
+> 两者**只差一个字母，肉眼几乎不可辨**。后果是**静默回落**：变量名拼错 ⇒ 服务读不到 ⇒ **悄悄改用 `data/db/dict.db` + `data/sync-data/sync.db` 生产库**。**实测事故**：`scripts/probe_t94_auth.mjs` 按错误拼写注入 ⇒ 06:29 那次运行**真打了生产 sync 库**（WAL 里出现 T94 的 `tokens` 表与索引），并触发一次 ~493 MB 迁移快照。
+> ⇒ **两道防线，缺一不可**：
+> ① `apps/sync-server/src/index.ts:63-69` 的 `pickEnv(...names)` **两种拼法都收**（本文件拼法优先）—— 把「拼错即静默回落」改成「任一拼法都生效」；
+> ② **安全闸：服务起来后必须先读它自报的 `dict db :` / `sync db :` 两行，确认指向临时目录；若指向 `data/**` 立即 kill 并整体中止。**
+> ⚠ **静默回落是这类事故唯一的真正放大器** —— 文档里反复强调拼写不如这两道防线可靠。
+> ⚠ 新增探针请一律用**无 I** 的 `ZIDIANKAFA_*`；`packages/core/test/**` 里的旧拼写属测试侧既有事实，改动须走测试 agent 写域。
 `pnpm --filter @zidiankaifa/web dev` 在受限沙箱下会 `spawn EPERM`；用上面的静态方案替代。
 
 **Android / Capacitor 手机端构建（v0.11.0 实测；工具链已装，勿重新勘察）**
@@ -188,26 +201,34 @@ $env:ZIDIANKAIFA_DB='D:\lzk17\Documents\zidiankaifa\data\db\dict.db'; node apps/
 - 搜索框是 React 受控组件：`browser_fill` **必须先填空串再填值**，否则值被回滚。
 - 页面有两个 `.search-input`（header + main），用 `css=.search-input >> nth=1`。
 
-**🔴⚠ 本 harness 下「用环境变量给子进程做隔离」**完全不可用**（v0.11.0 T94 实测，四种通道全部失败）**
-> 场景：要起一个**打临时库**的 `apps/sync-server` 实例做端到端实测（绝不能碰 `data/**`）。
-> 实测结论：**没有任何一种方式能把 `ZIDIANKAIFA_DB` / `ZIDIANKAIFA_SYNC_DB` / `PORT` 传给 node 子进程** ⇒
-> 服务一律落到**生产默认路径**（`data/db/dict.db` + `data/sync-data/sync.db`）。
+**✅ 起 `sync-server` 子进程做端到端实测的**正确做法**（v0.11.0 T94/T96 实测；**曾有过一条错误结论，见下**）**
+> 场景：要起一个**打临时库**的 `apps/sync-server` 实例跑真 HTTP 断言（绝不能碰 `data/**`）。
 
-| 通道 | 实测结果 |
-| --- | --- |
-| pwsh 工具里 `$env:X=...; node ...` | ❌ node 收到的仍是默认值 |
-| node `spawn(...)`：`stdio=['ignore',fd,fd]` / `'pipe'` / `'ignore'` 三种 | ❌ 子进程**静默不监听**（无输出、无退出），三种全败 |
-| `Start-Process -FilePath node` + 同会话 `$env:` | ❌ 服务自报 `dict db : ...\data\db\dict.db` —— **env 没传进去** |
-| `Start-Process pwsh -File <包装脚本>`（脚本内设 `$env:` 再跑 node） | ❌ 同样落默认路径 |
-| Node 里设 `process.env` + `spawnSync('pwsh', ['-Command', 'Start-Process ...'])` | ❌ 落默认路径；且 `spawnSync` 会**挂死**（必须靠外层超时打断） |
+**可用通道 = `spawn` ＋ 显式 `{ env }` ＋ stdio 文件重定向**（三个条件缺一不可）：
+```js
+const child = spawn(process.execPath, ['apps/sync-server/dist/index.js'], {
+  cwd: REPO,
+  env: { ...process.env, ZIDIANKAFA_DB: tmpDict, ZIDIANKAFA_SYNC_DB: tmpSync,
+         ZIDIANKAFA_SYNC_PORT: String(port), ZIDIANKAFA_SYNC_TOKEN: '' },  // ← 显式传 env；★ 用无 I 的官方拼法
+  stdio: ['ignore', logFd, logFd],                            // ← 文件重定向，不用 'pipe'
+});
+```
+> 🔴 **变量名必须用无 I 的 `ZIDIANKAFA_*`**（本仓两套形近前缀的完整说明见上文「UI 验证」节）。服务自 v0.11.0 T95 起用 `pickEnv()` **两种拼法都收**，但这只是兜底 —— **安全闸才是真防线**。
+**实测三通道全绿**（`scripts/probe_t96_spawn_env.mjs`，可复跑）：① env 传递 ✔（标准变量与自定义变量都通）② 子进程能监听端口 ✔ ③ 能正常退出（非静默挂死）✔。
+**安全闸（务必照抄）**：服务起来后**先读它自报的 `dict db : <路径>` / `sync db : <路径>` 两行**（`apps/sync-server/src/index.ts` 启动打印），**若指向 `data/**` 立即 kill 并整体中止**。端到端凭证 = `scripts/probe_t96_isolation.mjs`：子进程自报 `dict db : ...\scripts\_tmp\t96iso-*\t_dict.db (0 words)`，且生产库 **PRE/POST 指纹逐项一致**。
 
-- ⛔ **绝对纪律**：由于无法隔离，**任何「起 sync-server 做实测」的脚本都会打到生产库**。
-  - 它对 `data/db/dict.db` 是**只读式**使用，但 `openDatabase()` 会跑迁移 ⇒ **冻结库立刻多出 `-wal`/`-shm` 与一个 ~493 MB `dict.db.bak-<ISO>`**；对 `data/sync-data/sync.db` 则会**真的写入**（账号/生词）。
-  - **因此：起服务实测前必须先记生产库指纹，测完必须清理 + 三次并查复核**（见下）。
-- ✅ **实测可行的通道（唯一）**：`Start-Process -FilePath 'node' -ArgumentList 'apps/sync-server/dist/index.js' -PassThru -WindowStyle Hidden -RedirectStandardOutput <f> -RedirectStandardError <f>` —— 服务**能起来**（会监听），但**必然打生产库**。
-- ✅ **冻结库回滚手法**：删 `-wal`/`-shm` 即回逐字节原状（主文件是最后一个 checkpoint）。**实测两次均成功**。
-- ✅ **sync 库「账号表」回滚**：`users` / `auth_tokens` 是纯测试数据 ⇒ 直接 `DELETE` 后 `PRAGMA wal_checkpoint(TRUNCATE)` 即净；**绝不碰 `book` 表**。
-- ⚠ `node -e` 内嵌 SQL/正则**仍会** `Expected unicode escape`（pwsh 引号陷阱）⇒ 一律写 `.mjs` 文件。
+- ⛔ **三个「看起来可行其实不行」的通道（勿再试）**：
+  | 通道 | 实测结果 |
+  | --- | --- |
+  | pwsh 工具里 `$env:X=...; node ...`（依赖 **env 继承**） | ❌ node 收到默认值 ⇒ 落生产库 |
+  | `Start-Process -FilePath node` ＋ 同会话 `$env:` | ❌ 服务自报 `dict db : ...\data\db\dict.db` |
+  | `Start-Process pwsh -File <包装脚本>`（脚本内设 `$env:` 再跑 node） | ❌ 同样落默认路径 |
+  ⇒ **共同点 = 全靠 env 继承**。**判别实验 `probe_t96_spawn_env.mjs` 通道 C（env 继承 + 文件重定向）实测 `SYNC_DB=null / DICT_DB=null / PORTENV=null` ⇒ 继承确实不通**；**通道 A（显式 env + 文件重定向）与 B（显式 env + pipe）都通**。
+- ⚠ **一条曾写错并已更正的结论（留痕，防重犯）**：本文件曾断言「**本 harness 下 env 隔离完全不可用**，五种通道全部失败，任何起服务的脚本都会打到生产库」——**该结论是错的**。当时的实测确实全部失败，但**失败原因是「依赖 env 继承」这一共同前提**，而非「harness 禁止传 env」。**教训：把「我用过的 N 种写法都失败」写成「该能力不可用」，是把方法失败误升为能力不可用** —— 判据应是「**换一个本质不同的机制**再试一次」（此处 = 从「继承」换成「显式注入」），而不是把同一前提下的多种写法当作多种独立通道。
+- ✅ **冻结库回滚手法（仍然有效）**：删 `-wal`/`-shm` 即回逐字节原状（主文件是最后一个 checkpoint）。**实测两次均成功**。
+- ✅ **sync 库「账号表」回滚**：`users` / `person_tokens`（旧名 `auth_tokens`）是纯测试数据 ⇒ 直接 `DELETE` 后 `PRAGMA wal_checkpoint(TRUNCATE)` 即净；**绝不碰 `book` 表**。
+- ⚠ **若真让服务打到生产库，代价是**：`data/db/dict.db` 多出 `-wal`/`-shm` ＋ 一个 ~493 MB `dict.db.bak-<ISO>`（`openDatabase()` 的迁移前快照）；`data/sync-data/sync.db` 会**真的写入**。⇒ **起服务前先记指纹、测后三次并查复核**。
+- ⚠ `node -e` 内嵌 SQL/正则**会**报 `Expected unicode escape`（pwsh 引号陷阱）⇒ 一律写 `.mjs` 文件。
 
 **⚠ 文本文件存在字节损坏风险（2026-09-16 实测，已修复一处）**
 - `README.md:144` 曾被写入 **U+000D CR + U+0007 BEL** 两个控制字符（原文应为西里尔词 `корни` / `аффиксы`，被按错误码位落盘），肉眼在编辑器里看不出来，只有逐码点才能发现。

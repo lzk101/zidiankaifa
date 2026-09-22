@@ -24,7 +24,7 @@
 |---|---|
 | 前端 | React 18 + TypeScript + Vite（手写 CSS，浅色/深色主题，响应式） |
 | 桌面 | Electron 37（contextIsolation + preload 桥），`node:sqlite`（无原生编译依赖） |
-| 手机 | 同一套前端以 PWA 运行；预留 Capacitor 配置 |
+| **手机** | **Capacitor 8.5.2 真 App**（`apps/mobile/`，`webDir` = `../web/dist`）+ 同一套 React 前端；Android 工程 `apps/mobile/android/`，包名 `com.lzk101.zidiankaifa`，**已产出签名 release APK**。⚠ iOS 工程可生成，但**编译须 macOS + Xcode**，Windows 上物理无法产出 |
 | 数据 | SQLite（better 无依赖：Node 内置 `node:sqlite`） |
 | 同步 | Node 内置 http 服务 + SQLite，可选 Bearer Token |
 | 词库 | [ECDICT](https://github.com/skywind3000/ECDICT)（开源，77 万词条）+ [Etymological Wordnet](https://archive.org/details/etymwn-20130208)（CC BY 3.0）+ [Wiktionary/wiktextract](https://kaikki.org)（CC BY-SA 4.0 / GFDL，词源详解）+ 自编词根库 |
@@ -91,10 +91,16 @@ pnpm --filter @zidiankaifa/desktop build
 
 ```bash
 # 环境变量（均可选）
-ZIDIANKAFA_SYNC_PORT=4570        # 端口
-ZIDIANKAFA_SYNC_TOKEN=your-token # 开启鉴权（推荐）
-ZIDIANKAFA_DB=.../dict.db        # 词典库路径
-ZIDIANKAFA_SYNC_DB=.../sync.db   # 同步库路径
+ZIDIANKAIFA_SYNC_PORT=4570        # 端口（亦接受 PORT）
+ZIDIANKAIFA_SYNC_TOKEN=your-token # 遗留单 token 鉴权（作用域 = 本机 'local'；保留以兼容桌面端 sync:now）
+ZIDIANKAIFA_DB=.../dict.db        # 词典库路径
+ZIDIANKAIFA_SYNC_DB=.../sync.db   # 同步库路径
+# 账号与限流（AC-27，v0.11.0）
+ZIDIANKAFA_AUTH_REGISTER=closed   # 关闭公开注册（缺省开放，便于起首账号）
+ZIDIANKAIFA_RATE_MAX=300          # 作用域维度：每 60s 上限
+ZIDIANKAIFA_AUTH_RATE_MAX=15      # 鉴权路由：按 IP
+ZIDIANKAIFA_AUTH_USER_RATE_MAX=8  # 鉴权路由：按账号
+ZIDIANKAIFA_RATE_WINDOW_MS=60000  # 限流窗口
 
 # 接口
 GET  /health                      # 健康检查 + 词条数
@@ -108,14 +114,23 @@ GET  /api/v1/words?lang=&q=          # 单词表（按语言分离）
 GET  /api/v1/book                 # 生词本全量
 GET  /api/v1/book-groups          # 生词本 × 词素分组（知识图谱数据）
 GET  /api/v1/related?word=&lang=  # 查词页同根词（按共享词素分组的词族）
-POST /api/v1/sync  {items:[...]}  # 合并同步
+POST /api/v1/sync  {items:[...]}  # 合并同步（last-write-wins，含删除墓碑）
+# 账号（AC-27，v0.11.0；用户名即 email）
+POST /api/v1/auth/register  {email,password}  # 注册并签发 token
+POST /api/v1/auth/login     {email,password}  # 登录签发新 token（不区分「无此账号/口令错」，防枚举）
+POST /api/v1/auth/revoke    {all?}            # 撤销当前 token（all:true 撤销该账号全部）
+GET  /api/v1/auth/whoami                      # 当前作用域
 ```
+
+> **密码存储**：`scrypt` ＋ 每用户随机盐 ＋ `timingSafeEqual`，格式 `scrypt$N$salt$hash`；**令牌只存 sha256 哈希**（不存明文），用户级可撤销。
+> ⚠ **当前限制（未完成，勿误读为已支持多用户）**：`/api/v1/book`、`/api/v1/book-groups`、`/api/v1/sync` **尚未接入用户维度** ⇒ 服务端目前仍是「**单人多设备**」语义，**多人共用会互相看到并修改对方生词本**；不要把本服务暴露到公网（`DEC-031`，发布阻断项）。
 
 ## 测试
 
 ```bash
-# 核心数据层回归（621 项断言：拆解/语言路由/词形反查/劫持回归/词源/suggest 隔离/
-#                  词根词缀表/词源关联链接/同根词族/覆盖率下限/词素语义/生词本语言隔离）
+# 核心数据层回归（626 项断言：拆解/语言路由/词形反查/劫持回归/词源/suggest 隔离/
+#                  词根词缀表/词源关联链接/同根词族/覆盖率下限/词素语义/生词本语言隔离/
+#                  用户维度隔离（AC-27））
 pnpm --filter @zidiankaifa/core test     # 需先 build，且本地存在 data/db/dict.db
                                          # （book_lang.mjs 例外：全程临时合成库，不读 dict.db）
 
@@ -123,8 +138,9 @@ pnpm --filter @zidiankaifa/core test     # 需先 build，且本地存在 data/d
 pnpm --filter @zidiankaifa/desktop test
 ```
 
-> 合计 **643 项**（core 621 + desktop 22），全部 0 失败。
-> core 621 = `regress` 99 + `lexicon` 67 + `related` 38 + `ru_morph` 60 + `ru_morph_d1fix` 194 + `ru_morph_d1guard` 26 + `book_lang` 137（全部已接入 `pnpm test`）。
+> 合计 **648 项**（core 626 + desktop 22），全部 0 失败。
+> core 626 = `regress` 99 + `lexicon` 67 + `related` 38 + `ru_morph` 60 + `ru_morph_d1fix` 194 + `ru_morph_d1guard` 26 + `book_lang` **142**（全部已接入 `pnpm test`）。
+> ⚠ `book_lang` 由 137 增至 142 系 v0.11.0 的 AC-27 把 `book` 主键由 `(word, lang)` 升为 **`(user_id, word, lang)`** ⇒ 旧口径 `621 = …+137`、合计 `643` **已作废**（口径变更须带时点，见 `AGENTS.md` §1）。
 > 另有 4 个**手动**留红台账（**不接入** `pnpm test`）：`ru_morph_defects.mjs`（55 通过 / 1 失败，唯一余红 = `термостат`）·
 > `ru_morph_goals.mjs`（0/2，v0.11.0 目标）· `ru_morph_semantic.mjs`（44/1）· `ru_morph_v090_guard.mjs`（107/0）。
 > 逐文件断言数与口径见 `AGENTS.md` §1 与 `.board/BASELINE.md`。
@@ -150,9 +166,10 @@ pnpm --filter @zidiankaifa/desktop test
 - [x] **查词正确性与词素补漏**（v0.4.1：专名大小写漏失修复、词形反查劫持修复、suggest 语言隔离、词素 582→601、**71 项 core 回归测试**固化）
 - [x] **俄语词素库数据驱动扩充**（v0.4.3：词素 601→**888**，俄语 145→**432**；覆盖 `тоска`/`водопровод`/`страшный` 等常用词；修掉单字符前缀误拆与 ё/е 未归一；回归 **91 项**）
 - [x] **屈折形词条污染清理**（v0.4.4：清出 **58,195 条**（36.6%）变格/变位形被建成的独立词条——此前估计仅 9,710 条；删除 57,615 条可反查项后俄语词条 159,127→**101,512**，查 `книгу` 现直接返回主词条 `книга` + 「宾格/单数」标注；不可反查的 580 条保留；含库内备份表与回归 8 项，共 **99 项**）
+- [x] **手机端（Capacitor）· 手机↔电脑互通 · 用户机制**（v0.11.0，**进行中，尚未发布**）：手机端由 PWA 升级为 **Capacitor 8.5.2 真 App**（`apps/mobile/`，`webDir=../web/dist`，包名 `com.lzk101.zidiankaifa`，minSdk 24 / targetSdk 36），**release APK 已签名并在 Android 15 模拟器实测安装运行**（标题/搜索框/五面板齐全，无白屏）；端到端隔离实测**双向同步成立**——手机写 `t81phone` ⇒ PC 库回读 4 行（含中文备注与标签数组），PC 写 `t81desktop` ⇒ 手机 `pulled=5` 且**看到电脑端新词 = true**、字段逐项一致；修复 3 个缺陷（`V11-SYNC-DTO` 跨 HTTP 边界字段名 snake_case/camelCase 不匹配导致 500 与**静默漏推** · `V11-NOTE-NULL` `note: null` 被存成字符串 `"undefined"` · `V11-OPENDB-LEAK` `openDatabase()` 抛错路径漏 `close()` 泄漏句柄）。**用户机制（AC-27）**：`book` 主键 `(word, lang)` → **`(user_id, word, lang)`**，`user_id` **NOT NULL 且不给 DEFAULT**（给默认值会让「漏写」与「漏过滤」双向静默失效），旧数据落 `'local'`，`sync-server` 新增 `/api/v1/auth/{register,login,revoke,whoami}`（`scrypt` + 每用户随机盐 + `timingSafeEqual`，口令格式 `scrypt$N$salt$hash`，**token 只存哈希**、用户级可撤销，**零新依赖**）。门禁 **621 → 648**。⚠ **未交付**：云端托管同步（需 Turso 凭证）· **离线最小可用集** · 互通仍需**自建同步服务** · iOS 无法编译 ⇒ **v0.11.0 尚未发布**，清单见 `docs/v0.11.0-status.md`
 - [ ] 真人发音音频（ECDICT audio 字段 + 有道/离线音频）
 - [ ] 背单词/记忆曲线复习
-- [ ] Capacitor 打包 Android APK
+- [x] **Capacitor 打包 Android APK**（v0.11.0：见下方 v0.11.0 条目；已产出**签名 release APK** 并在 Android 15 模拟器实测安装运行）
 - [ ] 中文分词搜索（FTS5 trigram）
 - [ ] 划词取词（全局快捷键）
 - [x] **数据质量总收**（v0.5.0：词源来源标注修正 19,865 条——原先 64% 俄语词条把「资料出处」当成语源语言显示「源自 英语」；第三数据源 kaikki 俄语 dump 勘察（44.3 万词条仅可新增 128 条 → **源数据到头**）；补建 115 条词形反查；VACUUM 515.09→**491.59MB**；覆盖率口径修正为 **30.8%**；回归 **99 项**）
@@ -164,4 +181,4 @@ pnpm --filter @zidiankaifa/desktop test
 - [x] **词素语义核证 · 防假拆解**（v0.9.0：修复「词首假词根误拆」——查 `сучить`（捻、搓）→ 词族卡此前显示 `уч-`（教、学）的家族。根因**不是**「只做字母级判定不做词素级判定」，而是**这些词素本身在库里被标成了 `root` 却出现在词中位置**（`уч-` = `*učiti` 学/教、`дн-` = `*dьnь` 日/昼、`да-` = `*dati` 给/授予，单字符**前缀**只有 `в-` `о-` `с-` `у-` 四个）⇒ 不存在「词素级前缀判定」可修。**packages/core/src 一行未改**，只在 `roots_ru.json` 补齐 **9 条词素**（441→450）：真词素 `суч-` `суд-` `домин-` `-ной` `пад-` `тряс-`（各附可复核 ru.wiktionary `{{морфо-ru}}` 来源）+ 3 条**整词抑制兜底** `столп-` `казус-` `однако-`（`origin` 已标注「非语义切分」，Release Notes 已披露）。**全库可拆 33,174→33,495**，词首假词根 `уч-@1`/`дн-@1` 均归零，尺子 R **238→241（30.09%→30.47%）**，R 内空洞≥3 **134→132**，`loses=2`（`поднаковальня`/`поднакопить`，旧态含假词根 `дн-`，转为不拆属净改善）。**两项判据豁免已如实披露**：口径A/B 空洞绝对值上升（率反而下降，因分母同时长大）、`-ной` 属「结构上不可满足」的判据缺陷。新增 `test/ru_morph_semantic.mjs` 语义判别集；门禁 **442→506**）
 
 - [x] **生词本语言分离 · 词根分类独立面板**（v0.10.0：生词本原先把英俄词混在一个列表里、`book` 表主键只有 `word` —— 同拼写跨语言会**互相覆盖/互相删除**。本迭代把 `book` 表迁到 **(word, lang) 复合主键**（`migrateBookCompositeKey`，含**迁移前自动快照** `VACUUM INTO <db>.bak-<ISO>`、事务回滚、行数守卫、索引重建，老库首次打开自动迁移，**逐字段保真含墓碑**），`bookGet/bookList/bookListAll/bookAdd/bookRemove/bookUpdate/syncMerge/bookGroups` **全部带 `lang`**（同步合并键也改为 `(word, lang)`，协议未变），消除了「删俄语词把英语同名词墓碑掉」与「`bookRemove` 缺省把墓碑写成 `'en'`」两处缺陷；**SQLite 与浏览器 `localStorage` 两条存储路径同时隔离**。UI：生词本**一个入口 + 🇬🇧/🇷🇺 子页签**（各自独立计数、删除互不影响、添加时自动判语言**并可手动覆盖**）；新增**独立的第 5 面板「🌱 词根分类」**（只归类**生词本内**的词，空生词本显示空态而**不回退**成全库词根表，与「词根词缀」面板职责区分）。门禁 **506 → 643**（新增 `book_lang.mjs` **137 项**：迁移/隔离/同步合并/语言判定/备份快照））
-- [ ] **v0.11.0 计划**（按「正确性 > 覆盖率」排序，详见 `docs/release-v0.10.0.md` §六）：① `а-` 否定前缀缺失（唯一能同时消 gap 且降空洞的前缀，实测 4 词 `астатизм`/`астатический`/`астатичность`/`гигростат` 的正解被守卫拒掉）② `lookupWord` 的 `inBook` 仍硬编码 `lang = 'en'`（`packages/core/src/db/index.ts:823`，当前不可达故属潜在不一致）③ 词中空洞通用上限（D2：`землетрясение` 跳 `ряс`、`водопад` 类）④ 假词根全库普查（`каз-`/`дом-`/`дн-` 等**库内词根自身含语义错误**，属词素库维护问题而非算法问题）⑤ `термостат` 取舍（补 `стат-` 会吃掉真前缀 `термо-`，已实测否决）⑥ `да-` 假族 26 词（与真族 10 词**引擎输出同形**，补词素会误伤真族，实测否决；判别核心对：`вдаться`=`в-|да|+ть|-ся`（真）vs `вдавить`=`в-|дав|-и|+ть`（巧合））；工程债见 `docs/交接文档.md` §6.C
+- [ ] **v0.12.0 计划（正确性梯队，v0.11.0 改向后**顺延**）**：① `а-` 否定前缀缺失（唯一能同时消 gap 且降空洞的前缀，实测 4 词 `астатизм`/`астатический`/`астатичность`/`гигростат` 的正解被守卫拒掉）② `lookupWord` 的 `inBook` 仍硬编码 `lang = 'en'`（`packages/core/src/db/index.ts:823`，当前不可达故属潜在不一致）③ 词中空洞通用上限（D2：`землетрясение` 跳 `ряс`、`водопад` 类）④ 假词根全库普查（`каз-`/`дом-`/`дн-` 等**库内词根自身含语义错误**，属词素库维护问题而非算法问题）⑤ `термостат` 取舍（补 `стат-` 会吃掉真前缀 `термо-`，已实测否决）⑥ `да-` 假族 26 词（与真族 10 词**引擎输出同形**，补词素会误伤真族，实测否决；判别核心对：`вдаться`=`в-|да|+ть|-ся`（真）vs `вдавить`=`в-|дав|-и|+ть`（巧合））；工程债见 `docs/交接文档.md` §6.C

@@ -2685,3 +2685,196 @@ sync-dto 契约：19 通过 / 0 失败   → exit 0（仓库根 与 packages/cor
 3. **其它端点**（`book-groups` / `related` / `lookup` / `lexicon`）的 DTO 形状**未纳入**本文件（本轮按派单只覆盖 `book` + `sync`）。
 4. **`C17` 假红的最终处置未定**（属主管/开发写域）；门禁当前 **exit 1**，**发布前必须解决**。
 5. 修前/修后**不是同一版断言集**（B4/C3 语义中途修正）⇒ §50.3 的 7 红是**当时判据**下的真实数字；最终判据下的修前推断值（9 红）**未实测**。
+
+---
+
+## §51 T79：C17 行为版断言落地 · 任务 2 撤回与我的回退 · T68 判据层风险落盘（功能测试 agent · 只追加）
+
+### 51.1 任务 1（已交付）：`items` 非数组 / 缺键的**行为版断言**
+- 落地：`scripts/check_sync_dto_contract.mjs` 新增 **G 组（G1–G3）**，插在 C 组之后、F 组之前：
+  - **G1** `{"items":"not-an-array"}` · **G2** `{"items":123}` · **G3** `{}`（缺键）⇒ 每条断言「**不得 500** ∧ `pushed === 0`」。
+- **实测（T78 已落地且 dist 已重建，见 51.5）**：**22 通过 / 0 失败 · exit 0**，两 cwd 一致。原始输出：
+  ```
+  ✔ G1 items 为字符串 "not-an-array" ⇒ **不得 500**，且行为可预测（pushed === 0）  [status=200 pushed=0 skipped=0]
+  ✔ G2 items 为数字 123 ⇒ **不得 500**，且行为可预测（pushed === 0）  [status=200 pushed=0 skipped=0]
+  ✔ G3 缺 items 键 ⇒ **不得 500**，且行为可预测（pushed === 0）  [status=200 pushed=0 skipped=0]
+  sync-dto 契约：22 通过 / 0 失败
+  冻结库未被修改 = true（size 518242304 · mtime 2026-09-13T15:13:53.350Z）· 临时目录已清理
+  ```
+- **意义**：G1–G3 = `book_lang.mjs:1427` C17（源码字符串判断）的**行为版**。无论 `apps/sync-server/src/index.ts` 后续怎么重构，只要「非数组入参不崩」这条**行为**成立即绿；**不依赖冻结账本**（新增在本文件，core 断言数恒 621）。
+- 复现：`node scripts/check_sync_dto_contract.mjs`（任意 cwd；`packages/core` 下用 `node ../../scripts/check_sync_dto_contract.mjs`）。
+
+### 51.2 任务 2（**已按主管更正撤回**）：我**已误改**并**已回退** —— 附 diff
+**先独立复核主管的更正（结论一致）**：
+- `packages/core/test/book_lang.mjs:1826-1828` 的台账块有**独立标题**「⚠ 未闭环缺陷登记（非断言 · 供主管判定 · 共 N 条）」，且**位于 `if (allFails.length)` 之外**；
+- 红态实测：`失败项：` 之下**只有** `- C17 入参契约不变：body.items 数组（Array.isArray(body.items)）`，其后才是 `临时库保留（取证）` 与上述独立台账块。
+⇒ **主管「渲染层面错觉（把过滤输出当完整输出读）」的判断成立**；输出结构本来就是对的。
+
+**但我在该更正到达前已动手**（上轮派单要求 (a)/(b) 二选一，我按「标签即口径」改了标签）⇒ 依指示**已回退**。diff（**已回退；工作区当前 = 原文**）：
+```diff
+ if (allFails.length) {
+-  console.log('失败项：');
++  console.log(`失败项（共 ${allFails.length} 条 = 上方「${totalPass} 通过 / ${allFails.length} 失败」中的失败数；**下方 ⚠ 登记台账不计入**）：`);
+   for (const f of allFails) console.log(`  - ${f}`);
+   console.log(`临时库保留（取证）：${RUN}`);
+```
+**回退验证（两 cwd）**：`结果：137 通过 / 0 失败（共 137 条断言）· exit 0`；绿态**不打印** `失败项：`（与原文一致）；`⚠ 未闭环缺陷登记（非断言 · 供主管判定 · 共 3 条）` 独立成段。**断言计数 137 全程未变**（未触碰任何断言）。
+⚠ **教训（记我账上）**：派单写「(a)/(b) 由你定」，我在**未等主管自查结论**前就改了出口标签 —— 虽零风险且可回退，但**「被授权可改」≠「该立刻改」**：当派单的**前提**正在被主管自查推翻时，正确动作是**先验证前提、再动手**。
+
+### 51.3 T68 判据层风险（按主管要求落盘，**需主管/用户裁决**）
+> **结论（判据层，非实现层）**：手机端离线的「**高频**词子集」在当前数据下**名不副实**，且**缺关键数据源**。
+1. **俄语侧完全没有词频**：`words_i18n`（ru 101,512）**无任何词频列**，`source` 全为 `"zh"` ⇒ **「高频」二字在俄语侧没有任何数据依据** ⇒ 建议**改称「内置最小可用集」/「离线常用库」**，**不得称「高频」**。
+2. **英文侧有真词频但覆盖不全**：`words.bnc`/`frq` 方向已实测（`the` = 1/1），但**有排名（bnc≥1）的仅 45,443 / 770,611 = 5.9%** ⇒ **N=50k 在英文侧不可达**。
+3. **需第四源补俄语词频**：与 AGENTS.md 记的「俄语词源覆盖 30.8% 需第四源」同类；**在补到之前**，任何俄语「高频」选择都无法自证（现有代理判据 = 有词源 / 有屈折形 / 倒排覆盖，**都是「数据完整度」而非频率**）。
+4. **附带两个已实测的口径事实**：① 尺子 R **是长度函数** ⇒ 用「短词=高频」判据测 R 覆盖率属**同义反复**；② 子集 / 按 rowid 序重建**都不能复现那把 791 尺子**（重建得 **829**、逐词不同）⇒ **子集上测覆盖率必须换口径**（按词表集合比对）。
+> ⇒ **本条为「判据层的方案风险」，提交主管/用户裁决**（主管已表示将作为 v0.11.0 **已知限制**在 Release Notes 披露）。
+
+### 51.4 ★ `B3` 保留为长期判据（依主管指示）
+`B3`（「GET 形状 + 仅改时间戳」回喂 ⇒ 200 ∧ `pushed===1` ∧ 服务端该条时间戳已更新）**保留**，文件内已注明其价值 = 测**静默漏推**（比 500 更隐蔽的失效）。实测：修前红（`pushed=0`、服务端 `updated_at` 未变）→ 修后绿（`pushed=1`、`updatedAt=4000`）。
+
+### 51.5 构建状态与未验证项
+- **构建状态（实测）**：`apps/sync-server/src/index.ts` **13,423 B / 20:22:20**（T78 已落地）· `apps/sync-server/dist/index.js` **12,163 B / 20:23:53**（**已重建、晚于 src**）⇒ 51.1 的 22/0 是**对着含 T78 的构建**取得的；`book_lang.mjs` 的 C17 只读 **src**，故 T78 落地即复绿（无需重建）。
+- **未验证**：① G 组只覆盖 `POST /api/v1/sync`，`PUT` 与 `/api/v1/book` 两个别名路由未重复测；② 未加「`items` 为 `null`」「`items` 为对象 `{}`」两个额外形态；③ 未在真实客户端验证；④ T78 落地的字面量**写法未由我复核**（属开发侧）。
+- **工作区终态**：`scripts/_tmp/t77_sync_dto` 每次运行自清（残留 0）；`book_lang.mjs` 已回退至原文；`data/db/dict.db` 恒 `518,242,304 B` / `2026-09-13T15:13:53.350Z`。
+
+---
+
+## §52 T84-R 第一步：AC-27…AC-30 独立判别集骨架（`scripts/check_user_scope.mjs`）（功能测试 agent · 只追加）
+
+### 52.1 交付物与状态（**红是预期的**）
+| 项 | 值 |
+| --- | --- |
+| 断言脚本 | **`scripts/check_user_scope.mjs`** · **624 行（换行符计数）** · 33,622 B · **未跟踪**（`git status --short` = `?? scripts/check_user_scope.mjs`） |
+| 侦察探针 | `scripts/probe_t84_recon.mjs` · 118 行 · **只读**（真实 sync 库**只拷副本**读） |
+| 断言条目 | **48 条 = RUN 31（16 通过 / 15 失败）＋ PENDING 17**（等 T83-R1/R2，**不计失败**） |
+| 退出码 | `0` 全绿 · **`1` 有 RUN 红（当前）** · `2` 基建失败 —— **两 cwd 实测均 exit 1，逐项一致** |
+| 是否接入 `pnpm test` | **否**（主管明令）：core 621 与 `book_lang.mjs` 137 是冻结账本；教训 = `ru_morph_defects.mjs` 因「src 未修好就写红」被链外永久隔离 |
+| HTTP 边界 | **全部用户维度断言走真 HTTP**（真起进程 · 随机端口 · 真 `fetch`）；**不直接调函数**（V11-SYNC-DTO 的教训） |
+
+### 52.2 侦察结论（`scripts/probe_t84_recon.mjs` 实跑）
+- **T83-R1 未落地**：`packages/core/src/db/index.ts`（61,050 B · `2026-09-13T22:11:18Z`）与 `packages/core/dist/db/index.js`（58,771 B · `22:19:51Z`）中 **`user_id` / `userId` / `LOCAL_USER_ID` / `'local'` 出现次数全为 0**；`schema.ts` / `types.ts` 同样 0。
+- **真实 sync 库**（`data/sync-data/sync.db` · **4096 B** · mtime `2026-08-28T10:00:34.902Z`）`book` DDL 实测 `PRIMARY KEY (word, lang)`；列 = `word,lang,added_at,updated_at,status,note,tags,review_count,last_reviewed_at,deleted`；索引 = `sqlite_autoindex_book_1`, `idx_book_updated`；**行数 = 3**，逐行：
+  - `telephone/en` `added 1787911240485` `updated 1787911240489` `learning` `note null` `tags "[]"` `review_count 0` `last_reviewed_at null` `deleted 0`
+  - `test/en` `added 1` `updated 5000000` `new`；`test/ru` `added 2` `updated 4900000` `new`
+- **sync-server**（`apps/sync-server/src/index.ts` · 13,423 B · `2026-09-14T12:22:20Z`）：**12 条路由标记**；**涉及 `book` 的 3 条 = `/api/v1/book@251` · `/api/v1/book-groups@262` · `/api/v1/sync@275`，用户过滤 = 0/3**；`auth`/`register`/`login`/`429` **全部不存在**。dist 12,163 B · `12:23:53Z`（晚于 src）。
+
+### 52.3 RUN 31 条逐条现状（16 绿 / 15 红）
+**绿 16**：`0.1` 临时库已建 · `0.2` 存量夹具（真实库副本 3 行）· `0.3` 随机端口（实测 50604 ≠ 4570）· `0.4` 服务就绪 · `0.5` `/health` 200 · `3.1` 路由枚举（12 条 / 涉及 book 3）· `3.3` 覆盖率自校验（字面量 12 = 枚举 12）· `4.0` 迁移无异常 · `4.1` 行数保真 3→3 · `4.2` 逐字段保真（3 行）· `4.5` 幂等（复跑不变）· `8.2` 第 1 次请求未被限 · `9.1` 匿名 GET `/book` 200 · `9.2` 匿名 POST `/sync` 200 `pushed=1 skipped=0` · `9.3` 匿名写入立即可读 · `9.4` **重启后匿名数据仍在（持久化）**。
+**红 15（= 缺口清单，非脚本缺陷）**：`1.1` 无 `user_id` 列 · `1.2` 主键实测 `["word","lang"]` · `1.3` DDL 的 PK 不含 `user_id` · `1.4` `user_id` 无索引（实测仅 `idx_book_updated(updated_at)`＋`sqlite_autoindex_book_1(word+lang)`）· `1.5` **★ 数据面硬判据 alice/bob 同词同语言两行共存**（无列 ⇒ 无法表达）· `2.1` **★ 匿名 GET `/book` 不得看见用户行**（前置失败）· `3.2` **★ 三条涉及 book 的路由 0/3 带用户过滤** · `3.4` **★ `bookListAll(...)` 实测 `["bookListAll()","bookListAll(syncDb)"]` 均未传用户维度** · `4.3` **★ 三行 `user_id` 实测 `[null,null,null]`** · `4.4` 主键未重建 · `4.6` core dist 中 `'local'` **0 次** · `4.7` `LOCAL_USER_ID` **0 次** · `8.1` **★ IP 限流不存在：连发 `/api/v1/book` 120 次分布 `{"200":120}`，无 429** · `9.5` **★ 匿名写入行无 `user_id`**（读得 `undefined`）· `9.6` 匿名看不见用户行（同 `2.1`，重启后复验）。
+**PENDING 17（每条带机械化理由）**：`2.2` `2.3` `3.5`（`POST /api/v1/auth/login` 实测 **404**）· `5.1`–`5.5`（`/api/v1/auth/claim` `/api/v1/auth/bind` `/api/v1/book/claim` `/api/v1/me/claim` **全 404**）· `6.1`–`6.4`（注册 404）· `7.1`–`7.4`（登录 404）· `8.3`（无用户级凭证）。
+
+### 52.4 脚本设计要点（可复用）
+- **能力探测驱动 PENDING**：账号端点**实测 404 ⇒ PENDING**，并把**实测状态码写进理由**；不靠读源码猜协议（避免按实现写断言）。
+- **双通道核对 AC-27③**：通道 A = 源码结构（`p === '<route>'` 标记切块 → 是否含 `user_id|userId|LOCAL_USER_ID` ＋ `bookListAll(` 是否传第二实参 ＋ **枚举数 == 字面量数** 自校验防漏路由）；通道 B = 实际请求（待 R2）。
+- **存量迁移在真实库副本上做**：`fs.copyFileSync(REAL_SYNC, MIG_SYNC)`（含 `-wal`/`-shm` 若有）；逐字段保真 = 「剔除 `user_id` 后 JSON 全等」；幂等 = 第二次 `openDatabase` 复验。
+- **冻结库保护**：`data/db/dict.db` **全程不打开**，起止各取 `{size, mtime}` 比对 ⇒ 实测 **`518,242,304 B` / `2026-09-13T15:13:53.350Z` 完全一致**。
+- **清理纪律（与 `book_lang.mjs` 有意不同并写明理由）**：本脚本在 R1/R2 前**必然红**，照「红即保留」会每次堆一个目录 ⇒ **默认清理（红也清）**，取证用 `KEEP_TMP=1`；**基建失败**强制保留。现 `scripts/_tmp/t84_user_scope` 下 **`run-*` 残留 0**。
+- **退出码三分**：`0` 全绿 / `1` RUN 红 / `2` 基建失败；PENDING **永不计失败**。
+
+### 52.5 我自查发现并已修的自身缺陷（3 处）
+1. **`ReferenceError: frozenBefore is not defined`**（首次运行 :585 抛）—— `const frozenBefore` 写在 `try` 内，`finally` 不可见 ⇒ 改为外层 `let frozenBefore = null` ＋ `try` 内赋值。**触发点在收尾自证路径**，不复跑会漏过。
+2. **`8.2` 原断言恒真**（`!(statuses[429] === n)`）—— 改为记录**首次 429 序号** `first429At`，断言 `first429At === null || first429At > 1`。**教训：凡「不存在某现象」的断言，必须自问它是否可能为真，否则是恒绿装饰。**
+3. （侦察脚本）`touchesBook` 首版写成无意义三元（`... === false ? A : A`）⇒ 简化为 `/\bbook/i.test(block)`。
+
+### 52.6 门禁复跑（**采集窗口内工作区无并行写入**，已留证）
+- `pnpm --filter @zidiankaifa/core test` ⇒ **exit 0**：`regress 99/0` · `lexicon 67/0` · `related 38/0` · `ru_morph 60/0`（无「结果：」前缀，计数陷阱）· `ru_morph_d1fix 194/0` · `ru_morph_d1guard 26/0` · `book_lang 137/0` ⇒ **core 621 / 0 = 99+67+38+60+194+26+137**。
+- `pnpm --filter @zidiankaifa/desktop test` ⇒ `dbmigrate: 22 通过 / 0 失败` · **exit 0** ⇒ **门禁 643 / 0**。
+- **并行写入判别（PRE/POST 双快照）**：`packages/core/{src,dist}` 与 `apps/sync-server/{src,dist}` 最新写点在 core test **前后完全相同** —— 最晚 = `apps/sync-server/dist/index.js` `2026-09-14T20:23:53Z` · `.../src/index.ts` `20:22:20Z` · `packages/core/dist/db/index.js` `2026-09-14T06:19:51Z` ⇒ **窗口内无并行写入，数字有效**。
+
+### 52.7 未做 / 未验证（如实声明）
+1. **未接入 `pnpm test`**（按派单）⇒ **门禁仍 643**；接入时机待 AC-27 全部落地后由主管决定。
+2. §2/§5/§6/§7/§8.3 断言体**已写好但未执行真判**（端点 404）—— R2 后需**放开并复核协议**（尤以绑定端点路径与 LWW 留痕载体未知）。
+3. 限流阈值 **N 未钉**：以「120 次内须出现 429」作**存在性**判据；若实现把限流放在账号端点，`8.1` 目标路由会在 R2 后**自动切到 `/api/v1/auth/login`**（脚本已实现该切换）。
+4. **未验证**：多 IP 维度（单机只能造一个远端 IP）、并发竞态下的限流计数、Turso/远端方言差异（见 DoD D26 风险 B-4）。
+5. **未写 `packages/core/test/**` 任何一行**（137/621 冻结账本未动）；未改 `packages/core/src/**`、`apps/**`。
+   ⚠ **本条第 5 项已被 §53 取代**（T84 追加单授权我更新 `book_lang.mjs` 的过时主键断言）。
+
+---
+
+# §53 T84 追加单：`book_lang.mjs` 12 条过时主键断言更新（AC-27 有意变更）
+
+主管重派（此前 `send_message` 未达，已附反证：`book_lang.mjs` mtime 13.5 h 未变、`user_id` 字样 0 处）。裁定：**12 条失败不是实现缺陷，是断言编码了 v0.10.0 的旧主键契约 `(word, lang)`**；AC-27 **有意**把 `book` 主键迁到 `(user_id, word, lang)`（`DEC-033`：`user_id` NOT NULL 且**不给 DEFAULT**）⇒ **绝不能为保住旧账本把主键改回两列**，只能改断言。
+
+## 53.1 逐条归类（**12/12 全部 = AC-27 有意变更，无一保留为红**）
+| # | 断言 | 文件行（改前） | 失败原因 | 归类 |
+| --- | --- | --- | --- | --- |
+| 1 | A1 新库主键列 | `book_lang.mjs:811-814` | 实测 `["user_id","word","lang"]` | AC-27② 有意变更 ✔ |
+| 2 | A6 老库（有 lang）迁移后主键 | `:838` | 同上 | 同上 ✔ |
+| 3 | A15 幂等重跑后主键不变 | `:891` | 同上 | 同上 ✔ |
+| 4 | A19 老库（无 lang）迁移后主键 | `:902` | 同上 | 同上 ✔ |
+| 5 | A26 自愈后迁移成功 ∧ 主键 | `:938-943` | 同上（其余子项 threw/book_new 均已绿） | 同上 ✔ |
+| 6 | A28c S2 同类·正常路径 主键 | `:1018` | 同上 | 同上 ✔ |
+| 7 | A28d S2 同类·重试路径 主键 | `:1041`（标签 `:1036`） | 同上 | 同上 ✔ |
+| 8 | A28e S1 同类·陈旧异库备份 主键 | `:1071` | 同上 | 同上 ✔ |
+| 9 | E9 迁移确已完成 主键列 | `:1670` | 同上 | 同上 ✔ |
+| 10 | E15 并发读者下迁移完成（主键子项） | `:1709,1713` | 同上（备份/警告/无异常子项均已绿） | 同上 ✔ |
+| 11 | E17 幂等（主键子项） | `:1720,1722` | 同上（备份数 1→1、数据不变均已绿） | 同上 ✔ |
+| 12 | E20 崩溃残留形态迁移完成（主键子项） | `:1745,1746` | 同上（备份逐字段/integrity 均已绿） | 同上 ✔ |
+**主管给出的逐字失败行**（未过滤原文）：`E17 … 备份数 1 → 1 · 主键=["user_id","word","lang"] · 数据不变=true · 二次 warn=[]` · `E20 … 主键=["user_id","word","lang"] · 备份 3/3 行 · 逐字段==迁移前=true · integrity=true · warn=[]` —— 两条的**非主键子项全部通过**，即**唯一差异就是主键期望值**，与归类一致。
+
+## 53.2 改法（**唯一真值来源 + 列序显式**，不为绿放宽任何一条）
+1. **新增常量（期望值的唯一来源）**：`const BOOK_PK_EXPECTED = ['user_id', 'word', 'lang'];` —— 12 处主键期望**全部**改引该常量（`pkCols()` 返回按 `pk` 序号排序，故**列序**已被断言覆盖）。契约再变只改一处。
+2. **新增只读探针** `userIds(file)`：无 `user_id` 列时**返回 `null`**（如实暴露旧结构，**不静默当 `[]`**）⇒ 防止「列不存在」被 `[]` 掩盖成绿。
+3. **新增 import**：`import { LOCAL_USER_ID } from '../dist/db/schema.js';`（实测 `dist/db/schema.js:10 export const LOCAL_USER_ID = 'local'`）。
+4. **文案同步**：A28d/E15/E16/E17/E20 标签里的 `[word, lang]` → `[user_id, word, lang]`（仅文案，非条件）。
+5. **净增 5 条新断言（非替换）**——`user_id` 维度的**行为断言**（v0.10.0 时这些维度不存在）：
+   - `A1c` 新库 `user_id` 列 **`notnull=1` ∧ `dflt_value=null`**（DEC-033：给 DEFAULT 会让「漏写 user_id 的 INSERT 静默落 local」与「漏过滤 SELECT 仍读到行」**双向静默失效**）；
+   - `A1d` 哨兵常量取自 core：`LOCAL_USER_ID === 'local'`（AC-28②）；
+   - `A6b` / `A19b` / `E20b` 存量行 `user_id` **全部回填 `'local'`**（AC-30①）——分别覆盖「老库有 lang」「老库无 lang」「崩溃残留（主库+非空 wal，无人持有）」三形态。
+   ⇒ 判据是「非空 ∧ 每个值都 === `'local'`」，**不依赖行序/夹具规模**（首版写成与夹具顺序做 JSON 全等，我自己当场改为 `every()`，避免顺序耦合的假红）。
+
+## 53.3 新断言总数与构成式
+- `book_lang.mjs`：**142 = A46 + B26 + C18 + D25 + E27**（改前 **137 = A42 + B26 + C18 + D25 + E26**）；**+5 净增**，**0 条被删、0 条被放宽**；12 条为期望值更新（条件强度未降：仍要求主键列集合与**列序**双重相等）。
+- 门禁：**core 626 = 99 + 67 + 38 + 60 + 194 + 26 + 142**；desktop 22 ⇒ **合计 648 通过 / 0 失败**。
+
+## 53.4 实测（两种 cwd，逐项一致）
+- `node packages/core/test/book_lang.mjs`（仓库根）⇒ `[A]46/0 · [B]26/0 · [C]18/0 · [D]25/0 · [E]27/0` → **结果：142 通过 / 0 失败（共 142 条断言）** · **exit 0**。
+- `cd packages/core && node test/book_lang.mjs` ⇒ **逐字同上** · **exit 0**。
+- `pnpm --filter @zidiankaifa/core test` ⇒ **exit 0**（99/67/38/60/194/26/142 全绿）；`pnpm --filter @zidiankaifa/desktop test` ⇒ `dbmigrate: 22 通过 / 0 失败` **exit 0**。
+- `git diff --stat -- packages/core/test/book_lang.mjs`（改动当时）⇒ **1 file changed, 73 insertions(+), 21 deletions(-)**。⚠ 截至本§落盘，`book_lang.mjs` **仍未提交**（`git status --short` 显示 ` M packages/core/test/book_lang.mjs`）；我不执行 git 写操作。
+
+## 53.5 与主管交底的一处**过时事实**（我实测反证，供口径对齐）
+主管本单交底：「冻结库 `data/db/dict.db` 的 `book` 表实测**无 `user_id`**（列 `["word","lang",…]`、主键 `["word","lang"]`）」——**在我核对时（2026-09-20 13:19）已不成立**：只读直开真库得 `cols = user_id#1,word#2,lang#3,added_at,…`、`rows = 3`。根因与时点：`data/db/` 于 **2026-09-20T12:38:03** 多出 `dict.db.bak-2026-09-20T04-37-42-440Z`（517,132,288 B）且 `dict.db-wal` = 98,912 B ⇒ **12:38 有人对真库跑过 `openDatabase()` 迁移**（主文件 size/mtime 未变 ⇒ 迁移只存在于 WAL，正是 `AGENTS.md` 新增「三项并查」条款所述形态）。该备份与 WAL 后由主管在 T93 修复中清理，**现态已归还基线**（见 §54.3）。
+
+---
+
+# §54 T93：链外三文件「只读打开冻结词库」（我写域内）
+
+## 54.1 纯读取核实（**先验证再改**，判据 = 写操作出现次数）
+`packages/core/test/` 的 `ru_morph_defects.mjs` · `ru_morph_goals.mjs` · `ru_morph_v090_guard.mjs` 三文件实测：`bookAdd` **0** · `bookRemove` **0** · `bookUpdate` **0** · `db.exec` **0** · `.run(` **0** · `syncMerge` **0**（每文件分别计数）⇒ 三文件**均纯读取**，`readOnly: true` 完全够用，**无一需另行处置**。（对照：`ru_morph_defects.mjs:113` 早就是 `new DatabaseSync(DB_PATH, { readOnly: true })`。）
+
+## 54.2 改动（3 文件 / +20 −6，**未动任何断言与退出码语义**）
+| 文件 | 改前 | 改后 |
+| --- | --- | --- |
+| `packages/core/test/ru_morph_defects.mjs:37` | `import { openDatabase, breakdownWord } …` | `import { breakdownWord } …`（去掉不再用的 `openDatabase`；`DatabaseSync` 早在 `:36` 已导入 ⇒ **不会重蹈 `ReferenceError`**） |
+| `packages/core/test/ru_morph_defects.mjs:43` | `const db = openDatabase(DB_PATH);` | `const db = new DatabaseSync(DB_PATH, { readOnly: true });` + 4 行「为什么必须只读」注释 |
+| `packages/core/test/ru_morph_goals.mjs:25` | `import { openDatabase, breakdownWord } …` | **新增** `import { DatabaseSync } from 'node:sqlite';` + `import { breakdownWord } …` |
+| `packages/core/test/ru_morph_goals.mjs:32` | `const db = openDatabase(DB_PATH);` | `new DatabaseSync(DB_PATH, { readOnly: true })` + 同款注释 |
+| `packages/core/test/ru_morph_v090_guard.mjs:29` | 同上 | **新增** `DatabaseSync` 导入 + `breakdownWord` |
+| `packages/core/test/ru_morph_v090_guard.mjs:36` | `const db = openDatabase(DB_PATH);` | `new DatabaseSync(DB_PATH, { readOnly: true })` + 同款注释 |
+注释原文（三处一致）：`★ 必须只读打开冻结词库：openDatabase() 会跑 book 迁移（migrateBookLang → migrateBookUserId → migrateBookCompositeKey → 后置校验），而迁移开始前先落一份 VACUUM INTO 整库快照 ⇒ 每跑一次本文件就写一次 data/db/dict.db 并多出一个 ~493 MB 的 dict.db.bak-<ISO>（实测曾无界膨胀到 1.700 GiB）。本文件全程只读取数（… 实测各 0 次）⇒ readOnly 完全够用。`
+
+## 54.3 核心验收判据：冻结库三项证据（**改进前 PRE 快照 → 六个运行全部结束后 POST 快照**）
+| 项 | PRE | POST | 判定 |
+| --- | --- | --- | --- |
+| `data/db/dict.db` size | **518,242,304 B** | **518,242,304 B** | ✔ 逐位一致 |
+| `data/db/dict.db` mtime | `2026-09-13T23:13:53.3496496+08:00` | **同上（逐字符相同）** | ✔ 与 `BASELINE.md` 基线一致 |
+| `dict.db-wal` | **0 B** | **0 B** | ✔ 未增长 |
+| `dict.db.bak-<ISO>` 份数 | **0** | **0** | ✔ 不新增（`dict.db.bak-*` 的 3 个匹配项全是 `bak-v02pipe{,‑shm,‑wal}` 旧遗留，非迁移快照） |
+- ⚠ **唯一差异 = `dict.db-shm` 的 mtime**（20:26:54 → 20:44:55）⇒ **不是写入证据**：任何**读**连接都会刷新 `-shm`（`AGENTS.md` 已载「`dict.db-shm` mtime 被任何读连接刷新 ⇒ 不能当写入监视器，只认主库 mtime + `-wal`」）。故 6 项里 5 项逐字符一致、1 项为读连接的必然副作用。
+
+## 54.4 断言结果与退出码**完全未变**（两种 cwd 各跑一次，逐项一致）
+| 文件 | 仓库根 | `packages/core`（`pnpm --filter` 的 cwd） | 期望值 | 判定 |
+| --- | --- | --- | --- | --- |
+| `ru_morph_defects.mjs` | `结果：55 通过 / 1 失败` · **exit 1** | 同上 | 55/1 exit 1（唯一余红 `термостат`） | ✔ |
+| `ru_morph_goals.mjs` | `迭代目标（A2/v0.9.0）：0 通过 / 2 失败` · **exit 2** | 同上 | 0/2 exit 2 | ✔ |
+| `ru_morph_v090_guard.mjs` | `V090-GUARD 回归护栏：107 通过 / 0 失败 · V090-GAP 漂移 0` · **exit 0** | 同上 | 107/0 exit 0 | ✔ |
+
+## 54.5 ★ 归属事实（**我的改动已被主管先行提交**，落盘可查）
+- `git ls-files -s` / `git hash-object` / `git rev-parse HEAD:*` 三方 **blob 相等**：`ru_morph_defects.mjs` = `c262d7218806c1a376da4065b8f86ac246a90edf`、`ru_morph_goals.mjs` = `f1f0857508819ef18d1109493a1f91f3f42c09eb`、`ru_morph_v090_guard.mjs` = `cab75d2567494e579d03e6ddc6ebb778d5d9466e`（disk == index == HEAD）。
+- ⇒ 三文件**已进入 HEAD `ca915eb`**（`fix(core/test): 链外三文件改只读打开冻结词库（T93，测试 agent 交付 + 主管独立验证）`，2026-09-21 20:44:17，`3 files changed, 20 insertions(+), 6 deletions(-)`），提交内容与我写入的注释**逐字相同**。故 `git status --short` **看不到这三处改动**（工作区与索引无差异）、`git diff --stat` 同为空 —— **这不是「未交付」，而是已被取走并提交**。
+- 我的独立验证（两 cwd × 三文件）在 **20:41–20:42** 完成，早于该提交的 20:44:17；结论与主管自述的「独立验证」一致（exit 1 / 2 / 0 与 55/1、0/2、107/0 逐字相同）。
+- 本单我**未执行任何 git 写操作**；未提交项：`book_lang.mjs`（§53，`git status` 显示 ` M`）。
+
+## 54.6 观察项（不改、仅报）
+- `scripts/_tmp/booklang_tmp/` 现存 **3 个 `run-*` 目录**：系我早前 `book_lang.mjs` **红态跑**（12 条旧断言失败时）按「红态保留取证」纪律留下的；该文件现 **142/0 全绿** ⇒ **不再新增**，这 3 个属可清理残留（`AGENTS.md` 结构化额度「临时残留 0」）。按主管「你跑完不必管，我会清」未动。

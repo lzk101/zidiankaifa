@@ -145,17 +145,24 @@ node scripts/probe_ru_coverage.mjs 800
 
 ### 8.2 ★★ 冻结词库完整性纪律（2026-09-20 事故后新增，**硬性**）
 
-**指纹（权威）**：`data/db/dict.db` = **518,242,304 B** · mtime = **2026-09-13T23:13:53**（本地）/ `2026-09-13T15:13:53Z`。
+**指纹（权威）**：`data/db/dict.db` = **518,242,304 B** · mtime = **2026-09-13T23:13:53**（本地）/ `2026-09-13T15:13:53Z` · **SHA256 = `BDAF498ED318350801A7C4D3C06EF61E21E258428FAE51AF328A123680C40CCC`**（2026-09-22 加测）。
 
 1. 🔴 **只读打开冻结库必须用 `new DatabaseSync(path, { readOnly: true })`，严禁 `openDatabase(path)`。**
    `openDatabase()` 会跑 `book` 迁移（`migrateBookLang` → `migrateBookUserId` → `migrateBookCompositeKey` → 后置校验），而迁移**开始前先落一份 `VACUUM INTO` 整库快照** ⇒ 每跑一次门禁就**写一次冻结词库 + 多一个 ~493 MB 的 `dict.db.bak-<ISO>`**。
    **实测事故**：`lexicon.mjs:11` / `related.mjs:25` / `ru_morph.mjs:43` 三处曾用可写 `openDatabase()` ⇒ `data/db/` 膨胀到 **1.700 GiB**（无界增长）。已修（提交 `b37dd2f`）⇒ 备份份数 **0 → 0 不新增**、`dict.db-wal` **0 B**、size/mtime 与基线逐位一致，门禁仍 **648/0**，`data/db/` 回落 **0.737 GiB**。
-2. 🔴 **冻结库的「已迁移形态」不可作为基线。** v0.10.0 与 v0.11.0 **两次 `book` 迁移都只存在于 WAL 里**，主文件一直是**最初**的词库 —— 删掉 `-wal` 后实测 `book` 主键 = **`["word"]`（单列）**、`lang` 在末位。
+2. 🔴 **冻结库的「已迁移形态」不可作为基线。** —— ⚠ **本条的前提已于 2026-09-22 改变，见第 7 条**。原事实：v0.10.0 与 v0.11.0 **两次 `book` 迁移都只存在于 WAL 里**，主文件一直是**最初**的词库 —— 删掉 `-wal` 后实测 `book` 主键 = **`["word"]`（单列）**、`lang` 在末位。
 3. 🔴 **判断冻结库是否被污染须三项并查，缺一不可**：① `size` + `mtime` ② **`-wal` / `-shm` 是否存在及其大小** ③ **主文件字节里是否有迁移痕迹**（`idx_book_user_updated` / `book_new` / `PRIMARY KEY (user_id`）。
    ⛔ **只看 size/mtime 会漏判**：主文件未被写、改动全在 WAL 时，二者与基线**完全一致**（本次事故正是如此）。
 4. ✅ **恢复手法（已验证）**：**删除 `-wal` / `-shm` 即回到逐字节原状** —— 主文件本身就是最后一个 checkpoint。恢复后须复核 `PRAGMA integrity_check = ok` 与基准表行数：`words` **770611** · `words_i18n`(ru) **101512** · `morphemes` **918** · `roots` **492** · `affixes` **416**。
 5. ⚠ **结构性推论**：只要**任何一个**会进入 `pnpm test` 链的文件用可写方式打开冻结库，上述无界增长就会重现。**新增测试文件时必须逐项确认打开方式**。
 6. ⚠ **链外同类未修**（手动跑仍会写库，不阻塞门禁）：`packages/core/test/ru_morph_defects.mjs:43` · `ru_morph_goals.mjs:32` · `ru_morph_v090_guard.mjs:36`；`scripts/probe_ru_coverage.mjs:24` · `scripts/exp_v9_admission.mjs:26` · `scripts/exp_ru_ceiling.mjs:30` · `scripts/probe_t32_noi_claims.mjs:14`。另 `packages/data-pipeline/build_roots_tables.mjs:21` **设计上就要写库**（词库重建工具）⇒ **必须在副本上跑**。
+7. 🔴 **2026-09-22 前提变更：主文件当前已是「已迁移形态」，冻结库现含 `book(user_id, word, lang)` 结构。**
+   - 实测主文件 `book` 列 = `['user_id','word','lang','added_at','updated_at','status','note','tags','review_count','last_reviewed_at','deleted']`、主键 = **`['user_id','word','lang']`**、**3 行**（与迁移后形态一致）⇒ **第 2 条「主文件一直是最初词库」的表述已不再成立**（该条保留为历史留痕）。
+   - **指纹不变**：size **518,242,304 B** · mtime **2026-09-13 23:13:53** · **SHA256 `BDAF498ED318350801A7C4D3C06EF61E21E258428FAE51AF328A123680C40CCC`** ⇒ 本轮核心门禁的 `book` 断言因此**无需走 `bookHasColumn` 兼容分支**（`regress.mjs:13` 只读直开即可）。
+   - **受控实验**：连跑两次 core 门禁 ⇒ `dict.db.bak-*` **恒 3 → 3 不新增** · `dict.db-wal` 恒 **65,952 B** · mtime 恒 `2026-09-13 23:13:53` ⇒ **`pnpm test` 链已不会迁移冻结库**（`b37dd2f` ＋ `ca915eb` 两笔修复的实际效果）。
+   - ⚠ **孤立事实（未定位执行者）**：`data/db/dict.db.bak-2026-09-22T01-22-01-180Z`（517,132,288 B）曾被创建，其 `book` 主键 = `['word']` ∧ 含 `user_id` 列 = `migrateBookUserId` 之后、复合主键之前那一瞬 ⇒ **确有一次 `openDatabase()` 迁移了冻结库**，但**未定位到执行者**（环境变量干净；`scripts/probe_v10_book_lang.mjs` 用临时库；sync-server 09:11 启动、快照 09:22 才出现）。依熔断规则停止追查（同一操作失败 2 次即停手），转为发布优先。**两份快照内容等价**（均 `integrity_check = ok` ＋ 基准表行数全对）⇒ 冗余快照已删，保留 1 份。
+   - **WAL 头解析口径纠错**：`dict.db-wal` 头**偏移 12 是 checkpoint 序号，不是帧数**；帧数 = `(size - 32) / (24 + pageSize)`。实测 65,952 B / pageSize 4096 ⇒ **帧数 0**。此前记录的「24 帧」是误读 `readUInt32BE(12)` 所致。
+   - **`data/db` 终态 = 0.737 GiB**，仅 `dict.db` ＋ `dict.db.bak-v02pipe`（272,752,640 B，**唯一真实老结构夹具 · 禁删**）＋ 其 `-shm`/`-wal`。
 
 ### 8.3 `data/` 体量对照（事故前 → 后）
 

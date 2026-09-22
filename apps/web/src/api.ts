@@ -32,7 +32,90 @@ import { groupBookByMorphemeData, isCyrillic } from '@zidiankaifa/core';
 const DEFAULT_SYNC_URL = 'http://localhost:4570';
 const NATIVE_ANDROID_SYNC_URL = 'http://10.0.2.2:4570';
 const SYNC_URL_KEY = 'zidian-sync-url';
+/**
+ * ★ v0.11.0 AC-27：账号令牌（服务端 `POST /api/v1/auth/{register,login}` 签发）。
+ *
+ * 为什么必须存在：服务端自 R3 起对 `/api/v1/{book,book-groups,sync}` 按 **作用域** 隔离数据，
+ * 「已有账号」时无令牌请求会 **401**。若客户端不带此头，用户一注册账号，手机端/浏览器端同步立即全废。
+ *
+ * ⚠ 存放位置的风险如实登记：这是**无 HttpOnly 能力的纯前端**（浏览器 + Capacitor WebView），
+ * 令牌只能进 `localStorage` ⇒ 同源脚本可读。缓解：令牌可撤销（`POST /api/v1/auth/revoke`）、
+ * 且服务端**只存 sha256 哈希**；真机场景下 App 被解包也拿不到别人的令牌。桌面端应改存主进程（未做，见 BOARD）。
+ */
+const AUTH_TOKEN_KEY = 'zidian-auth-token';
+const AUTH_EMAIL_KEY = 'zidian-auth-email';
 const BOOK_LOCAL_KEY = 'zidian-book-local';
+
+export function getAuthToken(): string {
+  try {
+    return localStorage.getItem(AUTH_TOKEN_KEY) ?? '';
+  } catch {
+    return '';
+  }
+}
+
+export function getAuthEmail(): string {
+  try {
+    return localStorage.getItem(AUTH_EMAIL_KEY) ?? '';
+  } catch {
+    return '';
+  }
+}
+
+export function setAuth(token: string, email: string): void {
+  localStorage.setItem(AUTH_TOKEN_KEY, token);
+  localStorage.setItem(AUTH_EMAIL_KEY, email);
+}
+
+export function clearAuth(): void {
+  localStorage.removeItem(AUTH_TOKEN_KEY);
+  localStorage.removeItem(AUTH_EMAIL_KEY);
+}
+
+/** 账号操作结果（供设置面板展示）—— 不抛异常，一律以 `{ok,message}` 返回。 */
+export interface AuthResult {
+  ok: boolean;
+  message: string;
+}
+
+/**
+ * 注册 / 登录（两者都是**公开路由**，无需已有令牌）。
+ * ⚠ 服务端注册成功会**认领本机存量生词本**（首个账号，`claimed` 条），故成功后必须再同步一次。
+ */
+export async function authRequest(
+  kind: 'register' | 'login',
+  email: string,
+  password: string,
+): Promise<AuthResult & { claimed?: number }> {
+  try {
+    const r = await restFetch<{ ok: boolean; token: string; email: string; claimed?: number }>(
+      `/api/v1/auth/${kind}`,
+      { method: 'POST', body: JSON.stringify({ email, password }) },
+    );
+    if (!r?.token) return { ok: false, message: '服务端未返回令牌' };
+    setAuth(r.token, r.email ?? email);
+    return {
+      ok: true,
+      message: kind === 'register' ? '注册成功，已绑定账号' : '登录成功',
+      claimed: r.claimed,
+    };
+  } catch (e) {
+    return { ok: false, message: e instanceof Error ? e.message : String(e) };
+  }
+}
+
+/** 撤销当前令牌并清除本地凭证（服务端撤销失败也照样清本地 —— 否则用户被卡在「登不出」状态）。 */
+export async function authLogout(): Promise<AuthResult> {
+  const had = getAuthToken();
+  try {
+    if (had) await restFetch('/api/v1/auth/revoke', { method: 'POST', body: JSON.stringify({}) });
+  } catch {
+    /* 撤销失败不阻断登出（网络不通 / 令牌已失效时也必须能清掉本地凭证） */
+  }
+  clearAuth();
+  return { ok: true, message: had ? '已登出（令牌已在服务端撤销）' : '本就未绑定账号' };
+}
+
 
 /** 是否运行在 Capacitor 原生壳（Android/iOS）里 —— 与浏览器、Electron 都不同。 */
 function isNativeShell(): boolean {
@@ -159,12 +242,26 @@ function speakViaWebSpeech(word: string, lang = 'en'): Promise<void> {
 
 async function restFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const base = getSyncUrl().replace(/\/+$/, '');
+  // ★ AC-27：带上账号令牌（未绑定账号时为空串 ⇒ 不发该头，行为与 v0.10.0 完全一致）
+  const token = getAuthToken();
   const res = await fetch(`${base}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     ...init,
   });
   if (!res.ok) {
-    throw new Error(`请求失败（HTTP ${res.status}）`);
+    // ★ AC-27：把服务端的中文原因透出来（如「邮箱或口令错误」「该 email 已注册」「未授权：令牌无效或已撤销」）。
+    //   旧写法恒为「请求失败（HTTP 401）」⇒ 账号面板无法据此给出可操作的提示。
+    let detail = '';
+    try {
+      const body = (await res.json()) as { message?: string };
+      detail = body?.message ?? '';
+    } catch {
+      /* 非 JSON 响应体，忽略 */
+    }
+    throw new Error(detail || `请求失败（HTTP ${res.status}）`);
   }
   return (await res.json()) as T;
 }

@@ -239,10 +239,14 @@ has('packages/core/src/db/index.ts', 'D13 迁移在 openDatabase 内调用', /mi
 has('packages/core/src/db/index.ts', 'D15 迁移事务化（BEGIN IMMEDIATE）', /BEGIN IMMEDIATE/);
 has('packages/core/src/db/index.ts', 'D15/AC-12⑧ 迁移前备份 .bak-<ISO>', /\.bak-\$\{new Date\(\)\.toISOString\(\)/);
 has('packages/core/src/db/index.ts', 'AC-12⑧ 备份失败 ⇒ 放弃迁移', /备份失败[\s\S]{0,200}放弃迁移/);
-has('packages/core/src/db/index.ts', 'D16 冲突目标 = (word, lang)', /ON CONFLICT\(word,\s*lang\) DO UPDATE/);
+has('packages/core/src/db/index.ts', 'D16 冲突目标含 (word, lang)', /ON CONFLICT\((?:user_id,\s*)?word,\s*lang\) DO UPDATE/);
 lacks('packages/core/src/db/index.ts', "D16 已消除 ON CONFLICT(word) 旧写法", /ON CONFLICT\(word\) DO UPDATE/);
 lacks('packages/core/src/db/index.ts', "D16 已消除 `it.lang ?? 'en'` 隐式回退", /it\.lang \?\? 'en'/);
-has('packages/core/src/db/index.ts', 'AC-13⑤ 墓碑保留原语言（bookRemove 带 lang）', /export function bookRemove\(db: DatabaseSync, word: string, lang\?: string\)/);
+// ⚠ v0.11.0 AC-27（R1，2026-09-22 主管订正）：复合主键升为 `(user_id, word, lang)`，
+//   `bookRemove` 末位追加可选 `userId`。判据从「签名逐字相同」放宽为「前缀不变 ∧ userId 末尾可选」，
+//   保留 AC-13⑤ 原意（墓碑必须带 lang，不得退化成仅按 word 删），同时容许 v0.11.0 的合法扩展。
+//   这正是本项目反复记录的「文本级/字符串断言使实现升级假红」—— 处置 = 随契约升级同步判据。
+has('packages/core/src/db/index.ts', 'AC-13⑤ 墓碑保留原语言（bookRemove 带 lang）', /export function bookRemove\(db: DatabaseSync, word: string, lang\?: string(?:, userId: string = LOCAL_USER_ID)?\)/);
 has('packages/core/src/db/index.ts', 'AC-14 syncMerge 按 (word, lang) 比对 updated_at', /SELECT updated_at FROM book WHERE word = \? AND lang = \?/);
 console.log('');
 

@@ -178,6 +178,7 @@ import {
   syncMerge,
 } from '../dist/db/index.js';
 import { isCyrillic } from '../dist/lang.js';
+import { LOCAL_USER_ID } from '../dist/db/schema.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..', '..');
@@ -322,6 +323,28 @@ function pkCols(file) {
     .filter((c) => Number(c.pk) > 0)
     .sort((a, b) => Number(a.pk) - Number(b.pk))
     .map((c) => c.name);
+}
+/**
+ * ★ v0.11.0（AC-27② / `DEC-033`）：`book` 复合主键 = **(user_id, word, lang)** —— 本文件**期望值的唯一来源**。
+ *
+ * 为什么旧契约 `(word, lang)` 作废：只 `ALTER TABLE` 加列**不能**让「两个用户写同词同语言」各存一行
+ * （旧主键仍要求 `(word, lang)` 全局唯一 ⇒ 实测只剩 1 行）。契约再变时**只改本常量**，
+ * 改前须先确认 `.board/REQ.md` 的 AC-27 判定式仍然成立（这是**契约断言**，不是实现细节断言）。
+ */
+const BOOK_PK_EXPECTED = ['user_id', 'word', 'lang'];
+/** 只读探针：`book` 表全部行的 `user_id`；**无该列时返回 `null`**（如实暴露「旧结构」，不静默当 `[]`） */
+function userIds(file) {
+  const db = new DatabaseSync(file, { readOnly: true });
+  try {
+    const cols = db.prepare('PRAGMA table_info(book)').all().map((c) => c.name);
+    if (!cols.includes('user_id')) return null;
+    return db
+      .prepare('SELECT user_id FROM book ORDER BY word')
+      .all()
+      .map((r) => r.user_id);
+  } finally {
+    db.close();
+  }
 }
 function indexExists(file, name) {
   const db = new DatabaseSync(file, { readOnly: true });
@@ -808,10 +831,24 @@ try {
     const newDbPath = path.join(RUN, 'a1_new.db');
     const newDb = openDatabase(newDbPath);
     opened.push(newDb);
-    A.eq('A1 新库 PRAGMA table_info(book) 主键列 == [word, lang]（AC-12①⑤）', pkCols(newDbPath), [
-      'word',
-      'lang',
-    ]);
+    A.eq(
+      'A1 新库 PRAGMA table_info(book) 主键列 == [user_id, word, lang]（AC-12①⑤；v0.11.0 按 AC-27② 升级为三列）',
+      pkCols(newDbPath),
+      BOOK_PK_EXPECTED,
+    );
+    A.ok(
+      'A1c 新库 `user_id` 列 **NOT NULL 且无 DEFAULT**（DEC-033：给 DEFAULT 会让「漏写 user_id 的 INSERT 静默落 local」与「漏过滤 SELECT 仍读到行」双向静默失效）',
+      (() => {
+        const c = newDb.prepare('PRAGMA table_info(book)').all().find((x) => x.name === 'user_id');
+        return !!c && Number(c.notnull) === 1 && c.dflt_value === null;
+      })(),
+      `user_id 列=${JSON.stringify(newDb.prepare('PRAGMA table_info(book)').all().find((x) => x.name === 'user_id') ?? null)}`,
+    );
+    A.ok(
+      "A1d 哨兵常量取自 core（`LOCAL_USER_ID === 'local'`，AC-28②：必须常量、可 grep、可迁移）",
+      LOCAL_USER_ID === 'local',
+      `LOCAL_USER_ID=${JSON.stringify(LOCAL_USER_ID)}`,
+    );
     A.ok(
       'A2 新库 word 与 lang 两列 pk > 0（逐列判定，不依赖列序；AC-12⑤）',
       (() => {
@@ -835,7 +872,12 @@ try {
     if (open1.error) throw open1.error; // 正常路径不得抛（原有行为；此处不新增断言）
     const db1 = open1.value;
     opened.push(db1);
-    A.eq('A6 老库（有 lang 列）迁移后主键列 == [word, lang]（AC-12②⑤）', pkCols(old1), ['word', 'lang']);
+    A.eq('A6 老库（有 lang 列）迁移后主键列 == [user_id, word, lang]（AC-12②⑤ · AC-27②）', pkCols(old1), BOOK_PK_EXPECTED);
+    A.ok(
+      "A6b ★ 老库（有 lang 列）迁移后**存量行 `user_id` 全部回填为 `'local'`**（AC-30①：无主数据落到哨兵；禁 NULL/空串/随机值）",
+      Array.isArray(userIds(old1)) && userIds(old1).length > 0 && userIds(old1).every((v) => v === 'local'),
+      `实测 userIds=${JSON.stringify(userIds(old1))}（期望非空且全为 "local"）`,
+    );
     const after1 = snapWithLang(old1);
     // ⚠ 唯一**许可**的差异：空串 lang 由迁移的 COALESCE(NULLIF(lang,''),'en') 归一为 'en'（见 A10）。
     //   其余 9 个字段 + 另外 3 行必须逐字段逐字相等。
@@ -888,7 +930,7 @@ try {
     // --- A15 幂等：再开一次（AC-12④⑧） ---
     const db1b = openDatabase(old1);
     opened.push(db1b);
-    A.eq('A15 幂等重跑后主键列不变（AC-12④）', pkCols(old1), ['word', 'lang']);
+    A.eq('A15 幂等重跑后主键列不变（AC-12④）', pkCols(old1), BOOK_PK_EXPECTED);
     A.eq('A16 幂等重跑后行内容不变（AC-12④）', snapWithLang(old1), after1);
     A.eq('A17 幂等重跑**不产生第二个备份**（AC-12⑧）', bakFiles(old1).length, 1);
     A.eq('A18 幂等重跑后 idx_book_updated 仍在', indexExists(old1, 'idx_book_updated'), 1);
@@ -899,7 +941,12 @@ try {
     const before2 = snapNoLang(old2);
     const db2 = openDatabase(old2);
     opened.push(db2);
-    A.eq("A19 老库（无 lang 列）迁移后主键列 == [word, lang]（AC-12②）", pkCols(old2), ['word', 'lang']);
+    A.eq("A19 老库（无 lang 列）迁移后主键列 == [user_id, word, lang]（AC-12② · AC-27②）", pkCols(old2), BOOK_PK_EXPECTED);
+    A.ok(
+      "A19b ★ 老库（**无 lang 列**，更老的形态）迁移后存量行 `user_id` 全部回填为 `'local'`（AC-30①）",
+      Array.isArray(userIds(old2)) && userIds(old2).length > 0 && userIds(old2).every((v) => v === 'local'),
+      `实测 userIds=${JSON.stringify(userIds(old2))}（期望非空且全为 "local"）`,
+    );
     const after2 = snapWithLang(old2);
     A.eq('A20 老库（无 lang 列）迁移后逐字段保真（不含 lang 的 9 个字段）', after2.map((r) => r.filter((_, i) => i !== 1)), before2);
     A.ok(
@@ -935,10 +982,10 @@ try {
       threw ? `抛出 ${threw.message}` : '',
     );
     A.ok(
-      'A26 ★ 自愈后**迁移成功**（T45 变更②）：`openDatabase()` 成功 ∧ 主键列 == [word, lang] ∧ 残留 `book_new` 已从 sqlite_master 清除（原断言「主键仍是 [word]」按新实现改写）',
+      'A26 ★ 自愈后**迁移成功**（T45 变更②）：`openDatabase()` 成功 ∧ 主键列 == [user_id, word, lang] ∧ 残留 `book_new` 已从 sqlite_master 清除（原断言「主键仍是 [word]」按新实现改写；主键期望值随 AC-27② 由两列升为三列）',
       threw === null &&
         db3 !== null &&
-        JSON.stringify(pkCols(old3)) === JSON.stringify(['word', 'lang']) &&
+        JSON.stringify(pkCols(old3)) === JSON.stringify(BOOK_PK_EXPECTED) &&
         sqliteObject(old3, 'book_new') === null,
       `抛出=${threw ? threw.message : 'null'} · 主键=${JSON.stringify(pkCols(old3))} · sqlite_master 里 book_new=${JSON.stringify(sqliteObject(old3, 'book_new'))}`,
     );
@@ -1015,7 +1062,7 @@ try {
           s2BakSnap !== null &&
           JSON.stringify(s2BakSnap) === JSON.stringify(s2Before) &&
           reuseLogNames(s2.logs).length === 0 &&
-          JSON.stringify(pkCols(s2File)) === JSON.stringify(['word', 'lang']) &&
+          JSON.stringify(pkCols(s2File)) === JSON.stringify(BOOK_PK_EXPECTED) &&
           s2.error === null,
         `可用快照数=${s2Baks.length}（期望 1：必须新建）· 新建份内容==迁移前=${JSON.stringify(s2BakSnap) === JSON.stringify(s2Before)} · 复用日志=${JSON.stringify(reuseLogs(s2.logs))}（期望 []）· 主键=${JSON.stringify(pkCols(s2File))} · 抛出=${s2.error ? s2.error.message : 'null'} · sidecar 仍在=${fs.existsSync(s2Sidecar)}`,
       );
@@ -1033,12 +1080,12 @@ try {
       const s2rBaks = bakFiles(s2rFile);
       const s2rNames = reuseLogNames(s2r.logs);
       A.ok(
-        'A28d ★ T51 收紧判据（S2 同类 · **重试路径** = 复用的唯一合法场景）：目录里只有 sidecar 且残留 `book_new` 表 ⇒ 自愈重试时复用的**必须**是「本次刚创建的真实快照」—— 恰 1 条复用日志 ∧ 日志里的文件名 == 目录内**唯一**的 `<db>.bak-<ISO>`（≠ sidecar）∧ 该文件内容 == 迁移前快照 ∧ 迁移自愈成功（主键 [word, lang]）∧ 可用快照数 == 1',
+        'A28d ★ T51 收紧判据（S2 同类 · **重试路径** = 复用的唯一合法场景）：目录里只有 sidecar 且残留 `book_new` 表 ⇒ 自愈重试时复用的**必须**是「本次刚创建的真实快照」—— 恰 1 条复用日志 ∧ 日志里的文件名 == 目录内**唯一**的 `<db>.bak-<ISO>`（≠ sidecar）∧ 该文件内容 == 迁移前快照 ∧ 迁移自愈成功（主键 [user_id, word, lang]）∧ 可用快照数 == 1',
         s2rNames.length === 1 &&
           s2rBaks.length === 1 &&
           s2rNames[0] === s2rBaks[0] &&
           JSON.stringify(snapWithLang(path.join(RUN, s2rBaks[0]))) === JSON.stringify(s2rBefore) &&
-          JSON.stringify(pkCols(s2rFile)) === JSON.stringify(['word', 'lang']) &&
+          JSON.stringify(pkCols(s2rFile)) === JSON.stringify(BOOK_PK_EXPECTED) &&
           s2r.error === null,
         `复用日志=${JSON.stringify(reuseLogs(s2r.logs))} · 日志指向=${JSON.stringify(s2rNames[0] ?? null)} · 唯一真实备份=${JSON.stringify(s2rBaks[0] ?? null)} · 可用快照数=${s2rBaks.length} · 内容==迁移前=${s2rBaks.length === 1 ? JSON.stringify(snapWithLang(path.join(RUN, s2rBaks[0]))) === JSON.stringify(s2rBefore) : 'n/a'} · 主键=${JSON.stringify(pkCols(s2rFile))}`,
       );
@@ -1068,7 +1115,7 @@ try {
           JSON.stringify(s1FreshSnap) === JSON.stringify(s1Before) &&
           JSON.stringify(snapWithLang(s1Stale)) === JSON.stringify(s1StaleSnap) &&
           reuseLogNames(s1.logs).length === 0 &&
-          JSON.stringify(pkCols(s1File)) === JSON.stringify(['word', 'lang']),
+          JSON.stringify(pkCols(s1File)) === JSON.stringify(BOOK_PK_EXPECTED),
         `备份总数=${s1Baks.length}（期望 2 = 陈旧 1 + 新建 1）· 新建份=${JSON.stringify(s1Fresh[0] ?? null)} · 新建份内容==本次迁移前=${JSON.stringify(s1FreshSnap) === JSON.stringify(s1Before)} · 陈旧份内容未被改写=${JSON.stringify(snapWithLang(s1Stale)) === JSON.stringify(s1StaleSnap)} · 复用日志=${JSON.stringify(reuseLogs(s1.logs))}（期望 []）· 主键=${JSON.stringify(pkCols(s1File))}`,
       );
     }
@@ -1667,7 +1714,7 @@ try {
     );
 
     /* --- E9 / E10 迁移本身成功、源库保真 --- */
-    E.eq('E9 上述场景下迁移**确已完成**（有另一条打开的连接 ⇒ checkpoint 未 busy）：主键列 == [word, lang]（AC-12②⑤）', prod.pkAfter, ['word', 'lang']);
+    E.eq('E9 上述场景下迁移**确已完成**（有另一条打开的连接 ⇒ checkpoint 未 busy）：主键列 == [user_id, word, lang]（AC-12②⑤ · AC-27②）', prod.pkAfter, BOOK_PK_EXPECTED);
     E.ok(
       'E10 迁移后**源库**数据保真：3 行且逐字段 == 迁移前快照（新行连同 lang 一起进入复合主键表，无改写）',
       JSON.stringify(prod.srcAfter) === JSON.stringify(prod.before),
@@ -1706,20 +1753,20 @@ try {
     /* --- E15–E17 ★【T46 反转】并发读者下**不再有** busy 放弃分支（原为「边界登记」，现为「缺陷已消除」的正面证明） --- */
     const busy = walBusyScenario(RUN);
     E.ok(
-      'E15 ★【反转】另一连接**持未结束的读事务**时：`VACUUM INTO` 备份**仍然成功**（备份数 ≥ 1 ∧ 该唯一备份含全部 3 行含新行）∧ 迁移**仍然完成**（主键 == [word, lang]）∧ **不出现任何「放弃迁移」警告** ∧ 不抛错 —— 即「checkpoint 遇并发读者 ⇒ busy ⇒ 放弃迁移 ⇒ 静默降级」这一缺陷路径已被 T45 从根上消除（原 T42 断言「busy ⇒ 放弃迁移 ∧ 无备份 ∧ 主键保持老结构」按设计反转）',
+      'E15 ★【反转】另一连接**持未结束的读事务**时：`VACUUM INTO` 备份**仍然成功**（备份数 ≥ 1 ∧ 该唯一备份含全部 3 行含新行）∧ 迁移**仍然完成**（主键 == [user_id, word, lang]）∧ **不出现任何「放弃迁移」警告** ∧ 不抛错 —— 即「checkpoint 遇并发读者 ⇒ busy ⇒ 放弃迁移 ⇒ 静默降级」这一缺陷路径已被 T45 从根上消除（原 T42 断言「busy ⇒ 放弃迁移 ∧ 无备份 ∧ 主键保持老结构」按设计反转）',
       busy.baks1.length >= 1 &&
         busy.bak1Words.length === 3 &&
         busy.bak1Words.includes(NEW_WORD) &&
-        JSON.stringify(busy.pk1) === JSON.stringify(['word', 'lang']) &&
+        JSON.stringify(busy.pk1) === JSON.stringify(BOOK_PK_EXPECTED) &&
         !busy.firstWarns.some((w) => w.includes('放弃迁移')) &&
         busy.firstError === null,
       `warn=${JSON.stringify(busy.firstWarns)} · 备份数=${busy.baks1.length} · 备份 ${busy.bak1Words.length} 行 ${JSON.stringify(busy.bak1Words)} · 主键=${JSON.stringify(busy.pk1)} · 抛出=${busy.firstError ? busy.firstError.message : 'null'}`,
     );
-    E.eq('E16 并发读者场景下源库数据完好且**已升级**（新连接可见 3 行含新行；主键 [word, lang]）', busy.srcWords1, ['alpha', 'beta', NEW_WORD]);
+    E.eq('E16 并发读者场景下源库数据完好且**已升级**（新连接可见 3 行含新行；主键 [user_id, word, lang]）', busy.srcWords1, ['alpha', 'beta', NEW_WORD]);
     E.ok(
-      'E17 ★ 幂等（busy 分支不存在 ⇒ 本条的判别对象改为**重复调用不产生副作用**）：再 `openDatabase()` 一次**不再迁移** ⇒ 备份数不增加（不产生第二份备份）∧ 主键仍 [word, lang] ∧ 源库数据逐字段不变 ∧ 无异常无警告 —— 说明「不再有 busy 放弃」不会以「每次启动都重做迁移 / 每次都落备份」为代价',
+      'E17 ★ 幂等（busy 分支不存在 ⇒ 本条的判别对象改为**重复调用不产生副作用**）：再 `openDatabase()` 一次**不再迁移** ⇒ 备份数不增加（不产生第二份备份）∧ 主键仍 [user_id, word, lang] ∧ 源库数据逐字段不变 ∧ 无异常无警告 —— 说明「不再有 busy 放弃」不会以「每次启动都重做迁移 / 每次都落备份」为代价',
       busy.baks2.length === busy.baks1.length &&
-        JSON.stringify(busy.pk2) === JSON.stringify(['word', 'lang']) &&
+        JSON.stringify(busy.pk2) === JSON.stringify(BOOK_PK_EXPECTED) &&
         JSON.stringify(busy.srcSnap2) === JSON.stringify(busy.srcSnap1) &&
         busy.secondError === null &&
         !busy.secondWarns.some((w) => w.includes('放弃迁移')),
@@ -1742,13 +1789,18 @@ try {
       `备份 ${rem.bakWords.length} 行 ${JSON.stringify(rem.bakWords)}`,
     );
     E.ok(
-      'E20 崩溃残留形态下（T46 改判据）：迁移完成（主键 [word, lang]）∧ 备份与源库**逻辑等价**（备份行数 == 迁移前 3 行 ∧ 逐字段 == 迁移前快照 ∧ `integrity_check` = ok）∧ 未走「放弃迁移」分支',
-      JSON.stringify(rem.pkAfter) === JSON.stringify(['word', 'lang']) &&
+      'E20 崩溃残留形态下（T46 改判据）：迁移完成（主键 [user_id, word, lang]）∧ 备份与源库**逻辑等价**（备份行数 == 迁移前 3 行 ∧ 逐字段 == 迁移前快照 ∧ `integrity_check` = ok）∧ 未走「放弃迁移」分支',
+      JSON.stringify(rem.pkAfter) === JSON.stringify(BOOK_PK_EXPECTED) &&
         rem.bakWords.length === rem.before.length &&
         JSON.stringify(rem.bakSnap) === JSON.stringify(rem.before) &&
         rem.bakIntegrity === true &&
         !rem.warns.some((w) => w.includes('放弃迁移')),
       `主键=${JSON.stringify(rem.pkAfter)} · 备份 ${rem.bakWords.length}/${rem.before.length} 行 · 逐字段==迁移前=${JSON.stringify(rem.bakSnap) === JSON.stringify(rem.before)} · integrity=${rem.bakIntegrity} · warn=${JSON.stringify(rem.warns)}`,
+    );
+    E.ok(
+      "E20b ★ 崩溃残留形态（最贴近真实：上次进程被强杀/断电）迁移后存量行 `user_id` 全部回填为 `'local'`（AC-30①）",
+      Array.isArray(userIds(rem.file)) && userIds(rem.file).length > 0 && userIds(rem.file).every((v) => v === 'local'),
+      `实测 userIds=${JSON.stringify(rem.file ? userIds(rem.file) : null)}（期望非空且全为 "local"）`,
     );
     E.eq('E21 崩溃残留形态下备份逐字段 == 迁移前源库快照（与 E5 同判据、不同形态）', rem.bakSnap, rem.before);
     E.ok(
